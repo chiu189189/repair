@@ -1,0 +1,340 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>手機回收估價｜CHIU189手機維修中心</title>
+<meta name="description" content="CHIU189手機維修中心（台中龍井）線上回收估價：iPhone、iPad、Apple Watch、三星、OPPO、VIVO、小米等，選機況立即估價。">
+<style>
+  :root{
+    --bg:#f6f5f2; --card:#ffffff; --ink:#1c1c1e; --muted:#6b6b70; --line:#e4e2dc;
+    --accent:#d4561c; --accent-ink:#ffffff; --accent-soft:#fbeee6; --ok:#06c755; --bad:#b3261e;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{ --bg:#121214; --card:#1c1c1f; --ink:#f2f2f4; --muted:#9a9aa2; --line:#2e2e33;
+      --accent:#ff7a3d; --accent-ink:#1a0d05; --accent-soft:#2b1a10; --bad:#ff8a80; }
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"PingFang TC","Noto Sans TC","Microsoft JhengHei",sans-serif;
+    line-height:1.5;-webkit-text-size-adjust:100%}
+  .wrap{max-width:760px;margin:0 auto;padding:24px 16px 120px}
+  .nav{display:flex;gap:8px;margin-bottom:18px}
+  .nav a{flex:1;text-align:center;padding:10px;border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--ink);text-decoration:none;font-size:15px}
+  .nav a.on{background:var(--ink);color:var(--bg);border-color:var(--ink);font-weight:700}
+  header .eyebrow{color:var(--accent);font-size:13px;font-weight:700;letter-spacing:.05em}
+  header h1{margin:4px 0 6px;font-size:26px}
+  header p{margin:0;color:var(--muted);font-size:14px}
+  .notice{margin:14px 0 0;padding:12px 14px;border-radius:12px;background:var(--accent-soft);color:var(--accent);font-size:13px;font-weight:600}
+  .notice div+div{margin-top:4px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px;margin-top:16px}
+  .card h2{margin:0 0 12px;font-size:17px}
+  .card h2 small{color:var(--muted);font-weight:400;font-size:13px;margin-left:6px}
+  .chips{display:flex;gap:8px;flex-wrap:wrap}
+  .chips button{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:999px;padding:8px 14px;font-size:14px;cursor:pointer}
+  .chips button.on{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);font-weight:700}
+  label.f{display:block;font-size:14px;margin:14px 0 6px;font-weight:600}
+  select{width:100%;padding:12px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink);font-size:16px}
+  .q{margin-top:16px}
+  .q .t{font-size:14px;font-weight:600;margin-bottom:6px}
+  .opts{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
+  .opts label{display:flex;align-items:center;gap:8px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;cursor:pointer;font-size:14px;background:var(--bg)}
+  .opts label:has(input:checked){border-color:var(--accent);background:var(--accent-soft);color:var(--accent);font-weight:600}
+  .opts input{accent-color:var(--accent);margin:0}
+  .hint{font-size:12px;color:var(--muted);margin-top:6px}
+  .btn{display:block;width:100%;border:0;border-radius:12px;padding:14px;font-size:17px;font-weight:700;cursor:pointer;margin-top:18px;background:var(--accent);color:var(--accent-ink)}
+  .result{text-align:center}
+  .result .price{font-size:40px;font-weight:800;color:var(--accent);margin:4px 0}
+  .result .price.no{font-size:22px;color:var(--bad)}
+  .result .sub{color:var(--muted);font-size:13px}
+  pre{white-space:pre-wrap;text-align:left;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:12px;font-size:13px;font-family:inherit;margin:14px 0 0}
+  .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+  .btn-line{border:0;background:var(--ok);color:#fff;font-weight:700;border-radius:12px;padding:13px 16px;font-size:16px;cursor:pointer;flex:1 1 100%}
+  .btn-sub{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:12px;padding:12px 16px;font-size:15px;text-decoration:none;text-align:center;flex:1}
+  .why{margin-top:16px;font-size:13px;color:var(--muted)}
+  .why ul{margin:6px 0 0;padding-left:18px}
+  footer{margin-top:28px;text-align:center;color:var(--muted);font-size:13px}
+  [hidden]{display:none!important}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav class="nav"><a href="./">維修報價</a><a href="recycle.html" class="on">回收估價</a></nav>
+  <header>
+    <div class="eyebrow">CHIU189 手機維修中心</div>
+    <h1>手機回收線上估價</h1>
+    <p>選機型、勾機況，馬上知道大概能賣多少。估好直接 LINE 傳給我們。</p>
+    <div class="notice">
+      <div>・線上估價僅供參考，實際金額以到店檢測為準，當日有效。</div>
+      <div>・交易請攜帶本人身分證件，並先登出 iCloud／Google 帳號；來路不明的機器恕不收購。</div>
+    </div>
+  </header>
+
+  <section class="card">
+    <h2>1. 選擇機型</h2>
+    <div class="chips" id="brands"></div>
+    <label class="f" for="model">型號</label>
+    <select id="model"></select>
+    <label class="f" for="cap">容量／規格</label>
+    <select id="cap"></select>
+    <div class="hint" id="loadState">讀取價目中…</div>
+  </section>
+
+  <section class="card" id="condCard">
+    <h2>2. 機況 <small>照實際狀況選，估價會比較準</small></h2>
+    <div id="conds"></div>
+  </section>
+
+  <button class="btn" id="calc">立即估價</button>
+
+  <section class="card result" id="result" hidden>
+    <div class="sub">預估回收價</div>
+    <div class="price" id="price"></div>
+    <div class="sub" id="priceSub"></div>
+    <pre id="summary"></pre>
+    <div class="actions">
+      <button class="btn-line" id="sendLine">LINE 傳送估價給我們</button>
+      <a class="btn-sub" id="tel" href="#">撥打電話</a>
+      <a class="btn-sub" id="map" href="#" target="_blank" rel="noopener">地圖導航</a>
+    </div>
+  </section>
+
+  <div class="why">
+    <strong>舊機不賣也可以修</strong>
+    <ul>
+      <li>螢幕破、電池老化、不開機，修好再用或修好再賣，常常比直接回收划算。</li>
+      <li>到店可以同時幫你檢測、估維修價和回收價，兩個比一比再決定。</li>
+    </ul>
+  </div>
+
+  <footer id="foot"></footer>
+</div>
+
+<script>
+// ===== 設定區 =====
+const CONFIG = {
+  SHEET_CSV_URL: "",          // 之後改用 Google 試算表時填這裡；留空讀 recycle.csv
+  LOCAL_CSV: "recycle.csv",
+  LINE_OA_ID: "@891llnje",
+  PHONE: "0985-969-297",
+  ADDRESS: "台中市龍井區遠東街189號",
+  HOURS: "營業時間 12:00–22:00",
+};
+
+// 機況扣款：以基本回收價的百分比計算，各項分開扣（不連乘）
+const PHONE_Q = [
+  { id:"power", t:"開機狀態", o:[["正常開機",0],["無法開機",.90],["泡水",.98],["摔爛／車輾過",.98]] },
+  { id:"frame", t:"邊框", o:[["完好無傷",0],["輕微痕跡",.03],["明顯撞傷",.10],["明顯變形",.60]] },
+  { id:"back",  t:"背蓋", o:[["完好無傷",0],["輕微痕跡",.03],["明顯痕跡",.08],["背蓋破損",.35]] },
+  { id:"lcd",   t:"螢幕顯示", o:[["正常無傷",0],["輕微痕跡",.03],["明顯刮傷／老化／泛黃",.10],["非原廠螢幕",.50],["顯示異常／破損／觸控失靈",.50]],
+    hint:"輕微痕跡＝細小刮痕；顯示異常＝破裂、觸控失靈、烙印" },
+  { id:"camF",  t:"前鏡頭", o:[["正常",0],["內有異物",.10],["故障",.20]] },
+  { id:"camR",  t:"後鏡頭", o:[["正常",0],["內有異物",.10],["故障",.25]] },
+  { id:"bio",   t:"Face ID／指紋", o:[["正常",0],["指紋失效",.50],["Face ID 失效",.50]] },
+];
+const IPHONE_ONLY_Q = [
+  { id:"batt", t:"電池健康度", o:[["90% 以上",0],["86%–89%",.05],["81%–85%",.08],["80% 以下／無法顯示／非原廠",.12]] },
+];
+const IPHONE_FUNCS = [["NFC",.90],["GPS",.90],["Wi-Fi／藍牙",.90],["SIM／eSIM",.90],["聽筒",.10],["喇叭",.10],["麥克風",.10],["震動",.10],["充電孔",.10],["按鍵",.10],["感應器",.06]];
+const SIMPLE_FUNC_Q = { id:"func", t:"其他功能（通話、喇叭、充電、按鍵等）", o:[["都正常",0],["有異常",.10]] };
+
+// iPhone 保底價：依「螢幕好壞 × 背蓋好壞」分 A/B/C/E 四級，扣完低於保底就用保底
+const FLOOR = {
+  "iPhone 7":[50,50,50,50], "iPhone 7 Plus":[50,50,50,50], "iPhone 8":[50,50,50,50], "iPhone 8 Plus":[50,50,50,50],
+  "iPhone SE（第 2 代）":[50,50,50,50], "iPhone SE（第 3 代）":[50,50,50,50],
+  "iPhone X":[100,100,50,50], "iPhone XR":[100,100,50,50], "iPhone XS":[100,100,50,50], "iPhone XS Max":[100,100,50,50],
+  "iPhone 11":[500,300,300,100], "iPhone 11 Pro":[500,300,100,100], "iPhone 11 Pro Max":[1000,500,100,100],
+  "iPhone 12":[1500,800,300,180], "iPhone 12 mini":[1000,500,200,180], "iPhone 12 Pro":[1500,800,500,180], "iPhone 12 Pro Max":[2500,1500,800,180],
+  "iPhone 13":[2000,1500,500,200], "iPhone 13 mini":[1500,800,300,200], "iPhone 13 Pro":[3000,2000,800,200], "iPhone 13 Pro Max":[3500,2500,1000,200],
+  "iPhone 14":[2300,1500,800,200], "iPhone 14 Plus":[2500,1500,800,200], "iPhone 14 Pro":[4000,3000,1200,300], "iPhone 14 Pro Max":[4500,3500,1200,300],
+  "iPhone 15":[3500,2000,1000,300], "iPhone 15 Plus":[3500,2000,1000,300], "iPhone 15 Pro":[5000,3500,1500,300], "iPhone 15 Pro Max":[6000,4500,1500,300],
+  "iPhone 16":[4000,3000,1000,500], "iPhone 16 Plus":[4000,3000,1000,500], "iPhone 16 Pro":[7000,5500,1500,500], "iPhone 16 Pro Max":[8000,6500,1500,500],
+};
+
+// Apple Watch：玻璃破或任何功能異常就不收；外觀小扣；原廠盒裝配件齊全且未使用 +300
+const WATCH_FUNCS = ["無法正常開關機","螢幕顯示異常","觸控異常","數位錶冠異常","側邊按鍵異常","Wi-Fi 異常","藍牙異常","GPS 異常","行動網路（LTE）異常","喇叭異常","麥克風異常","心率／感測器異常","充電異常","其他硬體異常"];
+const WATCH_Q = [
+  { id:"glass", t:"螢幕玻璃", o:[["完好無破裂",0],["玻璃破裂",-1]] },
+  { id:"wscr",  t:"螢幕外觀", o:[["無明顯使用痕跡",0],["細微使用痕跡",.05],["明顯刮傷",.10]] },
+  { id:"wcase", t:"錶殼外觀", o:[["無明顯使用痕跡",0],["輕微使用痕跡",.05],["明顯刮傷／掉漆",.10]] },
+  { id:"acc",   t:"原廠配件與盒裝", o:[["配件＋盒裝完整且未使用（+NT$300）",300],["其他（沒盒子、缺線或已使用）",0]] },
+];
+
+// ===== 以下不用動 =====
+const $ = s => document.querySelector(s);
+let DB = {}, brand = null;
+
+function parseCSV(text){
+  const rows=[]; let row=[], cell="", q=false;
+  for(let i=0;i<text.length;i++){
+    const c=text[i];
+    if(q){ if(c==='"'){ if(text[i+1]==='"'){cell+='"';i++} else q=false } else cell+=c; }
+    else if(c==='"') q=true;
+    else if(c===','){ row.push(cell); cell=""; }
+    else if(c==='\n'||c==='\r'){ if(c==='\r'&&text[i+1]==='\n') i++; row.push(cell); rows.push(row); row=[]; cell=""; }
+    else cell+=c;
+  }
+  if(cell||row.length){ row.push(cell); rows.push(row); }
+  return rows;
+}
+const fmt = n => "NT$ " + n.toLocaleString();
+const kind = () => brand==="iPhone" ? "iphone" : brand==="Apple Watch" ? "watch" : "simple";
+
+async function load(){
+  const url = CONFIG.SHEET_CSV_URL || CONFIG.LOCAL_CSV;
+  try{
+    const r = await fetch(url + (url.includes("?")?"&":"?") + "t=" + Date.now());
+    if(!r.ok) throw 0;
+    parseCSV(await r.text()).slice(1).forEach(([b,s,m,c,p])=>{
+      const price = parseInt(p,10); if(!b||!m||!(price>0)) return;
+      (((DB[b]??={})[m]??={series:s,caps:{}}).caps)[c||"—"] = price;
+    });
+    $("#loadState").textContent = "價目更新於 " + new Date().toLocaleDateString("zh-TW");
+  }catch(e){ $("#loadState").textContent = "價目讀取失敗，請重新整理頁面"; return; }
+  renderBrands(); pickBrand(Object.keys(DB)[0]);
+}
+
+function renderBrands(){
+  $("#brands").innerHTML = "";
+  Object.keys(DB).forEach(b=>{
+    const el = document.createElement("button");
+    el.textContent = b; el.className = b===brand ? "on" : "";
+    el.onclick = () => pickBrand(b);
+    $("#brands").append(el);
+  });
+}
+
+function pickBrand(b){
+  brand = b; renderBrands();
+  const sel = $("#model"); sel.innerHTML = '<option value="">請選擇型號</option>';
+  const groups = {};
+  Object.entries(DB[b]).forEach(([m,v])=>{ (groups[v.series||""] ??= []).push(m); });
+  Object.entries(groups).forEach(([g,ms])=>{
+    const parent = g ? Object.assign(document.createElement("optgroup"),{label:g}) : sel;
+    ms.forEach(m=>parent.append(new Option(m,m)));
+    if(g) sel.append(parent);
+  });
+  pickModel(); renderConds(); $("#result").hidden = true;
+}
+
+function pickModel(){
+  const m = $("#model").value, sel = $("#cap");
+  sel.innerHTML = "";
+  if(!m){ sel.append(new Option("請先選型號","")); sel.disabled = true; return; }
+  sel.disabled = false;
+  Object.keys(DB[brand][m].caps).forEach(c=>sel.append(new Option(c,c)));
+  $("#result").hidden = true;
+}
+
+function radioQ(q){
+  const box = document.createElement("div"); box.className = "q";
+  box.innerHTML = `<div class="t"></div><div class="opts"></div>`;
+  box.querySelector(".t").textContent = q.t;
+  q.o.forEach(([label,val],i)=>{
+    const l = document.createElement("label");
+    l.innerHTML = `<input type="radio" name="${q.id}" value="${i}" ${i?"":"checked"}><span></span>`;
+    l.querySelector("span").textContent = label;
+    box.querySelector(".opts").append(l);
+  });
+  if(q.hint){ const h=document.createElement("div"); h.className="hint"; h.textContent=q.hint; box.append(h); }
+  return box;
+}
+function checkQ(title, items, name){
+  const box = document.createElement("div"); box.className = "q";
+  box.innerHTML = `<div class="t"></div><div class="opts"></div><div class="hint">沒有異常就不用勾</div>`;
+  box.querySelector(".t").textContent = title;
+  items.forEach((label,i)=>{
+    const l = document.createElement("label");
+    l.innerHTML = `<input type="checkbox" name="${name}" value="${i}"><span></span>`;
+    l.querySelector("span").textContent = label;
+    box.querySelector(".opts").append(l);
+  });
+  return box;
+}
+
+function renderConds(){
+  const c = $("#conds"); c.innerHTML = "";
+  const k = kind();
+  if(k==="watch"){
+    c.append(radioQ(WATCH_Q[0]), checkQ("功能檢查（有任何一項異常請勾選）", WATCH_FUNCS, "wf"));
+    const h=document.createElement("div"); h.className="hint"; h.textContent="Apple Watch 需所有功能正常、玻璃沒破才能收購。"; c.append(h);
+    WATCH_Q.slice(1).forEach(q=>c.append(radioQ(q)));
+    return;
+  }
+  PHONE_Q.forEach(q=>c.append(radioQ(q)));
+  if(k==="iphone"){
+    IPHONE_ONLY_Q.forEach(q=>c.append(radioQ(q)));
+    c.append(checkQ("其他功能異常（可複選）", IPHONE_FUNCS.map(x=>x[0]), "fn"));
+  } else c.append(radioQ(SIMPLE_FUNC_Q));
+}
+
+const pick = (q) => { const i = +document.querySelector(`input[name="${q.id}"]:checked`).value; return { label:q.o[i][0], val:q.o[i][1], i }; };
+const checked = name => [...document.querySelectorAll(`input[name="${name}"]:checked`)].map(x=>+x.value);
+
+function calc(){
+  const m = $("#model").value, cap = $("#cap").value;
+  if(!m || !cap){ alert("請選擇型號和容量"); return; }
+  const base = DB[brand][m].caps[cap];
+  const head = [`【回收估價】${new Date().toLocaleDateString("zh-TW")}`, `機型：${brand}／${m}／${cap}`];
+  let price, lines = [], note = "實際金額以到店檢測為準";
+
+  if(kind()==="watch"){
+    const glass = pick(WATCH_Q[0]), bad = checked("wf").map(i=>WATCH_FUNCS[i]);
+    if(glass.val<0 || bad.length){
+      show(null, [...head, "玻璃：" + glass.label, "異常：" + (bad.join("、")||"無")], "Apple Watch 玻璃破裂或功能異常無法收購，可以 LINE 問我們維修");
+      return;
+    }
+    const scr = pick(WATCH_Q[1]), cs = pick(WATCH_Q[2]), acc = pick(WATCH_Q[3]);
+    price = Math.floor((base - Math.round(base*scr.val) - Math.round(base*cs.val) + acc.val)/100)*100;
+    lines = ["螢幕玻璃：完好", "功能：全部正常", "螢幕外觀：" + scr.label, "錶殼外觀：" + cs.label, "配件盒裝：" + acc.label];
+  } else {
+    const qs = [...PHONE_Q, ...(kind()==="iphone" ? IPHONE_ONLY_Q : [SIMPLE_FUNC_Q])];
+    const picked = {};
+    qs.forEach(q=>{ picked[q.id] = pick(q); lines.push(`${q.t}：${picked[q.id].label}`); });
+    let ded = qs.reduce((s,q)=>s + Math.round(base*picked[q.id].val), 0);
+    if(kind()==="iphone"){
+      const fns = checked("fn");
+      ded += Math.round(base * fns.reduce((s,i)=>s+IPHONE_FUNCS[i][1],0));
+      lines.push("其他異常：" + (fns.map(i=>IPHONE_FUNCS[i][0]).join("、") || "無"));
+    }
+    price = Math.round((base - ded)/100)*100;
+    const floor = FLOOR[m];
+    if(kind()==="iphone" && floor){
+      const screenOk = picked.lcd.i <= 2, backOk = picked.back.i <= 2;
+      const f = floor[screenOk ? (backOk?0:1) : (backOk?2:3)];
+      if(price < f) price = f;
+    } else if(price <= 0){
+      show(null, [...head, ...lines], "這個機況比較特殊，請 LINE 傳給我們，專人幫你估價");
+      return;
+    }
+  }
+  show(price, [...head, ...lines], note);
+}
+
+function show(price, lines, sub){
+  $("#result").hidden = false;
+  const p = $("#price");
+  p.className = "price" + (price===null ? " no" : "");
+  p.textContent = price===null ? "需專人估價" : fmt(price);
+  $("#priceSub").textContent = sub;
+  $("#summary").textContent = [...lines, price===null ? "預估回收價：需專人估價" : "預估回收價：" + fmt(price)].join("\n");
+  $("#result").scrollIntoView({behavior:"smooth", block:"start"});
+}
+
+function sendLine(){
+  const text = $("#summary").textContent + "\n\n想詢問回收，請問什麼時候方便到店？";
+  // 用按鈕跳轉、不放 line.me 連結在頁面上，避免被手機的廣告阻擋隱藏
+  location.href = `https://line.me/R/oaMessage/${encodeURIComponent(CONFIG.LINE_OA_ID)}/?${encodeURIComponent(text)}`;
+}
+
+$("#model").onchange = pickModel;
+$("#cap").onchange = () => { $("#result").hidden = true; };
+$("#calc").onclick = calc;
+$("#sendLine").onclick = sendLine;
+$("#tel").href = "tel:" + CONFIG.PHONE.replace(/[^\d+]/g,"");
+$("#map").href = "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(CONFIG.ADDRESS);
+$("#foot").textContent = ["CHIU189手機維修中心",CONFIG.ADDRESS,CONFIG.HOURS,CONFIG.PHONE].join("・");
+load();
+</script>
+</body>
+</html>

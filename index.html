@@ -19,6 +19,9 @@
     font-family:-apple-system,BlinkMacSystemFont,"PingFang TC","Noto Sans TC","Microsoft JhengHei",sans-serif;
     line-height:1.5;-webkit-text-size-adjust:100%}
   .wrap{max-width:1040px;margin:0 auto;padding:24px 16px 120px}
+  .nav{display:flex;gap:8px;margin-bottom:18px;max-width:420px}
+  .nav a{flex:1;text-align:center;padding:10px;border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--ink);text-decoration:none;font-size:15px}
+  .nav a.on{background:var(--ink);color:var(--bg);border-color:var(--ink);font-weight:700}
   header .eyebrow{color:var(--accent);font-size:13px;font-weight:700;letter-spacing:.05em}
   header h1{margin:4px 0 6px;font-size:26px}
   header p{margin:0;color:var(--muted);font-size:14px}
@@ -79,6 +82,7 @@
 </head>
 <body>
 <div class="wrap">
+  <nav class="nav"><a href="./" class="on">維修報價</a><a href="recycle.html">回收估價</a></nav>
   <header>
     <div class="eyebrow">CHIU189 手機維修中心</div>
     <h1>手機維修報價查詢</h1>
