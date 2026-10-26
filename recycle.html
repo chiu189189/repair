@@ -4,6 +4,10 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>手機回收估價｜CHIU189手機維修中心</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 64 64%27%3E%3Crect width=%2764%27 height=%2764%27 rx=%2714%27 fill=%27%2317171A%27/%3E%3Ctext x=%2732%27 y=%2743%27 font-size=%2730%27 font-family=%27Arial%27 font-weight=%27700%27 text-anchor=%27middle%27 fill=%27%23C8A96A%27%3EC%3C/text%3E%3C/svg%3E">
+<meta property="og:title" content="手機回收估價｜CHIU189手機維修中心">
+<meta property="og:description" content="台中龍井 CHIU189手機維修中心：iPhone、iPad、Apple Watch、安卓手機線上回收估價，選機況馬上估價。">
+<meta name="theme-color" content="#17171A">
 <meta name="description" content="CHIU189手機維修中心（台中龍井）線上回收估價：iPhone、iPad、Apple Watch、三星、OPPO、VIVO、小米等，選機況立即估價。">
 <style>
   :root{
@@ -69,7 +73,7 @@
 </head>
 <body>
 <div class="wrap">
-  <nav class="nav"><a href="./?v=4">維修報價</a><a href="recycle.html?v=4" class="on">回收估價</a></nav>
+  <nav class="nav"><a href="./?v=5">維修報價</a><a href="recycle.html?v=5" class="on">回收估價</a></nav>
   <header>
     <div class="eyebrow">CHIU189 手機維修中心</div>
     <h1>手機回收線上估價</h1>
@@ -125,6 +129,7 @@
 const CONFIG = {
   SHEET_CSV_URL: "",          // 之後改用 Google 試算表時填這裡；留空讀 recycle.csv
   LOCAL_CSV: "recycle.csv",
+  PRICE_DATE: "2026/10/26",  // 更新回收價時順便改這個日期
   LINE_OA_ID: "@891llnje",
   PHONE: "0985-969-297",
   ADDRESS: "台中市龍井區遠東街189號",
@@ -197,9 +202,9 @@ async function load(){
     if(!r.ok) throw 0;
     parseCSV(await r.text()).slice(1).forEach(([b,s,m,c,p])=>{
       const price = parseInt(p,10); if(!b||!m||!(price>0)) return;
-      (((DB[b]??={})[m]??={series:s,caps:{}}).caps)[c||"—"] = price;
+      (((DB[b]??={})[m]??={series:s,caps:{}}).caps)[c||"不分容量"] = price;
     });
-    $("#loadState").textContent = "價目更新於 " + new Date().toLocaleDateString("zh-TW");
+    $("#loadState").textContent = "回收價更新日期：" + CONFIG.PRICE_DATE;
   }catch(e){ $("#loadState").textContent = "價目讀取失敗，請重新整理頁面"; return; }
   renderBrands(); pickBrand(Object.keys(DB)[0]);
 }
@@ -301,7 +306,7 @@ function calc(){
   if(kind()==="watch"){
     const glass = pick(WATCH_Q[0]), bad = checked("wf").map(i=>WATCH_FUNCS[i]);
     if(glass.val<0 || bad.length){
-      show(null, [...head, "玻璃：" + glass.label, "異常：" + (bad.join("、")||"無")], "Apple Watch 玻璃破裂或功能異常無法收購，可以 LINE 問我們維修");
+      show(null, [...head, "玻璃：" + glass.label, "異常：" + (bad.join("、")||"無")], "Apple Watch 玻璃破裂或功能異常無法收購，可以 LINE 問我們維修", "無法收購");
       return;
     }
     const scr = pick(WATCH_Q[1]), cs = pick(WATCH_Q[2]), acc = pick(WATCH_Q[3]);
@@ -331,13 +336,13 @@ function calc(){
   show(price, [...head, ...lines], note);
 }
 
-function show(price, lines, sub){
+function show(price, lines, sub, noPriceLabel = "需專人估價"){
   $("#result").hidden = false;
   const p = $("#price");
   p.className = "price" + (price===null ? " no" : "");
-  p.textContent = price===null ? "需專人估價" : fmt(price);
+  p.textContent = price===null ? noPriceLabel : fmt(price);
   $("#priceSub").textContent = sub;
-  $("#summary").textContent = [...lines, price===null ? "預估回收價：需專人估價" : "預估回收價：" + fmt(price)].join("\n");
+  $("#summary").textContent = [...lines, price===null ? "預估回收價：" + noPriceLabel : "預估回收價：" + fmt(price)].join("\n");
   $("#result").scrollIntoView({behavior:"smooth", block:"start"});
 }
 
@@ -357,9 +362,11 @@ $("#map").href = "https://www.google.com/maps/search/?api=1&query=" + encodeURIC
 $("#foot").innerHTML=`<div class="f-name">CHIU189 手機維修中心</div>
   <a class="f-row" id="fMap" target="_blank" rel="noopener"><span class="f-k">地址</span><span class="f-v"></span></a>
   <a class="f-row" id="fTel"><span class="f-k">電話</span><span class="f-v"></span></a>
-  <div class="f-row"><span class="f-k">營業時間</span><span class="f-v"></span></div>`;
+  <div class="f-row"><span class="f-k">營業時間</span><span class="f-v"></span></div>
+  <a class="f-row" id="fLine" href="#"><span class="f-k">LINE</span><span class="f-v"></span></a>`;
 const fv=[...document.querySelectorAll("#foot .f-v")];
-fv[0].textContent=CONFIG.ADDRESS; fv[1].textContent=CONFIG.PHONE; fv[2].textContent=CONFIG.HOURS.replace(/^營業時間\s*/,"");
+fv[0].textContent=CONFIG.ADDRESS; fv[1].textContent=CONFIG.PHONE; fv[2].textContent=CONFIG.HOURS.replace(/^營業時間\s*/,""); fv[3].textContent=CONFIG.LINE_OA_ID+"（點我加好友）";
+$("#fLine").onclick=e=>{ e.preventDefault(); location.href="https://line.me/R/ti/p/"+encodeURIComponent(CONFIG.LINE_OA_ID); };
 $("#fMap").href="https://www.google.com/maps/search/?api=1&query="+encodeURIComponent(CONFIG.ADDRESS);
 $("#fTel").href="tel:"+CONFIG.PHONE.replace(/[^\d+]/g,"");
 load();
