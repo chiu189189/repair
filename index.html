@@ -1,0 +1,283 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>維修報價查詢｜CHIU189手機維修中心</title>
+<meta name="description" content="CHIU189手機維修中心（台中龍井）線上維修報價：iPhone、三星、OPPO、VIVO、小米。螢幕、電池、主機板晶片級維修。">
+<style>
+  :root{
+    --bg:#f6f5f2; --card:#ffffff; --ink:#1c1c1e; --muted:#6b6b70; --line:#e4e2dc;
+    --accent:#d4561c; --accent-ink:#ffffff; --accent-soft:#fbeee6; --ok:#06c755;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{ --bg:#121214; --card:#1c1c1f; --ink:#f2f2f4; --muted:#9a9aa2; --line:#2e2e33;
+      --accent:#ff7a3d; --accent-ink:#1a0d05; --accent-soft:#2b1a10; }
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"PingFang TC","Noto Sans TC","Microsoft JhengHei",sans-serif;
+    line-height:1.5;-webkit-text-size-adjust:100%}
+  .wrap{max-width:1040px;margin:0 auto;padding:24px 16px 120px}
+  header .eyebrow{color:var(--accent);font-size:13px;font-weight:700;letter-spacing:.05em}
+  header h1{margin:4px 0 6px;font-size:26px}
+  header p{margin:0;color:var(--muted);font-size:14px}
+  .sample{margin:14px 0 0;padding:10px 12px;border-radius:10px;background:var(--accent-soft);color:var(--accent);font-size:13px;font-weight:600}
+  .status{display:flex;justify-content:space-between;align-items:center;margin:18px 0 12px;font-size:13px;color:var(--muted)}
+  .btn-ghost{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:999px;padding:6px 14px;font-size:13px;cursor:pointer}
+  .tabs{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none}
+  .tabs button{flex:none;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:999px;padding:9px 18px;font-size:15px;cursor:pointer}
+  .tabs button.on{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);font-weight:700}
+  .grid{display:grid;grid-template-columns:320px 1fr;gap:20px;margin-top:16px;align-items:start}
+  .search{position:relative}
+  .search input{width:100%;padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:var(--card);color:var(--ink);font-size:16px}
+  .count{margin:14px 2px 8px;color:var(--muted);font-size:14px}
+  .models{list-style:none;margin:0;padding:0;background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden;max-height:70vh;overflow-y:auto}
+  .models li button{all:unset;box-sizing:border-box;display:flex;justify-content:space-between;width:100%;padding:13px 16px;border-bottom:1px solid var(--line);cursor:pointer;font-size:15px}
+  .models li:last-child button{border-bottom:0}
+  .models li button:hover{background:var(--accent-soft)}
+  .models li button.on{background:var(--accent-soft);color:var(--accent);font-weight:700}
+  .models small{color:var(--muted);font-weight:400}
+  .panel{background:var(--card);border:1px solid var(--line);border-radius:14px;min-height:260px;padding:20px}
+  .panel.empty{display:flex;align-items:center;justify-content:center;border-style:dashed;color:var(--muted);text-align:center}
+  .panel h2{margin:0 0 4px;font-size:20px}
+  .panel .hint{margin:0 0 14px;color:var(--muted);font-size:13px}
+  .item{display:flex;align-items:center;gap:12px;padding:12px 0;border-top:1px solid var(--line)}
+  .item .name{flex:1}
+  .item .note{display:block;color:var(--muted);font-size:12px}
+  .item .price{font-weight:700;white-space:nowrap}
+  .tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:4px}
+  .tag{font-size:11px;padding:2px 8px;border-radius:999px;background:var(--bg);color:var(--muted);border:1px solid var(--line)}
+  .tag.ok{color:#0a7d3e;border-color:#0a7d3e33;background:#0a7d3e12}
+  .tag.no{color:#b3261e;border-color:#b3261e33;background:#b3261e10}
+  .tag.star{color:var(--accent);border-color:var(--accent);background:var(--accent-soft)}
+  .item .add{border:1px solid var(--accent);color:var(--accent);background:transparent;border-radius:8px;padding:5px 10px;font-size:13px;cursor:pointer;white-space:nowrap}
+  .item .add.on{background:var(--accent);color:var(--accent-ink)}
+  .terms{margin-top:22px;padding:16px;border-radius:14px;background:var(--card);border:1px solid var(--line);font-size:13px;color:var(--muted)}
+  .terms ul{margin:6px 0 0;padding-left:18px}
+  .book{margin-top:22px;padding:20px;border-radius:14px;background:var(--card);border:1px solid var(--line)}
+  .book h2{margin:0 0 4px;font-size:20px}
+  .book p{margin:0 0 14px;color:var(--muted);font-size:13px}
+  .book label{display:block;font-size:14px;margin:10px 0 4px}
+  .book input,.book textarea{width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink);font-size:16px;font-family:inherit}
+  .book textarea{min-height:90px}
+  .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+  .btn-line{border:0;background:var(--ok);color:#fff;font-weight:700;border-radius:12px;padding:13px 20px;font-size:16px;cursor:pointer;flex:1}
+  .btn-tel{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:12px;padding:13px 20px;font-size:16px;text-decoration:none;text-align:center;flex:1}
+  .bar{position:fixed;left:12px;right:12px;bottom:12px;max-width:560px;margin:0 auto;display:none;align-items:center;gap:12px;
+    padding:12px 14px;border-radius:16px;background:var(--ink);color:var(--bg);box-shadow:0 8px 30px rgba(0,0,0,.25)}
+  .bar.show{display:flex}
+  .bar span{flex:1;font-size:14px}
+  .bar button{border:0;background:var(--accent);color:var(--accent-ink);border-radius:10px;padding:9px 14px;font-weight:700;cursor:pointer}
+  footer{margin-top:28px;text-align:center;color:var(--muted);font-size:13px}
+  @media (max-width:760px){
+    .grid{grid-template-columns:1fr}
+    .models{max-height:46vh}
+    header h1{font-size:23px}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="eyebrow">CHIU189 手機維修中心</div>
+    <h1>手機維修報價查詢</h1>
+    <p>iPhone／三星／OPPO／VIVO／小米／紅米。螢幕、電池到主機板晶片級維修，每項都標示維修時間與保固。</p>
+  </header>
+
+  <div class="status">
+    <span id="status">讀取中…</span>
+    <button class="btn-ghost" id="reload">重新整理資料</button>
+  </div>
+
+  <nav class="tabs" id="tabs"></nav>
+
+  <div class="grid">
+    <div>
+      <div class="search"><input id="q" type="search" placeholder="輸入型號搜尋，例如 iPhone13、S24"></div>
+      <div class="count" id="count"></div>
+      <ul class="models" id="models"></ul>
+    </div>
+    <section class="panel empty" id="panel">從清單選擇型號，即可看到維修項目與報價</section>
+  </div>
+
+  <div class="terms">
+    <strong>報價說明</strong>
+    <ul>
+      <li>以上報價僅供參考，實際價格依當下零件行情與機況確認後報價。</li>
+      <li>維修保固 90 天；背玻璃／後殼／鏡頭玻璃等外觀件不含保固。</li>
+      <li>泡水、人為摔損、自行拆修不在保固範圍。</li>
+      <li>主機板、不開機、進水等問題需檢測後報價。本店專長晶片級維修，別家說修不好的機子也可以拿來問問看。</li>
+    </ul>
+    <strong style="display:block;margin-top:12px">螢幕怎麼選？</strong>
+    <ul>
+      <li><b>同規格</b>：顯示效果、觸控手感接近原廠，價格較高。</li>
+      <li><b>副廠</b>：價格實惠，色彩與亮度略遜於原廠，適合預算有限或備用機。</li>
+      <li>iPhone 11 之後換螢幕、XS 之後換電池，設定裡會出現「非原廠零件」提示，屬正常現象，不影響使用。</li>
+    </ul>
+  </div>
+
+  <section class="book" id="book">
+    <h2>預約維修</h2>
+    <p>填好後按「LINE 傳送預約」，我們會在營業時間回覆您。</p>
+    <label for="name">姓名</label>
+    <input id="name" autocomplete="name">
+    <label for="phone">聯絡電話</label>
+    <input id="phone" type="tel" autocomplete="tel">
+    <label for="when">希望到店時間</label>
+    <input id="when" placeholder="例如：週六下午 3 點">
+    <label for="items">要維修的機型與項目</label>
+    <textarea id="items" placeholder="在上方報價按「＋加入」會自動帶入，也可以自己填"></textarea>
+    <div class="actions">
+      <button class="btn-line" id="sendLine">LINE 傳送預約</button>
+      <a class="btn-tel" id="tel" href="#">撥打電話</a>
+      <a class="btn-tel" id="map" href="#" target="_blank" rel="noopener">地圖導航</a>
+    </div>
+  </section>
+
+  <footer id="foot"></footer>
+</div>
+
+<div class="bar" id="bar"><span id="barText"></span><button id="barGo">去預約</button></div>
+
+<script>
+// ===== 設定區：之後只要改這裡 =====
+const CONFIG = {
+  // Google 試算表「發布到網路」的 CSV 網址；留空就讀同資料夾的 prices.csv
+  SHEET_CSV_URL: "",
+  LOCAL_CSV: "prices.csv",
+  // LINE 官方帳號 ID（例如 "@abc1234"）；留空會改用 LINE 分享，讓客人自己選要傳給誰
+  LINE_OA_ID: "@891llnje",
+  PHONE: "0985-969-297",
+  ADDRESS: "台中市龍井區遠東街189號",
+  HOURS: "營業時間 12:00–22:00",
+};
+
+// 試算表欄位：品牌,型號,維修項目,價格,維修時間,保固,備註（價格可填數字或「檢測後報價」）
+
+// ===== 以下不用動 =====
+const $ = s => document.querySelector(s);
+let data = {}, brand = null, model = null;
+const picked = new Map(); // key -> {model,item,price}
+
+function parseCSV(text){
+  const rows=[]; let row=[], cell="", q=false;
+  for(let i=0;i<text.length;i++){
+    const c=text[i];
+    if(q){ if(c==='"'){ if(text[i+1]==='"'){cell+='"';i++} else q=false } else cell+=c; }
+    else if(c==='"') q=true;
+    else if(c===','){ row.push(cell); cell=""; }
+    else if(c==='\n'||c==='\r'){ if(c==='\r'&&text[i+1]==='\n') i++; row.push(cell); rows.push(row); row=[]; cell=""; }
+    else cell+=c;
+  }
+  if(cell||row.length){ row.push(cell); rows.push(row); }
+  return rows;
+}
+
+function build(csv){
+  const out={};
+  parseCSV(csv).slice(1).forEach(r=>{
+    const [b,m,item,price,time,warranty,note]=r.map(x=>(x||"").trim());
+    if(!b||!m||!item||!price) return;
+    ((out[b]??={})[m]??=[]).push({item,price,time,warranty,note});
+  });
+  return out;
+}
+
+function fmt(p){ return /^\d+$/.test(p) ? "NT$ "+Number(p).toLocaleString() : p; }
+
+async function load(){
+  $("#status").textContent="讀取中…";
+  const url=CONFIG.SHEET_CSV_URL||CONFIG.LOCAL_CSV;
+  try{
+    const r=await fetch(url+(url.includes("?")?"&":"?")+"t="+Date.now());
+    if(!r.ok) throw 0;
+    data=build(await r.text());
+  }catch(e){ $("#status").textContent="價目讀取失敗，請稍後按「重新整理資料」"; return; }
+  if(!brand||!data[brand]) brand=Object.keys(data)[0];
+  $("#status").textContent="已同步・更新於 "+new Date().toLocaleTimeString("zh-TW",{hour12:false});
+  renderTabs(); renderModels(); renderPanel();
+}
+
+function renderTabs(){
+  $("#tabs").innerHTML="";
+  Object.keys(data).forEach(b=>{
+    const el=document.createElement("button");
+    el.textContent=b; el.className=b===brand?"on":"";
+    el.onclick=()=>{ brand=b; model=null; $("#q").value=""; renderTabs(); renderModels(); renderPanel(); };
+    $("#tabs").append(el);
+  });
+}
+
+function renderModels(){
+  const q=$("#q").value.replace(/\s/g,"").toLowerCase();
+  // 搜尋時跨品牌找
+  const pool = q ? Object.entries(data).flatMap(([b,ms])=>Object.keys(ms).map(m=>[b,m]))
+                 : Object.keys(data[brand]||{}).map(m=>[brand,m]);
+  const list = pool.filter(([,m])=>m.replace(/\s/g,"").toLowerCase().includes(q));
+  $("#count").textContent = q ? `找到 ${list.length} 個型號` : `${brand} 共 ${list.length} 個型號`;
+  $("#models").innerHTML="";
+  list.forEach(([b,m])=>{
+    const li=document.createElement("li"), bt=document.createElement("button");
+    bt.className=m===model?"on":"";
+    bt.innerHTML=`<span></span><small>${data[b][m].length} 項</small>`;
+    bt.firstChild.textContent=m;
+    bt.onclick=()=>{ brand=b; model=m; renderTabs(); renderModels(); renderPanel();
+      if(innerWidth<=760) $("#panel").scrollIntoView({behavior:"smooth",block:"start"}); };
+    li.append(bt); $("#models").append(li);
+  });
+}
+
+function renderPanel(){
+  const p=$("#panel");
+  if(!model||!data[brand]?.[model]){ p.className="panel empty"; p.textContent="從清單選擇型號，即可看到維修項目與報價"; return; }
+  p.className="panel"; p.innerHTML="";
+  const h=document.createElement("h2"); h.textContent=model;
+  const hint=document.createElement("p"); hint.className="hint"; hint.textContent="按「＋加入」可帶入下方預約單";
+  p.append(h,hint);
+  data[brand][model].forEach(({item,price,time,warranty,note})=>{
+    const key=model+"｜"+item;
+    const row=document.createElement("div"); row.className="item";
+    row.innerHTML=`<span class="name"><span></span><span class="note"></span><span class="tags"></span></span><span class="price"></span><button class="add"></button>`;
+    row.querySelector(".name span").textContent=item;
+    row.querySelector(".note").textContent=note||"";
+    const tags=row.querySelector(".tags");
+    const tag=(t,c)=>{ const s=document.createElement("span"); s.className="tag "+(c||""); s.textContent=t; tags.append(s); };
+    if(/晶片級/.test(item)) tag("★ 本店專長","star");
+    if(time) tag("⏱ "+time);
+    if(warranty) tag(warranty==="不含保固"?"不含保固":"保固 "+warranty, warranty==="不含保固"?"no":"ok");
+    row.querySelector(".price").textContent=fmt(price);
+    const add=row.querySelector(".add");
+    const sync=()=>{ add.textContent=picked.has(key)?"✓ 已加入":"＋加入"; add.className="add"+(picked.has(key)?" on":""); };
+    add.onclick=()=>{ picked.has(key)?picked.delete(key):picked.set(key,{model,item,price}); sync(); syncPicked(); };
+    sync(); p.append(row);
+  });
+}
+
+function syncPicked(){
+  $("#items").value=[...picked.values()].map(x=>`${x.model}｜${x.item}｜${fmt(x.price)}`).join("\n");
+  $("#bar").classList.toggle("show",picked.size>0);
+  $("#barText").textContent=`已選 ${picked.size} 個維修項目`;
+}
+
+function sendLine(){
+  const name=$("#name").value.trim(), phone=$("#phone").value.trim(), items=$("#items").value.trim();
+  if(!name||!phone||!items){ alert("請填寫姓名、電話和維修項目"); return; }
+  const text=`【預約維修】\n姓名：${name}\n電話：${phone}\n時間：${$("#when").value.trim()||"未指定"}\n項目：\n${items}`;
+  // 用按鈕跳轉、不放 line.me 連結在頁面上，避免被手機的廣告阻擋隱藏
+  location.href = CONFIG.LINE_OA_ID
+    ? `https://line.me/R/oaMessage/${encodeURIComponent(CONFIG.LINE_OA_ID)}/?${encodeURIComponent(text)}`
+    : `https://line.me/R/share?text=${encodeURIComponent(text)}`;
+}
+
+$("#q").oninput=renderModels;
+$("#reload").onclick=load;
+$("#sendLine").onclick=sendLine;
+$("#barGo").onclick=()=>$("#book").scrollIntoView({behavior:"smooth"});
+if(CONFIG.PHONE){ $("#tel").href="tel:"+CONFIG.PHONE.replace(/[^\d+]/g,""); } else { $("#tel").hidden=true; }
+$("#map").href="https://www.google.com/maps/search/?api=1&query="+encodeURIComponent(CONFIG.ADDRESS);
+$("#foot").textContent=["CHIU189手機維修中心",CONFIG.ADDRESS,CONFIG.HOURS,CONFIG.PHONE].filter(Boolean).join("・");
+load();
+</script>
+</body>
+</html>
