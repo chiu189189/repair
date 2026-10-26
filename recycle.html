@@ -30,8 +30,12 @@
   .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px;margin-top:16px}
   .card h2{margin:0 0 12px;font-size:17px}
   .card h2 small{color:var(--muted);font-weight:400;font-size:13px;margin-left:6px}
-  .chips{display:flex;gap:8px;flex-wrap:wrap}
-  .chips button{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:999px;padding:8px 14px;font-size:14px;cursor:pointer}
+  .grp-t{font-size:12px;color:var(--muted);font-weight:600;letter-spacing:.05em;margin:0 0 6px}
+  .grp-t:not(:first-child){margin-top:12px}
+  .chips{display:grid;gap:8px;grid-template-columns:repeat(3,1fr)}
+  .chips.android{grid-template-columns:repeat(4,1fr)}
+  @media (min-width:600px){ .chips.android{grid-template-columns:repeat(7,1fr)} }
+  .chips button{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:10px;padding:10px 4px;font-size:14px;cursor:pointer;white-space:nowrap;text-align:center}
   .chips button.on{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);font-weight:700}
   label.f{display:block;font-size:14px;margin:14px 0 6px;font-weight:600}
   select{width:100%;padding:12px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink);font-size:16px}
@@ -59,7 +63,7 @@
 </head>
 <body>
 <div class="wrap">
-  <nav class="nav"><a href="./?v=2">維修報價</a><a href="recycle.html?v=2" class="on">回收估價</a></nav>
+  <nav class="nav"><a href="./?v=3">維修報價</a><a href="recycle.html?v=3" class="on">回收估價</a></nav>
   <header>
     <div class="eyebrow">CHIU189 手機維修中心</div>
     <h1>手機回收線上估價</h1>
@@ -72,7 +76,7 @@
 
   <section class="card">
     <h2>1. 選擇機型</h2>
-    <div class="chips" id="brands"></div>
+    <div id="brands"></div>
     <label class="f" for="model">型號</label>
     <select id="model"></select>
     <label class="f" for="cap">容量／規格</label>
@@ -194,13 +198,23 @@ async function load(){
   renderBrands(); pickBrand(Object.keys(DB)[0]);
 }
 
+// 按鈕上顯示短名稱，排起來比較整齊
+const SHORT = { "Samsung 三星":"三星", "ASUS 華碩":"華碩", "小米／紅米":"小米紅米", "Apple Watch":"Watch" };
 function renderBrands(){
-  $("#brands").innerHTML = "";
-  Object.keys(DB).forEach(b=>{
-    const el = document.createElement("button");
-    el.textContent = b; el.className = b===brand ? "on" : "";
-    el.onclick = () => pickBrand(b);
-    $("#brands").append(el);
+  const box = $("#brands"); box.innerHTML = "";
+  const apple = Object.keys(DB).filter(b=>/^(iPhone|iPad|Apple Watch)$/.test(b));
+  const android = Object.keys(DB).filter(b=>!apple.includes(b));
+  [["Apple",apple,""],["Android",android,"android"]].forEach(([title,list,cls])=>{
+    if(!list.length) return;
+    const t = document.createElement("div"); t.className = "grp-t"; t.textContent = title;
+    const g = document.createElement("div"); g.className = "chips " + cls;
+    list.forEach(b=>{
+      const el = document.createElement("button");
+      el.textContent = SHORT[b] || b; el.className = b===brand ? "on" : "";
+      el.onclick = () => pickBrand(b);
+      g.append(el);
+    });
+    box.append(t, g);
   });
 }
 
