@@ -92,7 +92,7 @@
 </head>
 <body>
 <div class="wrap">
-  <nav class="nav"><a href="./?v=9" class="on">維修報價</a><a href="recycle.html?v=9">回收估價</a></nav>
+  <nav class="nav"><a href="./?v=10" class="on">維修報價</a><a href="recycle.html?v=10">回收估價</a></nav>
   <header>
     <div class="eyebrow">CHIU189 手機維修中心</div>
     <h1>手機維修報價查詢</h1>
@@ -160,7 +160,6 @@ const CONFIG = {
   // Google 試算表「發布到網路」的 CSV 網址；留空就讀同資料夾的 prices.csv
   SHEET_CSV_URL: "https://docs.google.com/spreadsheets/d/e/2PACX-1vTGj8-fekjCYagdyOKo_9zq9WXo_cX-8iAeTjBWY9at2QyX4w_nfxDGUFlYPUyb36yHmqvnDuGQfCDN/pub?gid=0&single=true&output=csv",  // Google 試算表「CHIU189 價目表」維修分頁
   LOCAL_CSV: "prices.csv",
-  PRICE_DATE: "2026/10/26",  // 改價格時順便改這個日期
   // LINE 官方帳號 ID（例如 "@abc1234"）；留空會改用 LINE 分享，讓客人自己選要傳給誰
   LINE_OA_ID: "@891llnje",
   PHONE: "0985-969-297",
@@ -216,7 +215,7 @@ async function load(){
     data=build(await fetchPrices());
   }catch(e){ $("#status").textContent="價目讀取失敗，請稍後按「重新整理資料」"; return; }
   if(!brand||!data[brand]) brand=Object.keys(data)[0];
-  $("#status").textContent="價目更新日期："+CONFIG.PRICE_DATE;
+  $("#status").textContent="";  // 價格改由試算表管理，不顯示更新日期
   renderTabs(); renderModels(); renderPanel();
 }
 
