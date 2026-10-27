@@ -22,8 +22,8 @@
   body{margin:0;background:var(--bg);color:var(--ink);
     font-family:-apple-system,BlinkMacSystemFont,"PingFang TC","Noto Sans TC","Microsoft JhengHei",sans-serif;
     line-height:1.5;-webkit-text-size-adjust:100%}
-  .wrap{max-width:760px;margin:0 auto;padding:24px 16px 120px}
-  .nav{display:flex;gap:8px;margin-bottom:18px}
+  .wrap{max-width:1040px;margin:0 auto;padding:24px 16px 120px}  /* 跟維修頁同寬 */
+  .nav{display:flex;gap:8px;margin-bottom:18px;max-width:420px}
   .nav a{flex:1;text-align:center;padding:10px;border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--ink);text-decoration:none;font-size:15px}
   .nav a.on{background:var(--ink);color:var(--bg);border-color:var(--ink);font-weight:700}
   header .eyebrow{color:var(--accent);font-size:13px;font-weight:700;letter-spacing:.05em}
@@ -43,7 +43,12 @@
   .chips button{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:10px;padding:10px 4px;font-size:14px;cursor:pointer;white-space:nowrap;text-align:center}
   .chips button.on{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);font-weight:700}
   label.f{display:block;font-size:14px;margin:14px 0 6px;font-weight:600}
-  select{width:100%;padding:12px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink);font-size:16px}
+  select{width:100%;padding:12px 40px 12px 14px;border:1px solid var(--line);border-radius:12px;background-color:var(--bg);color:var(--ink);font-size:16px;font-family:inherit;
+    -webkit-appearance:none;appearance:none;cursor:pointer;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%2712%27 height=%278%27%3E%3Cpath d=%27M1 1l5 5 5-5%27 fill=%27none%27 stroke=%27%239A968E%27 stroke-width=%272%27/%3E%3C/svg%3E");
+    background-repeat:no-repeat;background-position:right 14px center}
+  select:disabled{opacity:.6;cursor:default}
+  @media (min-width:760px){ .pick{display:grid;grid-template-columns:2fr 1fr;gap:12px} }
   .q{margin-top:16px}
   .q .t{font-size:14px;font-weight:600;margin-bottom:6px}
   .opts{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
@@ -74,7 +79,7 @@
 </head>
 <body>
 <div class="wrap">
-  <nav class="nav"><a href="./?v=7">維修報價</a><a href="recycle.html?v=7" class="on">回收估價</a></nav>
+  <nav class="nav"><a href="./?v=8">維修報價</a><a href="recycle.html?v=8" class="on">回收估價</a></nav>
   <header>
     <div class="eyebrow">CHIU189 手機維修中心</div>
     <h1>手機回收線上估價</h1>
@@ -88,10 +93,10 @@
   <section class="card">
     <h2>1. 選擇機型</h2>
     <div id="brands"></div>
-    <label class="f" for="model">型號</label>
-    <select id="model"></select>
-    <label class="f" for="cap">容量／規格</label>
-    <select id="cap"></select>
+    <div class="pick">
+      <div><label class="f" for="model">型號</label><select id="model"></select></div>
+      <div><label class="f" for="cap">容量／規格</label><select id="cap"></select></div>
+    </div>
     <div class="hint" id="loadState">讀取價目中…</div>
   </section>
 
