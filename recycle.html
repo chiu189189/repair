@@ -79,7 +79,7 @@
 </head>
 <body>
 <div class="wrap">
-  <nav class="nav"><a href="./?v=8">維修報價</a><a href="recycle.html?v=8" class="on">回收估價</a></nav>
+  <nav class="nav"><a href="./?v=9">維修報價</a><a href="recycle.html?v=9" class="on">回收估價</a></nav>
   <header>
     <div class="eyebrow">CHIU189 手機維修中心</div>
     <h1>手機回收線上估價</h1>
@@ -133,7 +133,7 @@
 <script>
 // ===== 設定區 =====
 const CONFIG = {
-  SHEET_CSV_URL: "",          // 之後改用 Google 試算表時填這裡；留空讀 recycle.csv
+  SHEET_CSV_URL: "https://docs.google.com/spreadsheets/d/e/2PACX-1vTGj8-fekjCYagdyOKo_9zq9WXo_cX-8iAeTjBWY9at2QyX4w_nfxDGUFlYPUyb36yHmqvnDuGQfCDN/pub?gid=151823069&single=true&output=csv",  // Google 試算表「CHIU189 價目表」回收分頁
   LOCAL_CSV: "recycle.csv",
   PRICE_DATE: "2026/10/26",  // 更新回收價時順便改這個日期
   LINE_OA_ID: "@891llnje",
@@ -202,12 +202,17 @@ function parseCSV(text){
 const fmt = n => "NT$ " + n.toLocaleString();
 const kind = () => brand==="iPhone" ? "iphone" : brand==="Apple Watch" ? "watch" : "simple";
 
+// 先讀 Google 試算表；讀不到（斷線、試算表壞掉）就改讀 GitHub 上的備份價目
+async function fetchPrices(){
+  const bust=u=>u+(u.includes("?")?"&":"?")+"t="+Date.now();
+  if(CONFIG.SHEET_CSV_URL){
+    try{ const r=await fetch(bust(CONFIG.SHEET_CSV_URL)); if(r.ok){ const t=await r.text(); if(t.split("\n").length>2) return t; } }catch(e){}
+  }
+  const r=await fetch(bust(CONFIG.LOCAL_CSV)); if(!r.ok) throw 0; return r.text();
+}
 async function load(){
-  const url = CONFIG.SHEET_CSV_URL || CONFIG.LOCAL_CSV;
   try{
-    const r = await fetch(url + (url.includes("?")?"&":"?") + "t=" + Date.now());
-    if(!r.ok) throw 0;
-    parseCSV(await r.text()).slice(1).forEach(([b,s,m,c,p])=>{
+    parseCSV(await fetchPrices()).slice(1).forEach(([b,s,m,c,p])=>{
       const price = parseInt(p,10); if(!b||!m||!(price>0)) return;
       (((DB[b]??={})[m]??={series:s,caps:{}}).caps)[c||"不分容量"] = price;
     });
