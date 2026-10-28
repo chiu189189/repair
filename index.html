@@ -6,9 +6,13 @@
 <title>維修報價查詢｜CHIU189手機維修中心</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 64 64%27%3E%3Crect width=%2764%27 height=%2764%27 rx=%2714%27 fill=%27%2317171A%27/%3E%3Ctext x=%2732%27 y=%2743%27 font-size=%2730%27 font-family=%27Arial%27 font-weight=%27700%27 text-anchor=%27middle%27 fill=%27%23C8A96A%27%3EC%3C/text%3E%3C/svg%3E">
 <meta property="og:title" content="維修報價查詢｜CHIU189手機維修中心">
-<meta property="og:description" content="台中龍井 CHIU189手機維修中心：iPhone、三星、OPPO、VIVO、小米維修線上報價，螢幕、電池、主機板晶片級維修。">
+<meta property="og:description" content="台中龍井 CHIU189手機維修中心：iPhone、iPad、三星、OPPO、VIVO、小米維修線上報價，螢幕、電池、主機板晶片級維修。">
+<meta property="og:image" content="https://chiu189189.github.io/repair/og.png">
+<meta property="og:url" content="https://chiu189189.github.io/repair/">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
 <meta name="theme-color" content="#17171A">
-<meta name="description" content="CHIU189手機維修中心（台中龍井）線上維修報價：iPhone、三星、OPPO、VIVO、小米。螢幕、電池、主機板晶片級維修。">
+<meta name="description" content="CHIU189手機維修中心（台中龍井）線上維修報價：iPhone、iPad、三星、OPPO、VIVO、小米。螢幕、電池、主機板晶片級維修。">
 <style>
   :root{
     --bg:#f6f5f2; --card:#ffffff; --ink:#1c1c1e; --muted:#6b6b70; --line:#e4e2dc;
@@ -40,7 +44,7 @@
   .search input{width:100%;padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:var(--card);color:var(--ink);font-size:16px}
   .count{margin:14px 2px 8px;color:var(--muted);font-size:14px}
   .models{list-style:none;margin:0;padding:0;background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden;max-height:70vh;overflow-y:auto}
-  .models li button{all:unset;box-sizing:border-box;display:flex;justify-content:space-between;width:100%;padding:13px 16px;border-bottom:1px solid var(--line);cursor:pointer;font-size:15px}
+  .models li button{all:unset;box-sizing:border-box;display:flex;justify-content:space-between;align-items:center;width:100%;padding:13px 16px;border-bottom:1px solid var(--line);cursor:pointer;font-size:15px}
   .models li:last-child button{border-bottom:0}
   .models li button:hover{background:var(--accent-soft)}
   .models li button.on{background:var(--accent-soft);color:var(--accent);font-weight:700}
@@ -87,16 +91,21 @@
     .grid{grid-template-columns:1fr}
     .models{max-height:46vh}
     header h1{font-size:24px}
+    .tabs{flex-wrap:wrap;overflow:visible}  /* 品牌換行排滿，不會有被藏在右邊的 */
+    .item{flex-wrap:wrap;row-gap:8px}  /* 手機上品項名稱佔整行，價錢和加入按鈕排在下面 */
+    .item .name{flex:1 1 100%}
+    .item .price{flex:1;font-size:17px}
+    .item .add{padding:7px 14px}
   }
 </style>
 </head>
 <body>
 <div class="wrap">
-  <nav class="nav"><a href="./?v=12" class="on">維修報價</a><a href="recycle.html?v=12">回收估價</a></nav>
+  <nav class="nav"><a href="./?v=13" class="on">維修報價</a><a href="recycle.html?v=13">回收估價</a></nav>
   <header>
     <div class="eyebrow">CHIU189 手機維修中心</div>
     <h1>手機維修報價查詢</h1>
-    <p>iPhone／三星／OPPO／VIVO／小米／紅米。螢幕、電池到主機板晶片級維修，每項都標示維修時間與保固。</p>
+    <p>iPhone／iPad／三星／OPPO／VIVO／小米／紅米。螢幕、電池到主機板晶片級維修，每項都標示維修時間與保固。</p>
   </header>
 
   <div class="status">
@@ -277,7 +286,10 @@ function renderPanel(){
 function syncPicked(){
   $("#items").value=[...picked.values()].map(x=>`${x.model}｜${x.item}｜${fmt(x.price)}`).join("\n");
   $("#bar").classList.toggle("show",picked.size>0);
-  $("#barText").textContent=`已選 ${picked.size} 個維修項目`;
+  // 加總有數字的價格；有「檢測後報價」的項目另外註明
+  const vals=[...picked.values()], sum=vals.reduce((s,x)=>s+(/^\d+$/.test(x.price)?+x.price:0),0);
+  const tbd=vals.some(x=>!/^\d+$/.test(x.price));
+  $("#barText").textContent=`已選 ${picked.size} 項`+(sum?`・約 ${fmt(String(sum))}`:"")+(tbd?"＋檢測後報價":"");
 }
 
 function sendLine(){

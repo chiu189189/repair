@@ -7,6 +7,10 @@
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 64 64%27%3E%3Crect width=%2764%27 height=%2764%27 rx=%2714%27 fill=%27%2317171A%27/%3E%3Ctext x=%2732%27 y=%2743%27 font-size=%2730%27 font-family=%27Arial%27 font-weight=%27700%27 text-anchor=%27middle%27 fill=%27%23C8A96A%27%3EC%3C/text%3E%3C/svg%3E">
 <meta property="og:title" content="手機回收估價｜CHIU189手機維修中心">
 <meta property="og:description" content="台中龍井 CHIU189手機維修中心：iPhone、iPad、Apple Watch、安卓手機線上回收估價，選機況馬上估價。">
+<meta property="og:image" content="https://chiu189189.github.io/repair/og.png">
+<meta property="og:url" content="https://chiu189189.github.io/repair/recycle.html">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
 <meta name="theme-color" content="#17171A">
 <meta name="description" content="CHIU189手機維修中心（台中龍井）線上回收估價：iPhone、iPad、Apple Watch、三星、OPPO、VIVO、小米等，選機況立即估價。">
 <style>
@@ -80,7 +84,7 @@
 </head>
 <body>
 <div class="wrap">
-  <nav class="nav"><a href="./?v=12">維修報價</a><a href="recycle.html?v=12" class="on">回收估價</a></nav>
+  <nav class="nav"><a href="./?v=13">維修報價</a><a href="recycle.html?v=13" class="on">回收估價</a></nav>
   <header>
     <div class="eyebrow">CHIU189 手機維修中心</div>
     <h1>手機回收線上估價</h1>
@@ -160,7 +164,8 @@ const IPHONE_ONLY_Q = [
 const IPHONE_FUNCS = [["NFC",.90],["GPS",.90],["Wi-Fi／藍牙",.90],["SIM／eSIM",.90],["聽筒",.10],["喇叭",.10],["麥克風",.10],["震動",.10],["充電孔",.10],["按鍵",.10],["感應器",.06]];
 const SIMPLE_FUNC_Q = { id:"func", t:"其他功能（通話、喇叭、充電、按鍵等）", o:[["都正常",0],["有異常",.10]] };
 
-// iPhone 保底價：依「螢幕好壞 × 背蓋好壞」分 A/B/C/E 四級，扣完低於保底就用保底
+// iPhone 保底價：依「螢幕好壞 × 背蓋好壞」分 A/B/C/E 四級，扣完低於保底就用保底（只限正常開機的機子）
+// iPhone 16e、17 系列、18 系列還沒設保底價，要設就照下面格式加一行
 const FLOOR = {
   "iPhone 7":[50,50,50,50], "iPhone 7 Plus":[50,50,50,50], "iPhone 8":[50,50,50,50], "iPhone 8 Plus":[50,50,50,50],
   "iPhone SE（第 2 代）":[50,50,50,50], "iPhone SE（第 3 代）":[50,50,50,50],
@@ -333,6 +338,11 @@ function calc(){
       const fns = checked("fn");
       ded += Math.round(base * fns.reduce((s,i)=>s+IPHONE_FUNCS[i][1],0));
       lines.push("其他異常：" + (fns.map(i=>IPHONE_FUNCS[i][0]).join("、") || "無"));
+    }
+    // 無法開機、泡水、摔爛要拆機才知道能不能救，不給線上價、也不套保底價
+    if(picked.power.i > 0){
+      show(null, [...head, ...lines], "無法開機、泡水或摔爛的機子需要拆機檢測，請 LINE 傳給我們，專人幫你估價");
+      return;
     }
     price = Math.round((base - ded)/100)*100;
     const floor = FLOOR[m];
