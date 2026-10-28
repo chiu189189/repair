@@ -73,11 +73,12 @@
   .book input,.book textarea{width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink);font-size:16px;font-family:inherit}
   .book textarea{min-height:90px}
   .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
-  .btn-line{border:0;background:var(--ok);color:#fff;font-weight:700;border-radius:12px;padding:13px 20px;font-size:16px;cursor:pointer;flex:1}
+  .btn-line{border:0;background:var(--ok);color:#fff;font-weight:700;border-radius:12px;padding:13px 20px;font-size:16px;cursor:pointer;flex:1 1 100%}  /* LINE 按鈕整排，電話／導航並排在下面 */
   .btn-tel{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:12px;padding:13px 20px;font-size:16px;text-decoration:none;text-align:center;flex:1}
   .bar{position:fixed;left:12px;right:12px;bottom:12px;max-width:560px;margin:0 auto;display:none;align-items:center;gap:12px;
     padding:12px 14px;border-radius:16px;background:var(--ink);color:var(--bg);box-shadow:0 8px 30px rgba(0,0,0,.25)}
   .bar.show{display:flex}
+  .bar.show.away{display:none}  /* 捲到預約單時藏起來，不擋表單 */
   .bar span{flex:1;font-size:14px}
   .bar button{border:0;background:var(--accent);color:var(--accent-ink);border-radius:10px;padding:9px 14px;font-weight:700;cursor:pointer}
   footer{margin-top:24px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:6px 16px;font-size:14px}
@@ -101,7 +102,7 @@
 </head>
 <body>
 <div class="wrap">
-  <nav class="nav"><a href="./?v=15" class="on">維修價目</a><a href="recycle.html?v=15">舊機回收</a></nav>
+  <nav class="nav"><a href="./?v=16" class="on">維修價目</a><a href="recycle.html?v=16">舊機回收</a></nav>
   <header>
     <div class="eyebrow">CHIU189 手機維修中心</div>
     <h1>維修價目表</h1>
@@ -195,11 +196,29 @@ function parseCSV(text){
   return rows;
 }
 
+// 試算表裡的型號名稱沿用艾薇寫法（每天同步要靠它對照），網頁上換成客人看得懂的名字
+const NICE = { "A236 (5G 另編號)": "A23 (5G) A236 版", "Y38 (5G)關聯Y28": "Y38 (5G)／Y28", "小米 10s (S版)": "小米 10S",
+  "Reno8 (5G)等多機型共用": "Reno8 系列共用螢幕" };
+function niceName(m){
+  if(NICE[m]) return NICE[m];
+  return m.replace(/^(A\d{2}) A\d{3}[A-Z]?(?=\s|$)/,"$1")          // A80 A805F → A80
+    .replace(/等多機型共用$/,"")
+    .replace(/^iPhone (\d+) Mini$/,"iPhone $1 mini")
+    .replace(/\bLITE\b|\blite\b/g,"Lite").replace(/ Lite ne\b/," Lite NE").replace(/ pro\b/g," Pro").replace(/ zoom\b/," Zoom")
+    .replace(/ultra至尊/,"Ultra 至尊")
+    .replace(/\(4G\) ?\(5G\)|\(4G5G(通用)?\)/,"(4G／5G)")
+    .replace(/^PAD(\d)/,"小米平板 $1").replace(/^黑鯊(\d)/,"黑鯊 $1")
+    .trim();
+}
+
 function build(csv){
-  const out={};
+  const out={}, used={};
   parseCSV(csv).slice(1).forEach(r=>{
-    const [b,m,item,price,time,warranty,note]=r.map(x=>(x||"").trim());
-    if(!b||!m||!item||!price) return;
+    const [b,raw,item,price,time,warranty,note]=r.map(x=>(x||"").trim());
+    if(!b||!raw||!item||!price) return;
+    let m=niceName(raw);
+    if(used[b+"|"+m] && used[b+"|"+m]!==raw) m=raw;   // 換名後撞到別的型號就用原名
+    used[b+"|"+m]=raw;
     ((out[b]??={})[m]??=[]).push({item,price,time,warranty,note});
   });
   return out;
@@ -294,7 +313,9 @@ function syncPicked(){
 function sendLine(){
   const name=$("#name").value.trim(), phone=$("#phone").value.trim(), items=$("#items").value.trim();
   if(!name||!phone||!items){ alert("請填寫姓名、電話和維修項目"); return; }
-  const text=`【預約維修】\n姓名：${name}\n電話：${phone}\n時間：${$("#when").value.trim()||"未指定"}\n項目：\n${items}`;
+  const vals=[...picked.values()], sum=vals.reduce((s,x)=>s+(/^\d+$/.test(x.price)?+x.price:0),0);
+  const total=sum?`\n合計：約 ${fmt(String(sum))}`+(vals.some(x=>!/^\d+$/.test(x.price))?"（另有檢測後報價項目）":""):"";
+  const text=`【預約維修】\n姓名：${name}\n電話：${phone}\n時間：${$("#when").value.trim()||"未指定"}\n項目：\n${items}${total}`;
   // 用按鈕跳轉、不放 line.me 連結在頁面上，避免被手機的廣告阻擋隱藏
   location.href = CONFIG.LINE_OA_ID
     ? `https://line.me/R/oaMessage/${encodeURIComponent(CONFIG.LINE_OA_ID)}/?${encodeURIComponent(text)}`
@@ -304,6 +325,7 @@ function sendLine(){
 $("#q").oninput=renderModels;
 $("#sendLine").onclick=sendLine;
 $("#barGo").onclick=()=>$("#book").scrollIntoView({behavior:"smooth"});
+new IntersectionObserver(([e])=>$("#bar").classList.toggle("away",e.isIntersecting)).observe($("#book"));
 if(CONFIG.PHONE){ $("#tel").href="tel:"+CONFIG.PHONE.replace(/[^\d+]/g,""); } else { $("#tel").hidden=true; }
 $("#map").href=CONFIG.MAP_URL;
 // 頁尾店家資訊：地址點了開地圖、電話點了直接撥
