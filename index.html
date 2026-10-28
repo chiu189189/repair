@@ -71,7 +71,18 @@
   .book p{margin:0 0 14px;color:var(--muted);font-size:13px}
   .book label{display:block;font-size:14px;margin:10px 0 4px}
   .book input,.book textarea{width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink);font-size:16px;font-family:inherit}
-  .book textarea{min-height:90px}
+  .book textarea{min-height:76px}
+  /* 已選項目清單：機型小字在上、項目在下、價錢靠右 */
+  .picked{border:1px solid var(--line);border-radius:10px;background:var(--bg);padding:2px 12px}
+  .picked .pi{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)}
+  .picked .pi:last-of-type{border-bottom:0}
+  .picked .pi-name{flex:1;min-width:0;font-size:15px;line-height:1.35}
+  .picked .pi-name small{display:block;color:var(--muted);font-size:12px}
+  .picked .pi-price{font-weight:700;font-size:15px;white-space:nowrap}
+  .picked .pi-del{border:0;background:none;color:var(--muted);font-size:18px;line-height:1;padding:4px 2px;cursor:pointer}
+  .picked .pi-sum{display:flex;justify-content:space-between;padding:10px 0;border-top:1px dashed var(--line);font-size:14px;color:var(--muted)}
+  .picked .pi-sum b{color:var(--ink);font-size:16px}
+  .picked .pi-empty{padding:12px 0;color:var(--muted);font-size:14px}
   .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
   .btn-line{border:0;background:var(--ok);color:#fff;font-weight:700;border-radius:12px;padding:13px 20px;font-size:16px;cursor:pointer;flex:1 1 100%}  /* LINE 按鈕整排，電話／導航並排在下面 */
   .btn-tel{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:12px;padding:13px 20px;font-size:16px;text-decoration:none;text-align:center;flex:1}
@@ -102,7 +113,7 @@
 </head>
 <body>
 <div class="wrap">
-  <nav class="nav"><a href="./?v=16" class="on">維修價目</a><a href="recycle.html?v=16">舊機回收</a></nav>
+  <nav class="nav"><a href="./?v=17" class="on">維修價目</a><a href="recycle.html?v=17">舊機回收</a></nav>
   <header>
     <div class="eyebrow">CHIU189 手機維修中心</div>
     <h1>維修價目表</h1>
@@ -147,8 +158,10 @@
     <input id="phone" type="tel" autocomplete="tel">
     <label for="when">希望到店時間</label>
     <input id="when" placeholder="例如：週六下午 3 點">
-    <label for="items">要維修的機型與項目</label>
-    <textarea id="items" placeholder="在上方報價按「＋加入」會自動帶入，也可以自己填"></textarea>
+    <label>要維修的項目</label>
+    <div class="picked" id="picked"></div>
+    <label for="items">其他說明（選填）</label>
+    <textarea id="items" placeholder="例如：摔到後螢幕有綠線、上週開始充不了電"></textarea>
     <div class="actions">
       <button class="btn-line" id="sendLine">LINE 傳送預約</button>
       <a class="btn-tel" id="tel" href="#">撥打電話</a>
@@ -301,21 +314,44 @@ function renderPanel(){
   });
 }
 
+// 加總有數字的價格；有「檢測後報價」的項目另外註明
+function pickedSum(){
+  const vals=[...picked.values()];
+  return { sum: vals.reduce((s,x)=>s+(/^\d+$/.test(x.price)?+x.price:0),0), tbd: vals.some(x=>!/^\d+$/.test(x.price)) };
+}
+
 function syncPicked(){
-  $("#items").value=[...picked.values()].map(x=>`${x.model}｜${x.item}｜${fmt(x.price)}`).join("\n");
+  const {sum,tbd}=pickedSum(), box=$("#picked");
+  box.innerHTML="";
+  if(!picked.size) box.innerHTML='<div class="pi-empty">在上方價目按「＋加入」，選的項目會列在這裡；不確定的話寫在下面說明就好</div>';
+  picked.forEach((x,key)=>{
+    const row=document.createElement("div"); row.className="pi";
+    row.innerHTML='<span class="pi-name"><small></small><span></span></span><span class="pi-price"></span><button class="pi-del" aria-label="移除">×</button>';
+    row.querySelector("small").textContent=x.model;
+    row.querySelector(".pi-name span").textContent=x.item;
+    row.querySelector(".pi-price").textContent=fmt(x.price);
+    row.querySelector(".pi-del").onclick=()=>{ picked.delete(key); syncPicked(); renderPanel(); };
+    box.append(row);
+  });
+  if(sum){
+    const t=document.createElement("div"); t.className="pi-sum";
+    t.innerHTML="<span></span><b></b>";
+    t.querySelector("span").textContent=tbd?"合計（另有檢測後報價）":"合計";
+    t.querySelector("b").textContent="約 "+fmt(String(sum));
+    box.append(t);
+  }
   $("#bar").classList.toggle("show",picked.size>0);
-  // 加總有數字的價格；有「檢測後報價」的項目另外註明
-  const vals=[...picked.values()], sum=vals.reduce((s,x)=>s+(/^\d+$/.test(x.price)?+x.price:0),0);
-  const tbd=vals.some(x=>!/^\d+$/.test(x.price));
   $("#barText").textContent=`已選 ${picked.size} 項`+(sum?`・約 ${fmt(String(sum))}`:"")+(tbd?"＋檢測後報價":"");
 }
 
 function sendLine(){
-  const name=$("#name").value.trim(), phone=$("#phone").value.trim(), items=$("#items").value.trim();
-  if(!name||!phone||!items){ alert("請填寫姓名、電話和維修項目"); return; }
-  const vals=[...picked.values()], sum=vals.reduce((s,x)=>s+(/^\d+$/.test(x.price)?+x.price:0),0);
-  const total=sum?`\n合計：約 ${fmt(String(sum))}`+(vals.some(x=>!/^\d+$/.test(x.price))?"（另有檢測後報價項目）":""):"";
-  const text=`【預約維修】\n姓名：${name}\n電話：${phone}\n時間：${$("#when").value.trim()||"未指定"}\n項目：\n${items}${total}`;
+  const name=$("#name").value.trim(), phone=$("#phone").value.trim(), memo=$("#items").value.trim();
+  if(!name||!phone||(!picked.size&&!memo)){ alert("請填寫姓名、電話，並選擇維修項目或寫下說明"); return; }
+  const {sum,tbd}=pickedSum();
+  const items=[...picked.values()].map(x=>`${x.model}｜${x.item}｜${fmt(x.price)}`).join("\n");
+  const total=sum?`\n合計：約 ${fmt(String(sum))}`+(tbd?"（另有檢測後報價項目）":""):"";
+  const text=`【預約維修】\n姓名：${name}\n電話：${phone}\n時間：${$("#when").value.trim()||"未指定"}`+
+    (items?`\n項目：\n${items}${total}`:"")+(memo?`\n說明：${memo}`:"");
   // 用按鈕跳轉、不放 line.me 連結在頁面上，避免被手機的廣告阻擋隱藏
   location.href = CONFIG.LINE_OA_ID
     ? `https://line.me/R/oaMessage/${encodeURIComponent(CONFIG.LINE_OA_ID)}/?${encodeURIComponent(text)}`
@@ -339,6 +375,7 @@ fv[0].textContent=CONFIG.ADDRESS; fv[1].textContent=CONFIG.PHONE; fv[2].textCont
 $("#fLine").onclick=e=>{ e.preventDefault(); location.href="https://line.me/R/ti/p/"+encodeURIComponent(CONFIG.LINE_OA_ID); };
 $("#fMap").href=CONFIG.MAP_URL;
 $("#fTel").href="tel:"+CONFIG.PHONE.replace(/[^\d+]/g,"");
+syncPicked();
 load();
 </script>
 </body>
