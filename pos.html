@@ -15,16 +15,35 @@
 <meta name="apple-mobile-web-app-title" content="CHIU189 收銀">
 <link rel="apple-touch-icon" href="pos-icon.png">
 <link rel="icon" href="pos-icon.png">
+<link rel="preconnect" href="https://script.google.com" crossorigin>
+<link rel="preconnect" href="https://n-cyag6pi2e3zdz6rjml5fymc53asamxxh5sybcda-0lu-script.googleusercontent.com" crossorigin>
 <style>
   :root { --bg: #f6f5f2; --card: #ffffff; }
   @media (prefers-color-scheme: dark) { :root { --bg: #121214; --card: #1c1c1f; } }
   html, body { margin: 0; height: 100%; background: var(--bg); overflow: hidden; }
   /* 狀態列用黑色（不透明），網頁從狀態列下面開始，高度剛好等於可用畫面；底部橫條的留白交給裡面的頁面 */
   iframe { position: fixed; inset: 0; width: 100%; height: 100%; border: 0; display: block; background: var(--bg, #0E0E10); }
+  /* 打開時先蓋一層載入畫面，裡面好了再淡出（不然頭幾秒是一片空白，像當機） */
+  #splash { position: fixed; inset: 0; z-index: 2; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px;
+    background: var(--bg, #0E0E10); transition: opacity .35s ease; font: 14px -apple-system, "PingFang TC", sans-serif; color: #9a9aa2; letter-spacing: .1em; }
+  #splash img { width: 84px; height: 84px; border-radius: 20px; }
+  #splash i { width: 22px; height: 22px; border: 2px solid rgba(200,169,106,.25); border-top-color: #C8A96A; border-radius: 50%; animation: spin .8s linear infinite; }
+  #splash.done { opacity: 0; pointer-events: none; }
+  @keyframes spin { to { transform: rotate(360deg); } }
 </style>
 </head>
 <body>
 <iframe src="https://script.google.com/macros/s/AKfycbx3DCMskoPLo9LdGVBYDY06KbOuc6BI2HGzG2RJVHU2MbfqZloc0F4JMenCG4gSI8yeDQ/exec"
   allow="clipboard-read; clipboard-write" title="CHIU189 收銀"></iframe>
+<div id="splash"><img src="pos-icon.png" alt=""><i></i><span>載入中…</span></div>
+<script>
+  // 框架載完後再等一下（裡面的頁面還要畫一次），然後淡出；最多等 15 秒
+  (() => {
+    const sp = document.getElementById("splash");
+    const hide = () => { sp.classList.add("done"); setTimeout(() => sp.remove(), 400); };
+    document.querySelector("iframe").addEventListener("load", () => setTimeout(hide, 500), { once: true });
+    setTimeout(hide, 15000);
+  })();
+</script>
 </body>
 </html>
