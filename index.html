@@ -57,7 +57,8 @@
   .item .name{flex:1}
   .item .note{display:block;color:var(--muted);font-size:12px}
   .item .price{font-weight:700;white-space:nowrap}
-  .tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:4px}
+  .item .head{display:flex;align-items:center;flex-wrap:wrap;gap:4px 8px}  /* 項目名稱和工時、保固標籤排同一行，太窄才換行 */
+  .tags{display:flex;gap:6px;flex-wrap:wrap}
   .tag{font-size:11px;padding:2px 8px;border-radius:999px;background:var(--bg);color:var(--muted);border:1px solid var(--line)}
   .tag.ok{color:#0a7d3e;border-color:#0a7d3e33;background:#0a7d3e12}
   .tag.no{color:#b3261e;border-color:#b3261e33;background:#b3261e10}
@@ -101,7 +102,7 @@
 </head>
 <body>
 <div class="wrap">
-  <nav class="nav"><a href="./?v=13" class="on">維修報價</a><a href="recycle.html?v=13">回收估價</a></nav>
+  <nav class="nav"><a href="./?v=14" class="on">維修報價</a><a href="recycle.html?v=14">回收估價</a></nav>
   <header>
     <div class="eyebrow">CHIU189 手機維修中心</div>
     <h1>手機維修報價查詢</h1>
@@ -267,8 +268,8 @@ function renderPanel(){
   data[brand][model].forEach(({item,price,time,warranty,note})=>{
     const key=model+"｜"+item;
     const row=document.createElement("div"); row.className="item";
-    row.innerHTML=`<span class="name"><span></span><span class="note"></span><span class="tags"></span></span><span class="price"></span><button class="add"></button>`;
-    row.querySelector(".name span").textContent=item;
+    row.innerHTML=`<span class="name"><span class="head"><span class="ttl"></span><span class="tags"></span></span><span class="note"></span></span><span class="price"></span><button class="add"></button>`;
+    row.querySelector(".ttl").textContent=item;
     row.querySelector(".note").textContent=note||"";
     const tags=row.querySelector(".tags");
     const tag=(t,c)=>{ const s=document.createElement("span"); s.className="tag "+(c||""); s.textContent=t; tags.append(s); };
