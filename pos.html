@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>CHIU189 收銀</title>
+<meta name="robots" content="noindex">
+<!-- 頂端狀態列跟收銀頁同色（收銀頁跟著手機深淺色模式） -->
+<meta name="theme-color" content="#121214" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#f6f5f2" media="(prefers-color-scheme: light)">
+<!-- 加入主畫面後全螢幕打開，像 App 一樣 -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="CHIU189 收銀">
+<link rel="apple-touch-icon" href="pos-icon.png">
+<link rel="icon" href="pos-icon.png">
+<style>
+  :root { --bg: #f6f5f2; --card: #ffffff; }
+  @media (prefers-color-scheme: dark) { :root { --bg: #121214; --card: #1c1c1f; } }
+  html, body { margin: 0; height: 100%; background: var(--bg); overflow: hidden; }
+  /* 收銀系統本體（Google Apps Script）放在這個框裡；上下留出瀏海和底部橫條的空間 */
+  iframe {
+    position: fixed; border: 0; display: block;
+    top: env(safe-area-inset-top); left: env(safe-area-inset-left);
+    width: calc(100% - env(safe-area-inset-left) - env(safe-area-inset-right));
+    height: calc(100% - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+    background: var(--bg);
+  }
+  /* 底部橫條那一小段塗成跟收銀頁底部選單同色，看起來是連在一起的 */
+  .home-bar { position: fixed; left: 0; right: 0; bottom: 0; height: env(safe-area-inset-bottom); background: var(--card); }
+</style>
+</head>
+<body>
+<iframe src="https://script.google.com/macros/s/AKfycbx3DCMskoPLo9LdGVBYDY06KbOuc6BI2HGzG2RJVHU2MbfqZloc0F4JMenCG4gSI8yeDQ/exec"
+  allow="clipboard-read; clipboard-write" title="CHIU189 收銀"></iframe>
+<div class="home-bar"></div>
+</body>
+</html>
