@@ -19,21 +19,35 @@
   :root { --bg: #f6f5f2; --card: #ffffff; }
   @media (prefers-color-scheme: dark) { :root { --bg: #121214; --card: #1c1c1f; } }
   html, body { margin: 0; height: 100%; background: var(--bg); overflow: hidden; }
-  /* 收銀系統本體（Google Apps Script）放在這個框裡；上下留出瀏海和底部橫條的空間 */
+  /* 收銀系統本體（Google Apps Script）放在這個框裡；上面留出瀏海的空間，下面一路到底 */
   iframe {
     position: fixed; border: 0; display: block;
     top: env(safe-area-inset-top); left: env(safe-area-inset-left);
     width: calc(100% - env(safe-area-inset-left) - env(safe-area-inset-right));
-    height: calc(100% - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+    height: calc(100vh - env(safe-area-inset-top));
     background: var(--bg);
   }
-  /* 底部橫條那一小段塗成跟收銀頁底部選單同色，看起來是連在一起的 */
-  .home-bar { position: fixed; left: 0; right: 0; bottom: 0; height: env(safe-area-inset-bottom); background: var(--card); }
 </style>
 </head>
 <body>
 <iframe src="https://script.google.com/macros/s/AKfycbx3DCMskoPLo9LdGVBYDY06KbOuc6BI2HGzG2RJVHU2MbfqZloc0F4JMenCG4gSI8yeDQ/exec"
   allow="clipboard-read; clipboard-write" title="CHIU189 收銀"></iframe>
-<div class="home-bar"></div>
+<div id="probe" style="position:absolute;visibility:hidden;padding-top:env(safe-area-inset-top)"></div>
+<script>
+// iPhone 從主畫面打開時，網頁拿到的高度會少一截（系統毛病），底下就空一條。
+// 這裡改用整個螢幕的高度，讓收銀框一路延伸到最底下；底部橫條的留白交給裡面的頁面自己處理。
+(() => {
+  const f = document.querySelector("iframe"), probe = document.getElementById("probe");
+  const fit = () => {
+    const top = parseFloat(getComputedStyle(probe).paddingTop) || 0;
+    const portrait = matchMedia("(orientation: portrait)").matches;
+    const full = navigator.standalone ? (portrait ? screen.height : screen.width) : window.innerHeight;
+    f.style.height = Math.max(full, window.innerHeight) - top + "px";
+  };
+  fit();
+  addEventListener("resize", fit);
+  addEventListener("orientationchange", () => setTimeout(fit, 300));
+})();
+</script>
 </body>
 </html>
