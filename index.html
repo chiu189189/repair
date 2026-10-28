@@ -3,9 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>維修報價查詢｜CHIU189手機維修中心</title>
+<title>維修價目表｜CHIU189手機維修中心</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 64 64%27%3E%3Crect width=%2764%27 height=%2764%27 rx=%2714%27 fill=%27%2317171A%27/%3E%3Ctext x=%2732%27 y=%2743%27 font-size=%2730%27 font-family=%27Arial%27 font-weight=%27700%27 text-anchor=%27middle%27 fill=%27%23C8A96A%27%3EC%3C/text%3E%3C/svg%3E">
-<meta property="og:title" content="維修報價查詢｜CHIU189手機維修中心">
+<meta property="og:title" content="維修價目表｜CHIU189手機維修中心">
 <meta property="og:description" content="台中龍井 CHIU189手機維修中心：iPhone、iPad、三星、OPPO、VIVO、小米維修線上報價，螢幕、電池、主機板晶片級維修。">
 <meta property="og:image" content="https://chiu189189.github.io/repair/og.png">
 <meta property="og:url" content="https://chiu189189.github.io/repair/">
@@ -35,7 +35,6 @@
   header p{margin:0;color:var(--muted);font-size:14px}
   .sample{margin:14px 0 0;padding:10px 12px;border-radius:10px;background:var(--accent-soft);color:var(--accent);font-size:13px;font-weight:600}
   .status{display:flex;justify-content:space-between;align-items:center;margin:18px 0 12px;font-size:13px;color:var(--muted)}
-  .btn-ghost{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:999px;padding:6px 14px;font-size:13px;cursor:pointer}
   .tabs{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none}
   .tabs button{flex:none;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:999px;padding:9px 18px;font-size:15px;cursor:pointer}
   .tabs button.on{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);font-weight:700}
@@ -102,17 +101,14 @@
 </head>
 <body>
 <div class="wrap">
-  <nav class="nav"><a href="./?v=14" class="on">維修報價</a><a href="recycle.html?v=14">回收估價</a></nav>
+  <nav class="nav"><a href="./?v=15" class="on">維修價目</a><a href="recycle.html?v=15">舊機回收</a></nav>
   <header>
     <div class="eyebrow">CHIU189 手機維修中心</div>
-    <h1>手機維修報價查詢</h1>
-    <p>iPhone／iPad／三星／OPPO／VIVO／小米／紅米。螢幕、電池到主機板晶片級維修，每項都標示維修時間與保固。</p>
+    <h1>維修價目表</h1>
+    <p>換螢幕、換電池先看價錢再來店。不開機、無訊號、進水這類主機板問題，是我們最拿手的晶片級維修。</p>
   </header>
 
-  <div class="status">
-    <span id="status">讀取中…</span>
-    <button class="btn-ghost" id="reload">重新整理資料</button>
-  </div>
+  <div class="status"><span id="status">讀取中…</span></div>
 
   <nav class="tabs" id="tabs"></nav>
 
@@ -129,7 +125,7 @@
     <strong>報價說明</strong>
     <ul>
       <li>以上報價僅供參考，實際價格依當下零件行情與機況確認後報價。</li>
-      <li>維修保固 90 天；背玻璃／後殼／鏡頭玻璃等外觀件不含保固。</li>
+      <li>螢幕、電池、鏡頭、排線等功能零件保固 90 天；背玻璃、後殼、鏡頭玻璃屬於外觀件，不在保固內。</li>
       <li>泡水、人為摔損、自行拆修不在保固範圍。</li>
       <li>主機板、不開機、進水等問題需檢測後報價。本店專長晶片級維修，別家說修不好的機子也可以拿來問問看。</li>
     </ul>
@@ -223,7 +219,7 @@ async function load(){
   $("#status").textContent="讀取中…";
   try{
     data=build(await fetchPrices());
-  }catch(e){ $("#status").textContent="價目讀取失敗，請稍後按「重新整理資料」"; return; }
+  }catch(e){ $("#status").textContent="價目讀取失敗，請重新整理網頁"; return; }
   if(!brand||!data[brand]) brand=Object.keys(data)[0];
   $("#status").textContent="";  // 價格改由試算表管理，不顯示更新日期
   renderTabs(); renderModels(); renderPanel();
@@ -245,12 +241,14 @@ function renderModels(){
   const pool = q ? Object.entries(data).flatMap(([b,ms])=>Object.keys(ms).map(m=>[b,m]))
                  : Object.keys(data[brand]||{}).map(m=>[brand,m]);
   const list = pool.filter(([,m])=>m.replace(/\s/g,"").toLowerCase().includes(q));
-  $("#count").textContent = q ? `找到 ${list.length} 個型號` : `${brand} 共 ${list.length} 個型號`;
+  $("#count").textContent = q ? (list.length ? "搜尋結果" : "找不到這個型號，直接 LINE 問我們") : "選擇你的機型";
   $("#models").innerHTML="";
   list.forEach(([b,m])=>{
     const li=document.createElement("li"), bt=document.createElement("button");
     bt.className=m===model?"on":"";
-    bt.innerHTML=`<span></span><small>${data[b][m].length} 項</small>`;
+    // 右邊顯示最低價，讓客人先抓個概念
+    const low=Math.min(...data[b][m].map(x=>/^\d+$/.test(x.price)?+x.price:Infinity));
+    bt.innerHTML=`<span></span><small>${isFinite(low)?fmt(String(low))+" 起":"檢測後報價"}</small>`;
     bt.firstChild.textContent=m;
     bt.onclick=()=>{ brand=b; model=m; renderTabs(); renderModels(); renderPanel();
       if(innerWidth<=760) $("#panel").scrollIntoView({behavior:"smooth",block:"start"}); };
@@ -304,7 +302,6 @@ function sendLine(){
 }
 
 $("#q").oninput=renderModels;
-$("#reload").onclick=load;
 $("#sendLine").onclick=sendLine;
 $("#barGo").onclick=()=>$("#book").scrollIntoView({behavior:"smooth"});
 if(CONFIG.PHONE){ $("#tel").href="tel:"+CONFIG.PHONE.replace(/[^\d+]/g,""); } else { $("#tel").hidden=true; }
