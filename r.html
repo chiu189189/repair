@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>CHIU189 維修單</title>
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#f6f5f2">
+<link rel="icon" href="pos-icon.png">
+<link rel="preconnect" href="https://script.google.com" crossorigin>
+<style>
+  html, body { margin: 0; height: 100%; background: #f6f5f2; overflow: hidden; }
+  /* 客人掃收件單 QR Code 會到這裡：#後面是查詢碼，裡面包住收銀系統的維修單頁。
+     直接開 script.google.com 的話，手機瀏覽器有登入 Google 帳號會跳「雲端硬碟：無法開啟這個檔案」 */
+  iframe { position: fixed; inset: 0; width: 100%; height: 100%; border: 0; display: block; background: #f6f5f2; }
+  #msg { position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px;
+    font: 15px -apple-system, "PingFang TC", sans-serif; color: #6b6b70; background: #f6f5f2; transition: opacity .3s; }
+  #msg img { width: 72px; height: 72px; border-radius: 18px; }
+  #msg.done { opacity: 0; pointer-events: none; }
+</style>
+</head>
+<body>
+<div id="msg"><img src="pos-icon.png" alt=""><span>讀取維修單…</span></div>
+<script>
+  (() => {
+    const key = location.hash.slice(1), msg = document.getElementById("msg");
+    if (!/^[0-9a-f]{24}$/.test(key)) { msg.querySelector("span").textContent = "連結不完整，請重新掃收件單上的 QR Code，或直接聯絡店家。"; return; }
+    const f = document.createElement("iframe");
+    f.title = "CHIU189 維修單";
+    f.src = "https://script.google.com/macros/s/AKfycbx3DCMskoPLo9LdGVBYDY06KbOuc6BI2HGzG2RJVHU2MbfqZloc0F4JMenCG4gSI8yeDQ/exec?r=" + key;
+    f.onload = () => setTimeout(() => msg.classList.add("done"), 300);
+    document.body.appendChild(f);
+    setTimeout(() => msg.classList.add("done"), 15000);
+  })();
+</script>
+</body>
+</html>
