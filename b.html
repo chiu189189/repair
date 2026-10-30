@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>CHIU189 LINE 綁定</title>
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#f6f5f2">
+<link rel="icon" href="pos-icon.png">
+<style>
+  /* 客人掃收件單 QR Code → LINE 打開這頁（LIFF）→ 按「允許」→ 綁好維修單，修好會收到 LINE 通知 */
+  html, body { margin: 0; min-height: 100%; background: #f6f5f2; color: #1c1c1e; font: 16px/1.6 -apple-system, "PingFang TC", "Noto Sans TC", sans-serif; }
+  .w { max-width: 480px; margin: 0 auto; padding: calc(28px + env(safe-area-inset-top)) 20px 32px; text-align: center; }
+  .shop { color: #A6843F; font-weight: 700; font-size: 14px; letter-spacing: .05em; }
+  .ic { width: 76px; height: 76px; margin: 28px auto 14px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 40px; background: #e9e6df; }
+  .ic.ok { background: #06C755; color: #fff; }
+  h1 { font-size: 24px; margin: 0 0 6px; }
+  p { margin: 6px 0; color: #55555a; }
+  .what { margin: 14px 0 4px; padding: 12px; border-radius: 12px; background: #fff; border: 1px solid #e4e2dc; color: #1c1c1e; }
+  a.btn, button.btn { display: block; width: 100%; box-sizing: border-box; margin-top: 12px; padding: 14px; border: 0; border-radius: 12px; font: inherit; font-weight: 700; text-decoration: none; text-align: center; cursor: pointer; }
+  .line { background: #06C755; color: #fff; }
+  .gold { background: #A6843F; color: #fff; }
+  .ghost { background: transparent; color: #55555a; border: 1px solid #d6d3cc !important; font-weight: 400 !important; }
+  .spin { width: 28px; height: 28px; border: 3px solid #d6d3cc; border-top-color: #06C755; border-radius: 50%; animation: s 1s linear infinite; }
+  @keyframes s { to { transform: rotate(360deg); } }
+  [hidden] { display: none !important; }
+</style>
+<script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+</head>
+<body>
+<div class="w">
+  <div class="shop">CHIU189 手機維修中心</div>
+  <div class="ic" id="ic"><div class="spin"></div></div>
+  <h1 id="h">正在綁定 LINE…</h1>
+  <p id="p">請稍等一下</p>
+  <div class="what" id="what" hidden></div>
+  <div id="acts"></div>
+</div>
+<script>
+(() => {
+  const LIFF_ID = "2012295376-XFup3FBS";
+  const APP = "https://script.google.com/macros/s/AKfycbx3DCMskoPLo9LdGVBYDY06KbOuc6BI2HGzG2RJVHU2MbfqZloc0F4JMenCG4gSI8yeDQ/exec";
+  const OA = "https://line.me/R/ti/p/@891llnje";
+  const $ = id => document.getElementById(id);
+  const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  let key = "";
+  const ticketBtn = () => /^[0-9a-f]{24}$/.test(key) ? `<a class="btn ghost" href="r.html#${key}">查看維修單</a>` : "";
+  function show(icon, ok, h, p, acts){
+    $("ic").className = "ic" + (ok ? " ok" : ""); $("ic").textContent = icon;
+    $("h").textContent = h; $("p").textContent = p; $("acts").innerHTML = acts || "";
+  }
+  function fail(msg){ show("!", false, "綁定沒有成功", msg, ticketBtn() + `<a class="btn line" href="${OA}">加 LINE 好友，直接傳訊息給我們</a>`); }
+
+  // 查詢碼放在 ?k=；從 liff.line.me 進來時，LIFF 會先把它包在 liff.state 裡，init 之後才換回來
+  const readKey = () => new URLSearchParams(location.search).get("k") || "";
+  liff.init({ liffId: LIFF_ID }).then(async () => {
+    key = readKey();
+    if (!/^[0-9a-f]{24}$/.test(key)) return fail("連結不完整，請重新掃收件單上的 QR Code。");
+    // 用手機瀏覽器開（沒在 LINE 裡）：讓客人自己選要不要用 LINE 登入綁定
+    if (!liff.isLoggedIn()) {
+      show("💬", false, "用 LINE 接收修好通知", "按下面的綠色按鈕，用 LINE 登入一次就綁好，修好時會用 LINE 通知您。",
+        `<button class="btn line" id="go">用 LINE 綁定</button>` + ticketBtn());
+      $("go").onclick = () => liff.login({ redirectUri: location.href });
+      return;
+    }
+    const res = await fetch(APP, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify({ bind: key, idToken: liff.getIDToken() }) }).then(r => r.json());
+    if (!res.ok) return fail(res.err || "請再掃一次 QR Code，或直接聯絡店家。");
+    $("what").hidden = false;
+    $("what").textContent = res.model + "（" + res.issue + "）";
+    // 客人取消勾選「加入好友」的話，LINE 不能主動傳訊息給他，提醒他補加
+    const friend = await liff.getFriendship().then(f => f.friendFlag).catch(() => true);
+    if (friend) show("✓", true, "綁定完成", "修好時會用 LINE 通知您，也可以在 LINE 選單按「查維修進度」。", ticketBtn().replace("ghost", "gold") +
+      (liff.isInClient() ? `<button class="btn ghost" id="close">關閉</button>` : ""));
+    else show("✓", true, "還差一步：加 LINE 好友", "綁定好了，但要加我們為好友，修好時才收得到 LINE 通知。", `<a class="btn line" href="${OA}">加 LINE 好友</a>` + ticketBtn());
+    if ($("close")) $("close").onclick = () => liff.closeWindow();
+  }).catch(err => { console.error(err); key = key || readKey(); fail("LINE 暫時打不開，請再掃一次 QR Code，或直接聯絡店家。"); });
+})();
+</script>
+</body>
+</html>
