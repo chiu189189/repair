@@ -66,6 +66,14 @@
   .item .add.on{background:var(--accent);color:var(--accent-ink)}
   .terms{margin-top:22px;padding:16px;border-radius:14px;background:var(--card);border:1px solid var(--line);font-size:13px;color:var(--muted)}
   .terms ul{margin:6px 0 0;padding-left:18px}
+  .about{margin-top:22px;padding:20px;border-radius:14px;background:var(--card);border:1px solid var(--line)}
+  .about .eyebrow{color:var(--accent);font-weight:700;font-size:13px;letter-spacing:.05em}
+  .about h2{margin:4px 0 8px;font-size:20px}
+  .about > p{margin:0 0 14px;color:var(--muted);font-size:14px;line-height:1.7}
+  .about ul{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .about li{padding:12px 14px;border-radius:12px;background:var(--bg);border:1px solid var(--line);font-size:14px;line-height:1.6}
+  .about li b{display:block;margin-bottom:2px;font-size:15px}
+  @media (max-width:640px){.about ul{grid-template-columns:1fr}}
   .book{margin-top:22px;padding:20px;border-radius:14px;background:var(--card);border:1px solid var(--line)}
   .book h2{margin:0 0 4px;font-size:20px}
   .book p{margin:0 0 14px;color:var(--muted);font-size:13px}
@@ -167,6 +175,20 @@
       <a class="btn-tel" id="tel" href="#">撥打電話</a>
       <a class="btn-tel" id="map" href="#" target="_blank" rel="noopener">地圖導航</a>
     </div>
+  </section>
+
+  <!-- 關於我們：用設備、流程、保固說明實力（不寫年資） -->
+  <section class="about" id="about">
+    <div class="eyebrow">關於我們</div>
+    <h2>專注晶片級維修，每一台都先檢測再動手</h2>
+    <p>CHIU189 專注 iPhone／Android 手機維修，從螢幕、電池到主機板晶片級維修都在店內完成。老闆在大陸接受晶片級維修專業進修，並在同業維修中心實戰後，回台開設這間維修中心。</p>
+    <ul>
+      <li><b>🔬 專業設備</b>顯微鏡、微焊接設備、尾插檢測儀，找到真正壞掉的地方，能修小零件就不換整片。</li>
+      <li><b>📸 流程透明</b>收件拍機況照片、先檢測再報價，超出預估一定先問過您。</li>
+      <li><b>💬 LINE 即時通知</b>修好自動通知、隨時查進度，取件後傳保固到期日給您。</li>
+      <li><b>🛡 保固清楚</b>每個維修項目都有保固天數，到期日寫給您。</li>
+    </ul>
+    <p style="margin:14px 0 0">📍 台中市龍井區遠東街189號（東海商圈）</p>
   </section>
 
   <footer id="foot"></footer>
