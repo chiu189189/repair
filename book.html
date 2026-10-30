@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>預約維修｜CHIU189 手機維修中心</title>
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#f6f5f2">
+<link rel="icon" href="pos-icon.png">
+<style>
+  /* Google 商家「預訂」按鈕連到這裡，再轉去 LINE 帶好預約訊息。
+     Google 會在網址後面加 ?rwg_token=…，直接連 LINE 的話那串碼會跑進訊息裡，所以先經過這頁 */
+  html, body { margin: 0; min-height: 100%; background: #f6f5f2; color: #1c1c1e; font: 16px/1.6 -apple-system, "PingFang TC", "Noto Sans TC", sans-serif; }
+  .w { max-width: 480px; margin: 0 auto; padding: calc(40px + env(safe-area-inset-top)) 20px 32px; text-align: center; }
+  .shop { color: #A6843F; font-weight: 700; font-size: 14px; letter-spacing: .05em; }
+  h1 { font-size: 24px; margin: 18px 0 6px; }
+  p { margin: 6px 0; color: #55555a; }
+  button { display: block; width: 100%; margin-top: 20px; padding: 14px; border: 0; border-radius: 12px; background: #06C755; color: #fff; font: inherit; font-weight: 700; cursor: pointer; }
+</style>
+</head>
+<body>
+<div class="w">
+  <div class="shop">CHIU189 手機維修中心</div>
+  <h1>用 LINE 預約維修</h1>
+  <p>正在打開 LINE…</p>
+  <p>沒有自動打開的話，請按下面的按鈕。</p>
+  <button id="go">打開 LINE 預約</button>
+</div>
+<script>
+  const url = "https://line.me/R/oaMessage/@891llnje/?" + encodeURIComponent("我想預約維修\n型號：\n問題：\n想來的時間：");
+  document.getElementById("go").onclick = () => { location.href = url; };
+  setTimeout(() => { location.href = url; }, 300);
+</script>
+</body>
+</html>
