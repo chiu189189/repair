@@ -6,7 +6,7 @@ const SITE = {
   EMAIL: "",                    // 公司 email：網域開通後填，例如 "service@chiu189.com.tw"；空白就不顯示
   ADDRESS: "台中市龍井區遠東街189號1樓",
   PHONE: "0905-584-846",
-  V: 19,                        // 改版時加一，避免手機看到舊頁面
+  V: 20,                        // 改版時加一，避免手機看到舊頁面
 };
 (function(){
   const el = document.getElementById("sitefoot");
