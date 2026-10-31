@@ -50,8 +50,4 @@ table.biz th,table.biz td{padding:9px 0;border-bottom:1px solid var(--line)}
 table.biz tr:last-child th,table.biz tr:last-child td{border-bottom:0}
 table.biz a{color:var(--ink)}
 .updated{margin-top:18px;color:var(--muted);font-size:13px}
-/* 每頁共用頁尾 */
-.sitefoot{margin-top:24px;padding:16px;border-radius:14px;background:var(--card);border:1px solid var(--line);font-size:13px;color:var(--muted);line-height:1.7}
-.sitefoot .links{display:flex;flex-wrap:wrap;gap:6px 14px;margin-bottom:8px}
-.sitefoot .links a{color:var(--ink);text-decoration:none;font-size:14px}
-.sitefoot p{margin:4px 0 0}
+/* 每頁共用頁尾的樣式寫在 site.js 裡 */
