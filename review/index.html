@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>CHIU189 審稿</title>
+<style>
+:root {
+  --bg: #f4f1ea; --card: #ffffff; --ink: #1e1b14; --sub: #6b6458; --line: #e4ddd0;
+  --accent: #A6843F; --accent-ink: #1E1B14; --ok: #1f9d55; --fix: #c2410c; --warnbg: #fff7e6;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #14130f; --card: #1e1c17; --ink: #f3efe6; --sub: #a59d8e; --line: #34302727;
+    --accent: #C8A96A; --accent-ink: #1E1B14; --ok: #34c77b; --fix: #fb923c; --warnbg: #2a2416;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #14130f; --card: #1e1c17; --ink: #f3efe6; --sub: #a59d8e; --line: #343027;
+  --accent: #C8A96A; --accent-ink: #1E1B14; --ok: #34c77b; --fix: #fb923c; --warnbg: #2a2416;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.6 -apple-system, "PingFang TC", "Noto Sans TC", sans-serif; }
+header { padding: 20px 16px 8px; max-width: 720px; margin: 0 auto; }
+h1 { font-size: 24px; margin: 0; }
+header p { margin: 4px 0 0; color: var(--sub); font-size: 14px; }
+main { max-width: 720px; margin: 0 auto; padding: 8px 16px 48px; }
+.card { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 16px; margin: 14px 0; }
+.card h2 { font-size: 19px; margin: 0 0 6px; line-height: 1.45; }
+.when { color: var(--accent); font-weight: 700; font-size: 14px; }
+.tag { display: inline-block; font-size: 13px; font-weight: 700; border-radius: 999px; padding: 2px 10px; margin: 6px 0; }
+.tag.wait { background: var(--warnbg); color: var(--fix); }
+.tag.ok { background: color-mix(in srgb, var(--ok) 18%, transparent); color: var(--ok); }
+.tag.fix { background: color-mix(in srgb, var(--fix) 18%, transparent); color: var(--fix); }
+.imgs { display: flex; gap: 8px; overflow-x: auto; scroll-snap-type: x mandatory; margin: 10px -16px; padding: 0 16px 6px; }
+.imgs img { width: 78%; max-width: 330px; flex: none; border-radius: 10px; scroll-snap-align: start; border: 1px solid var(--line); }
+.check { margin: 8px 0; padding: 0; list-style: none; font-size: 15px; }
+.check li { padding: 3px 0; }
+details { border: 1px solid var(--line); border-radius: 10px; margin: 8px 0; }
+summary { cursor: pointer; padding: 10px 12px; font-weight: 700; min-height: 44px; display: flex; align-items: center; }
+details pre { white-space: pre-wrap; word-break: break-word; margin: 0; padding: 0 12px 12px; font: inherit; font-size: 15px; }
+.btns { display: flex; gap: 10px; margin-top: 12px; }
+.btns button { flex: 1; min-height: 48px; border-radius: 12px; font: inherit; font-weight: 700; font-size: 17px; cursor: pointer; border: 1px solid var(--line); background: var(--card); color: var(--ink); }
+.btns .okb { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.btns button:disabled { opacity: .5; }
+textarea { width: 100%; min-height: 90px; border-radius: 10px; border: 1px solid var(--line); background: var(--bg); color: var(--ink); font: inherit; padding: 10px; margin-top: 10px; }
+.msg { font-size: 14px; color: var(--sub); margin-top: 8px; min-height: 1em; }
+.empty { text-align: center; color: var(--sub); padding: 48px 0; }
+.foot { text-align: center; color: var(--sub); font-size: 13px; margin-top: 24px; }
+.foot button { background: none; border: 0; color: var(--sub); text-decoration: underline; font: inherit; cursor: pointer; }
+</style>
+</head>
+<body>
+<header>
+  <h1>CHIU189 審稿</h1>
+  <p>看過圖和文案，按「通過」就會自動排程；要改就寫一句意見。</p>
+</header>
+<main id="list"><div class="empty">載入中…</div></main>
+<div class="foot"><span id="upd"></span> · <button id="reload" type="button">重新整理</button> · <button id="resetpin" type="button">換審稿密碼</button></div>
+<script>
+const API = 'https://script.google.com/macros/s/AKfycbwcStF05qkS0cKT8l6PoTTzj21ijwnnyyJkoSDqPYZjDxFVG6EadZCwCp2GrKpV7wNSow/exec';
+const $ = (s) => document.querySelector(s);
+const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+let data = { reviews: [], decisions: {} };
+
+function getPin() { try { return localStorage.getItem('chiu189_pin') || ''; } catch (e) { return ''; } }
+function setPin(v) { try { localStorage.setItem('chiu189_pin', v); } catch (e) {} }
+function askPin() { const v = prompt('請輸入審稿密碼（只要輸入一次）'); if (v) setPin(v.trim()); return v ? v.trim() : ''; }
+
+async function load() {
+  $('#list').innerHTML = '<div class="empty">載入中…</div>';
+  try {
+    const r = await fetch(API + '?t=' + Date.now());
+    data = await r.json();
+    render();
+    $('#upd').textContent = '更新 ' + new Date().toLocaleString('zh-TW', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false });
+  } catch (e) { $('#list').innerHTML = '<div class="empty">讀不到稿子，請稍後按「重新整理」。</div>'; }
+}
+
+function render() {
+  const rv = data.reviews || [];
+  if (!rv.length) { $('#list').innerHTML = '<div class="empty">目前沒有要審的文章 ✨<br>新稿做好會傳 LINE 通知你。</div>'; return; }
+  $('#list').innerHTML = rv.map((r, i) => {
+    const d = (data.decisions || {})[r.id];
+    const st = d ? d.decision : 'wait';
+    const tag = st === 'ok' ? '<span class="tag ok">已通過・等自動排程</span>' : st === 'fix' ? '<span class="tag fix">已退回・等 Claude 改</span>' : '<span class="tag wait">等你審</span>';
+    const caps = r.caps || {};
+    return `<article class="card" data-i="${i}">
+      <h2>${esc(r.title)}</h2>
+      <div class="when">預計 ${esc(r.when)}｜FB・IG・Threads 一起發</div>
+      ${tag}
+      <div class="imgs">${(r.imgs || []).map((src, k) => `<img src="${esc(src)}" alt="第 ${k + 1} 張圖" loading="lazy">`).join('')}</div>
+      <ul class="check">${(r.check || []).map((c) => `<li>${esc(c)}</li>`).join('')}</ul>
+      ${['FB', 'IG', 'Threads'].filter((k) => caps[k]).map((k) => `<details><summary>${k} 文案</summary><pre>${esc(caps[k])}</pre></details>`).join('')}
+      <div class="btns"><button type="button" class="okb" data-act="ok">${st === 'ok' ? '已通過 ✓' : '通過'}</button><button type="button" data-act="fix">要改</button></div>
+      <div class="fixbox" hidden><textarea placeholder="哪裡要改？例如：第 3 張字太多、Threads 開頭換一句"></textarea><div class="btns"><button type="button" class="okb" data-act="sendfix">送出意見</button><button type="button" data-act="cancel">取消</button></div></div>
+      ${st !== 'wait' ? '<div class="btns"><button type="button" data-act="clear">撤回決定</button></div>' : ''}
+      <div class="msg"></div>
+    </article>`;
+  }).join('');
+}
+
+async function decide(card, decision, note) {
+  const r = data.reviews[+card.dataset.i];
+  let pin = getPin() || askPin();
+  if (!pin) return;
+  const msg = card.querySelector('.msg');
+  card.querySelectorAll('button').forEach((b) => (b.disabled = true));
+  msg.textContent = '存檔中…';
+  try {
+    const res = await fetch(API, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ a: 'decide', id: r.id, decision, note: note || '', pin }) });
+    const j = await res.json();
+    if (!j.ok && j.error === 'pin') { setPin(''); msg.textContent = '密碼不對，請再按一次重新輸入。'; card.querySelectorAll('button').forEach((b) => (b.disabled = false)); return; }
+    if (!j.ok) throw new Error(j.error);
+    if (decision === 'clear') delete data.decisions[r.id]; else data.decisions[r.id] = { decision };
+    render();
+    const m = document.querySelector(`.card[data-i="${card.dataset.i}"] .msg`);
+    if (m) m.textContent = decision === 'ok' ? '已存好！晚上 9:30 或早上 10:00 會自動排程。' : decision === 'fix' ? '意見收到，Claude 改好會再傳 LINE 給你。' : '已撤回。';
+  } catch (e) { msg.textContent = '沒存到，請再按一次。'; card.querySelectorAll('button').forEach((b) => (b.disabled = false)); }
+}
+
+$('#list').addEventListener('click', (e) => {
+  const b = e.target.closest('button[data-act]'); if (!b) return;
+  const card = b.closest('.card'), act = b.dataset.act, box = card.querySelector('.fixbox');
+  if (act === 'ok') decide(card, 'ok');
+  else if (act === 'fix') { box.hidden = false; box.querySelector('textarea').focus(); }
+  else if (act === 'cancel') box.hidden = true;
+  else if (act === 'sendfix') { const t = box.querySelector('textarea').value.trim(); if (!t) { box.querySelector('textarea').focus(); return; } decide(card, 'fix', t); }
+  else if (act === 'clear') decide(card, 'clear');
+});
+$('#reload').addEventListener('click', load);
+$('#resetpin').addEventListener('click', () => { setPin(''); askPin(); });
+load();
+</script>
+</body>
+</html>
