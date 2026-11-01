@@ -144,7 +144,7 @@
   <div class="terms">
     <strong>報價說明</strong>
     <ul>
-      <li>以上報價僅供參考，實際價格依當下零件行情與機況確認後報價。</li>
+      <li>價格只顯示大約級距（例如 NT$ 3,•••），實際價格依零件行情與機況，<b>到店檢測或 LINE 詢問後報價</b>。</li>
       <li>泡水、人為摔損、自行拆修不在保固範圍。</li>
       <li>主機板、不開機、進水等問題需檢測後報價。本店專長晶片級維修，別家說修不好的機子也可以拿來問問看。</li>
     </ul>
@@ -200,7 +200,7 @@
 // ===== 設定區：之後只要改這裡 =====
 const CONFIG = {
   // Google 試算表「發布到網路」的 CSV 網址；留空就讀同資料夾的 prices.csv
-  SHEET_CSV_URL: "https://docs.google.com/spreadsheets/d/e/2PACX-1vTGj8-fekjCYagdyOKo_9zq9WXo_cX-8iAeTjBWY9at2QyX4w_nfxDGUFlYPUyb36yHmqvnDuGQfCDN/pub?gid=0&single=true&output=csv",  // Google 試算表「CHIU189 價目表」維修分頁
+  SHEET_CSV_URL: "https://docs.google.com/spreadsheets/d/e/2PACX-1vTGj8-fekjCYagdyOKo_9zq9WXo_cX-8iAeTjBWY9at2QyX4w_nfxDGUFlYPUyb36yHmqvnDuGQfCDN/pub?gid=1683786510&single=true&output=csv",  // Google 試算表「CHIU189 價目表」維修公開分頁（價格自動遮成 3,•••；完整價格在「維修」分頁，不公開）
   LOCAL_CSV: "prices.csv",
   // LINE 官方帳號 ID（例如 "@abc1234"）；留空會改用 LINE 分享，讓客人自己選要傳給誰
   LINE_OA_ID: "@891llnje",
@@ -259,7 +259,10 @@ function build(csv){
   return out;
 }
 
-function fmt(p){ return /^\d+$/.test(p) ? "NT$ "+Number(p).toLocaleString() : p; }
+function fmt(p){ return /^\d+$/.test(p) ? "NT$ "+Number(p).toLocaleString() : isMasked(p) ? "NT$ "+p : p; }
+// 遮過的價格（3,••• 或 8••）：只露第一位數，完整價格到店報價
+function isMasked(p){ return /^\d+(,•••|•+)$/.test(p); }
+function approx(p){ if(/^\d+$/.test(p)) return +p; const m=p.match(/^(\d+),•••$/); if(m) return +m[1]*1000; const k=p.match(/^(\d)(•+)$/); return k? +k[1]*Math.pow(10,k[2].length) : Infinity; }
 
 // 先讀 Google 試算表；讀不到（斷線、試算表壞掉）就改讀 GitHub 上的備份價目
 async function fetchPrices(){
@@ -301,8 +304,8 @@ function renderModels(){
     const li=document.createElement("li"), bt=document.createElement("button");
     bt.className=m===model?"on":"";
     // 右邊顯示最低價，讓客人先抓個概念
-    const low=Math.min(...data[b][m].map(x=>/^\d+$/.test(x.price)?+x.price:Infinity));
-    bt.innerHTML=`<span></span><small>${isFinite(low)?fmt(String(low))+" 起":"檢測後報價"}</small>`;
+    const lowItem=data[b][m].reduce((a,x)=>approx(x.price)<approx(a?a.price:"")?x:a,null);
+    bt.innerHTML=`<span></span><small>${lowItem&&isFinite(approx(lowItem.price))?fmt(lowItem.price)+" 起":"檢測後報價"}</small>`;
     bt.firstChild.textContent=m;
     bt.onclick=()=>{ brand=b; model=m; renderTabs(); renderModels(); renderPanel();
       if(innerWidth<=760) $("#panel").scrollIntoView({behavior:"smooth",block:"start"}); };
@@ -339,11 +342,11 @@ function renderPanel(){
 // 加總有數字的價格；有「檢測後報價」的項目另外註明
 function pickedSum(){
   const vals=[...picked.values()];
-  return { sum: vals.reduce((s,x)=>s+(/^\d+$/.test(x.price)?+x.price:0),0), tbd: vals.some(x=>!/^\d+$/.test(x.price)) };
+  return { sum: vals.reduce((s,x)=>s+(/^\d+$/.test(x.price)?+x.price:0),0), tbd: vals.some(x=>!/^\d+$/.test(x.price)), masked: vals.some(x=>isMasked(x.price)) };
 }
 
 function syncPicked(){
-  const {sum,tbd}=pickedSum(), box=$("#picked");
+  const {sum,tbd,masked}=pickedSum(), box=$("#picked");
   box.innerHTML="";
   if(!picked.size) box.innerHTML='<div class="pi-empty">在上方價目按「＋加入」，選的項目會列在這裡；不確定的話寫在下面說明就好</div>';
   picked.forEach((x,key)=>{
@@ -355,7 +358,11 @@ function syncPicked(){
     row.querySelector(".pi-del").onclick=()=>{ picked.delete(key); syncPicked(); renderPanel(); };
     box.append(row);
   });
-  if(sum){
+  if(picked.size && masked){
+    const t=document.createElement("div"); t.className="pi-sum";
+    t.innerHTML="<span>合計</span><b>到店確認報價</b>";
+    box.append(t);
+  } else if(sum){
     const t=document.createElement("div"); t.className="pi-sum";
     t.innerHTML="<span></span><b></b>";
     t.querySelector("span").textContent=tbd?"合計（另有檢測後報價）":"合計";
@@ -363,15 +370,15 @@ function syncPicked(){
     box.append(t);
   }
   $("#bar").classList.toggle("show",picked.size>0);
-  $("#barText").textContent=`已選 ${picked.size} 項`+(sum?`・約 ${fmt(String(sum))}`:"")+(tbd?"＋檢測後報價":"");
+  $("#barText").textContent=`已選 ${picked.size} 項`+(masked?"・到店報價":(sum?`・約 ${fmt(String(sum))}`:"")+(tbd?"＋檢測後報價":""));
 }
 
 function sendLine(){
   const name=$("#name").value.trim(), phone=$("#phone").value.trim(), memo=$("#items").value.trim();
   if(!name||!phone||(!picked.size&&!memo)){ alert("請填寫姓名、電話，並選擇維修項目或寫下說明"); return; }
-  const {sum,tbd}=pickedSum();
+  const {sum,tbd,masked}=pickedSum();
   const items=[...picked.values()].map(x=>`${x.model}｜${x.item}｜${fmt(x.price)}`).join("\n");
-  const total=sum?`\n合計：約 ${fmt(String(sum))}`+(tbd?"（另有檢測後報價項目）":""):"";
+  const total=masked?"\n合計：到店確認報價":sum?`\n合計：約 ${fmt(String(sum))}`+(tbd?"（另有檢測後報價項目）":""):"";
   const text=`【預約維修】\n姓名：${name}\n電話：${phone}\n時間：${$("#when").value.trim()||"未指定"}`+
     (items?`\n項目：\n${items}${total}`:"")+(memo?`\n說明：${memo}`:"");
   // 用按鈕跳轉、不放 line.me 連結在頁面上，避免被手機的廣告阻擋隱藏
