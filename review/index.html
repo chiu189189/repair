@@ -8,6 +8,8 @@
 <meta name="theme-color" content="#14130f" media="(prefers-color-scheme: dark)">
 <meta name="theme-color" content="#f4f1ea" media="(prefers-color-scheme: light)">
 <meta name="apple-mobile-web-app-title" content="CHIU189 審稿">
+<link rel="apple-touch-icon" href="icon.png">
+<link rel="icon" href="icon.png">
 <title>CHIU189 審稿行程</title>
 <style>
 :root {
@@ -35,7 +37,7 @@ body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.55 -app
 .brand h1 { font-size: 20px; margin: 0; letter-spacing: .02em; }
 .brand h1 span { color: var(--accent); }
 .brand button { background: none; border: 0; color: var(--sub); font: inherit; font-size: 13px; padding: 6px 0 6px 8px; cursor: pointer; }
-.tabs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; background: var(--soft); border-radius: 12px; padding: 4px; margin-bottom: 10px; }
+.tabs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; background: var(--soft); border-radius: 12px; padding: 4px; margin-bottom: 10px; }
 .tabs button { border: 0; background: none; color: var(--sub); font: inherit; font-weight: 700; font-size: 15px; min-height: 40px; border-radius: 9px; cursor: pointer; position: relative; }
 .tabs button[aria-selected="true"] { background: var(--card); color: var(--ink); box-shadow: 0 1px 3px rgba(0,0,0,.12); }
 .badge { display: inline-block; min-width: 20px; height: 20px; line-height: 20px; border-radius: 10px; background: var(--fix); color: #fff; font-size: 12px; padding: 0 6px; margin-left: 4px; vertical-align: 1px; }
@@ -115,6 +117,12 @@ textarea { width: 100%; min-height: 90px; border-radius: 10px; border: 1px solid
 .bar { height: 4px; background: var(--soft); border-radius: 2px; margin-top: 4px; overflow: hidden; }
 .bar i { display: block; height: 100%; background: var(--accent); border-radius: 2px; }
 .sub-h { font-size: 13px; color: var(--sub); margin: 12px 0 2px; }
+.ck-ok { color: var(--ok); } .ck-bad { color: var(--fix); font-weight: 700; }
+.alert { background: color-mix(in srgb, var(--fix) 14%, var(--card)); border: 1px solid color-mix(in srgb, var(--fix) 40%, transparent); color: var(--ink); border-radius: 12px; padding: 10px 12px; margin-top: 10px; font-size: 14.5px; }
+.req { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px; margin-bottom: 10px; }
+.req .q { font-weight: 700; overflow-wrap: anywhere; }
+.req .a { margin-top: 6px; font-size: 14.5px; white-space: pre-wrap; overflow-wrap: anywhere; }
+.req .s { font-size: 12.5px; color: var(--sub); margin-top: 4px; }
 .foot { text-align: center; color: var(--sub); font-size: 12.5px; padding: 0 0 calc(24px + env(safe-area-inset-bottom)); }
 </style>
 </head>
@@ -126,6 +134,7 @@ textarea { width: 100%; min-height: 90px; border-radius: 10px; border: 1px solid
       <button type="button" role="tab" data-tab="review" aria-selected="true">審稿<span class="badge" id="badge" hidden></span></button>
       <button type="button" role="tab" data-tab="sched" aria-selected="false">行程</button>
       <button type="button" role="tab" data-tab="stats" aria-selected="false">成效</button>
+      <button type="button" role="tab" data-tab="ask" aria-selected="false">交代</button>
     </div>
   </div>
 </div>
@@ -135,6 +144,12 @@ textarea { width: 100%; min-height: 90px; border-radius: 10px; border: 1px solid
   <section class="pane" id="pane-review"><div id="list"></div></section>
   <section class="pane" id="pane-sched" hidden><div id="sched"></div></section>
   <section class="pane" id="pane-stats" hidden><div id="stats"></div></section>
+  <section class="pane" id="pane-ask" hidden>
+    <div class="card"><h2>交代小秘</h2><div class="meta">想改排程、問成效、指定下一篇題目…打一句話就好。每天 12:20、20:40 處理，結果會傳 LINE 也會顯示在下面。</div>
+      <textarea id="askText" placeholder="例如：下一篇做 iOS 27.2 耗電／11/5 的影片改到 11/6／這週哪篇最多人看？"></textarea>
+      <div class="btns"><button type="button" class="okb" id="askSend">送出</button></div><div class="msg" id="askMsg"></div></div>
+    <div id="askList"></div>
+  </section>
 </main>
 <div class="foot" id="upd"></div>
 
@@ -156,8 +171,9 @@ const reviews = () => (data.reviews || []).filter((r) => r.id !== '__schedule__'
 
 function setTab(t) {
   document.querySelectorAll('.tabs button').forEach((b) => b.setAttribute('aria-selected', String(b.dataset.tab === t)));
-  ['review', 'sched', 'stats'].forEach((k) => { $('#pane-' + k).hidden = k !== t; });
+  ['review', 'sched', 'stats', 'ask'].forEach((k) => { $('#pane-' + k).hidden = k !== t; });
   try { sessionStorage.setItem('chiu189_tab', t); } catch (e) {}
+  if (t === 'ask' && !askLoaded) { askLoaded = true; loadAsk(); }
 }
 
 async function load() {
@@ -187,6 +203,8 @@ function renderToday() {
     ${td.length ? td.map(line).join('') : '<div class="none">今天沒有排發文</div>'}
     <div class="hd" style="margin-top:10px">明天 ${tm.getMonth() + 1}/${tm.getDate()}（${WD[tm.getDay()]}）</div>
     ${tmr.length ? tmr.map(line).join('') : '<div class="none">明天還沒有排</div>'}`;
+  const fails = items.filter((x) => x.ck === 'fail');
+  if (fails.length) $('#today').innerHTML += `<div class="alert">⚠️ ${fails.length} 篇沒發出去：${fails.map((x) => esc(x.at.slice(5, 10).replace('-', '/') + ' ' + clean(x.t).slice(0, 14))).join('、')}<br>到「交代」打「補發」，或叫 Claude 處理。</div>`;
   const b = $('#badge'); b.hidden = !waiting; b.textContent = waiting;
 }
 
@@ -199,10 +217,10 @@ function renderReview() {
     const caps = r.caps || {}, n = (r.imgs || []).length;
     return `<article class="card" data-i="${i}">
       <h2>${esc(clean(r.title))}</h2>
-      <div class="meta">預計 <b>${esc(r.when)}</b>・FB／IG／Threads</div>
+      <div class="meta">預計 <b>${esc(r.when)}</b>・${r.kind === 'vid' ? '影片・FB／IG' : 'FB／IG／Threads'}</div>
       ${tag}
       <div class="imgs">${(r.imgs || []).map((src, k) => `<img src="${esc(src)}" alt="第 ${k + 1} 張圖" loading="lazy">`).join('')}</div>
-      ${n > 1 ? `<div class="hint">共 ${n} 張，左右滑 →</div>` : ''}
+      ${n > 1 ? `<div class="hint">${r.kind === 'vid' ? `影片畫面 ${n} 張` : `共 ${n} 張`}，左右滑 →</div>` : ''}
       <ul class="check">${(r.check || []).map((c) => `<li>${esc(c)}</li>`).join('')}</ul>
       ${['FB', 'IG', 'Threads'].filter((k) => caps[k]).filter((k, j, a) => !(k === 'IG' && caps.IG === caps.FB)).map((k) => `<details><summary>${k === 'FB' && caps.IG === caps.FB ? 'FB／IG' : k} 文案</summary><pre>${esc(caps[k])}</pre></details>`).join('')}
       <div class="btns"><button type="button" class="okb" data-act="ok"${st === 'ok' ? ' disabled' : ''}>${st === 'ok' ? '已通過 ✓' : '通過'}</button><button type="button" data-act="fix">要改</button></div>
@@ -228,7 +246,8 @@ function renderSched() {
     return `<div class="dayhd${isT ? ' is-today' : ''}">${d.getMonth() + 1}/${d.getDate()}（${WD[d.getDay()]}）${isT ? '・今天' : ''}</div><div class="list">${days[k].map((x) => {
       const plats = x.p.filter((v) => v !== 'Threads').join('・');
       const t = x.k === 'img' && x.th ? th[x.th] || ['Threads', ''] : null;
-      return `<div class="it${x.done ? ' done' : ''}"><span class="tm">${esc(x.at.slice(11, 16))}</span><div class="bd"><div class="tt"><span class="dot ${x.k}"></span>${esc(clean(x.t))}</div><div class="pl"><span>${esc(plats)}</span>${t ? `<span class="${t[1]}">${t[0]}</span>` : ''}${x.done ? '<span>已過</span>' : ''}</div></div></div>`;
+      const ck = x.ck === 'ok' ? '<span class="ck-ok">✅ 確認有發</span>' : x.ck === 'fail' ? `<span class="ck-bad">❌ 沒發出去：${esc(x.ckn || '')}</span>` : (x.done ? '<span>已過・等確認</span>' : '');
+      return `<div class="it${x.done && x.ck !== 'fail' ? ' done' : ''}"><span class="tm">${esc(x.at.slice(11, 16))}</span><div class="bd"><div class="tt"><span class="dot ${x.k}"></span>${esc(clean(x.t))}</div><div class="pl"><span>${esc(plats)}</span>${t ? `<span class="${t[1]}">${t[0]}</span>` : ''}${ck}</div></div></div>`;
     }).join('')}</div>`;
   }).join('') + (hiddenN ? `<button class="more" type="button" id="more">再看後面 ${hiddenN} 天</button>` : '');
 }
@@ -293,6 +312,31 @@ $('#list').addEventListener('click', (e) => {
 });
 $('#sched').addEventListener('click', (e) => { if (e.target.id === 'more') { showAll = true; renderSched(); } });
 document.querySelector('.tabs').addEventListener('click', (e) => { const b = e.target.closest('button[data-tab]'); if (b) { setTab(b.dataset.tab); window.scrollTo({ top: 0 }); } });
+async function askApi(body) {
+  const pin = getPin() || askPin(); if (!pin) return null;
+  const res = await fetch(API, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(Object.assign({ pin }, body)) });
+  const j = await res.json();
+  if (!j.ok && j.error === 'pin') { setPin(''); throw new Error('pin'); }
+  if (!j.ok) throw new Error(j.error);
+  return j;
+}
+function renderAsk(list) {
+  const st = { new: '等處理', done: '已處理', need_you: '要你處理' };
+  $('#askList').innerHTML = (list || []).map((q) => `<div class="req"><div class="q">${esc(q.text)}</div>${q.reply ? `<div class="a">${esc(q.reply)}</div>` : ''}<div class="s">${new Date(q.at).toLocaleString('zh-TW', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false })}・${st[q.status] || q.status}</div></div>`).join('') || '<div class="empty">還沒有交代過事情</div>';
+}
+async function loadAsk() {
+  $('#askList').innerHTML = '<div class="empty">載入中…</div>';
+  try { const j = await askApi({ a: 'my_requests' }); if (j) renderAsk(j.requests); else $('#askList').innerHTML = '<div class="empty">輸入審稿密碼後才看得到</div>'; }
+  catch (e) { $('#askList').innerHTML = e.message === 'pin' ? '<div class="empty">密碼不對，切換分頁再試一次</div>' : '<div class="empty">讀不到，請稍後再試</div>'; }
+}
+$('#askSend').addEventListener('click', async () => {
+  const t = $('#askText').value.trim(); if (!t) { $('#askText').focus(); return; }
+  $('#askSend').disabled = true; $('#askMsg').textContent = '送出中…';
+  try { const j = await askApi({ a: 'ask', text: t }); if (j) { $('#askText').value = ''; $('#askMsg').textContent = '收到！12:20 或 20:40 處理，結果會傳 LINE。'; renderAsk(j.requests); } else $('#askMsg').textContent = ''; }
+  catch (e) { $('#askMsg').textContent = e.message === 'pin' ? '密碼不對，請再按一次。' : '沒送出去，請再按一次。'; }
+  $('#askSend').disabled = false;
+});
+let askLoaded = false;
 $('#reload').addEventListener('click', () => { $('#today').innerHTML = '<div class="hd">載入中…</div>'; load(); });
 load();
 </script>
