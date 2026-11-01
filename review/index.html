@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex,nofollow">
+<meta http-equiv="Cache-Control" content="no-cache">
 <title>CHIU189 審稿行程</title>
 <style>
 :root {
@@ -74,7 +75,7 @@ textarea { width: 100%; min-height: 90px; border-radius: 10px; border: 1px solid
   <h3 class="sec">📅 接下來的行程</h3>
   <div id="sched"></div>
 </main>
-<div class="foot"><span id="upd"></span> · <button id="reload" type="button">重新整理</button> · <button id="resetpin" type="button">換審稿密碼</button></div>
+<div class="foot"><span id="upd"></span> · <button id="reload" type="button">重新整理</button></div>
 <script>
 const API = 'https://script.google.com/macros/s/AKfycbwcStF05qkS0cKT8l6PoTTzj21ijwnnyyJkoSDqPYZjDxFVG6EadZCwCp2GrKpV7wNSow/exec';
 const $ = (s) => document.querySelector(s);
@@ -167,7 +168,6 @@ $('#list').addEventListener('click', (e) => {
   else if (act === 'clear') decide(card, 'clear');
 });
 $('#reload').addEventListener('click', load);
-$('#resetpin').addEventListener('click', () => { setPin(''); askPin(); });
 load();
 </script>
 </body>
