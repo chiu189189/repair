@@ -59,6 +59,14 @@ textarea { width: 100%; min-height: 90px; border-radius: 10px; border: 1px solid
 .it .pl { font-size: 12.5px; color: var(--sub); margin-top: 2px; }
 .it.done { opacity: .55; }
 .kind { font-size: 12px; font-weight: 700; border-radius: 6px; padding: 1px 6px; margin-right: 4px; background: var(--warnbg); color: var(--ink); }
+.kpis { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin: 8px 0 4px; }
+.kpi { background: var(--bg); border-radius: 10px; padding: 8px 10px; }
+.kpi b { display: block; font-size: 22px; line-height: 1.2; font-variant-numeric: tabular-nums; }
+.kpi span { font-size: 12.5px; color: var(--sub); }
+.note2 { font-size: 13px; color: var(--sub); margin-top: 6px; }
+.tp { display: flex; justify-content: space-between; gap: 10px; padding: 7px 0; border-top: 1px solid var(--line); font-size: 14.5px; }
+.tp a { color: var(--ink); text-decoration: none; overflow-wrap: anywhere; }
+.tp .v { font-weight: 700; white-space: nowrap; font-variant-numeric: tabular-nums; }
 .empty { text-align: center; color: var(--sub); padding: 48px 0; }
 .foot { text-align: center; color: var(--sub); font-size: 13px; margin-top: 24px; }
 .foot button { background: none; border: 0; color: var(--sub); text-decoration: underline; font: inherit; cursor: pointer; }
@@ -74,6 +82,8 @@ textarea { width: 100%; min-height: 90px; border-radius: 10px; border: 1px solid
   <div id="list"><div class="empty">載入中…</div></div>
   <h3 class="sec">📅 接下來的行程</h3>
   <div id="sched"></div>
+  <h3 class="sec">📈 成效</h3>
+  <div id="stats"></div>
 </main>
 <div class="foot"><span id="upd"></span> · <button id="reload" type="button">重新整理</button></div>
 <script>
@@ -115,8 +125,40 @@ function renderSched() {
   }).join('') + `<div class="pl" style="text-align:center;color:var(--sub);font-size:13px">行程更新於 ${esc((sc.updated || '').replace('T', ' '))}</div>`;
 }
 
+function renderStats() {
+  const sc = (data.reviews || []).find((r) => r.id === '__schedule__');
+  const st = (sc && sc.stats) || {};
+  const g = st.gbp, t = st.threads;
+  const n = (x) => (x == null ? '—' : Number(x).toLocaleString('zh-TW'));
+  let h = '';
+  if (g) {
+    const m = (g.months || []).slice(-1)[0] || {}, mm = m.m ? +m.m.slice(5) : '';
+    const top = (g.platform || [])[0];
+    h += `<section class="card"><h2>Google 商家（客人怎麼找到店）</h2>
+      <div class="kpis"><div class="kpi"><b>${g.rating ? g.rating.toFixed(1) + ' ★' : '—'}</b><span>${n(g.reviews)} 則評論${g.unreplied ? `・${g.unreplied} 則未回` : ''}</span></div>
+      <div class="kpi"><b>${n(m.dirs)}</b><span>${mm} 月查路線</span></div>
+      <div class="kpi"><b>${n(m.calls)}</b><span>${mm} 月打電話</span></div></div>
+      <div class="note2">${n(g.views)} 人看過商家檔案（${esc(g.viewsRange || '')}）${top ? `，最多來自${esc(top[0])}（${top[1]}%）` : ''}</div>
+      ${(g.terms || []).length ? `<div class="note2">大家搜尋：${g.terms.map(esc).join('、')}</div>` : ''}
+      <div class="note2">資料日期 ${esc(g.asOf || '')}・每週一更新</div></section>`;
+  }
+  if (t) {
+    const ps = (t.posts || []).slice().sort((a, b) => b.views - a.views);
+    const tot = ps.reduce((a, b) => a + (b.views || 0), 0);
+    const hist = t.followerHist || [], grow = hist.length > 1 ? t.followers - hist[Math.max(0, hist.length - 8)][1] : null;
+    h += `<section class="card"><h2>Threads（${esc(t.range || '最近 7 天')}）</h2>
+      <div class="kpis"><div class="kpi"><b>${n(t.followers)}</b><span>粉絲${grow != null ? `（7 天 ${grow >= 0 ? '+' : ''}${grow}）` : ''}</span></div>
+      <div class="kpi"><b>${n(ps.length)}</b><span>則貼文</span></div>
+      <div class="kpi"><b>${n(tot)}</b><span>總觀看</span></div></div>
+      ${ps.map((p) => `<div class="tp"><a href="${esc(p.url)}" target="_blank" rel="noopener">${esc(p.t)}</a><span class="v">${n(p.views)} 次</span></div>`).join('')}
+      <div class="note2">更新 ${esc(t.asOf || '')}・每天早上更新</div></section>`;
+  }
+  $('#stats').innerHTML = h || '<div class="empty">還沒有成效資料</div>';
+}
+
 function render() {
   renderSched();
+  renderStats();
   const rv = (data.reviews || []).filter((r) => r.id !== '__schedule__');
   if (!rv.length) { $('#list').innerHTML = '<div class="empty">目前沒有要審的文章 ✨<br>新稿每晚 8:10 做好會傳 LINE 通知你。</div>'; return; }
   $('#list').innerHTML = rv.map((r, i) => {
