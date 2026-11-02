@@ -6,7 +6,7 @@ const SITE = {
   EMAIL: "service@chiu189.com.tw", // 公司 email：網域開通後填，例如 "service@chiu189.com.tw"；空白就不顯示
   ADDRESS: "臺中市龍井區東海里遠東街189號",
   PHONE: "0905-584-846",
-  V: 21,                        // 改版時加一，避免手機看到舊頁面
+  V: 22,                        // 改版時加一，避免手機看到舊頁面
 };
 (function(){
   const el = document.getElementById("sitefoot");
@@ -40,7 +40,8 @@ const SITE = {
     '<p class="sf-copy">© ' + new Date().getFullYear() + ' ' + SITE.BIZ_NAME + '</p>';
 
   // 維修價目、舊機回收上面已經有地址電話卡片 → 這裡只放連結、商號、聲明，不重複
-  if(document.getElementById("foot")){
+  // 頁面上已經有店家資訊表（首頁、關於本店）也一樣只放簡短版
+  if(document.getElementById("foot") || document.querySelector("table.biz")){
     el.classList.add("compact");
     el.innerHTML = links + '<p class="sf-line" style="margin-top:12px">' + biz + '</p>' + tail;
     return;
