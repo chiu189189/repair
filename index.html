@@ -47,8 +47,12 @@
     background:var(--accent-soft);color:var(--accent);font-weight:700;margin-bottom:6px}
   .flow li b{display:block;color:var(--ink);font-size:14px}
   @media (max-width:640px){.flow{grid-template-columns:1fr 1fr}}
-  .trust{display:flex;flex-wrap:wrap;gap:8px}
-  .trust span{font-size:13px;padding:7px 12px;border-radius:999px;background:var(--card);border:1px solid var(--line)}
+  .trust{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+  .trust>*{display:flex;flex-direction:column;gap:2px;padding:12px;border-radius:14px;background:var(--card);border:1px solid var(--line);color:var(--ink);text-decoration:none}
+  .trust .ic{font-size:22px;line-height:1.2}
+  .trust b{font-size:14px}
+  .trust small{font-size:12.5px;color:var(--muted);line-height:1.5}
+  @media (max-width:640px){.trust{grid-template-columns:1fr 1fr}}
   /* 店家資訊 */
   .visit{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:16px;border-radius:16px;background:var(--card);border:1px solid var(--line)}
   .visit .row{font-size:15px;line-height:1.6}
@@ -136,7 +140,10 @@
 
   <h2 class="sec">為什麼選 CHIU189</h2>
   <div class="trust">
-    <span>⭐ Google 評價 5.0</span><span>🧾 先報價、同意才修</span><span>👀 維修現場透明</span><span>🔬 顯微鏡、微焊接設備</span><span>🏠 店內維修不外送</span>
+    <a href="https://maps.app.goo.gl/GdYtfryHyToNYyn66" target="_blank" rel="noopener"><span class="ic">⭐</span><b>Google 評價 5.0</b><small>點我看客人評論</small></a>
+    <div><span class="ic">👀</span><b>維修現場透明</b><small>多數維修可在旁邊看</small></div>
+    <div><span class="ic">🔬</span><b>專業設備</b><small>顯微鏡、微焊接設備</small></div>
+    <div><span class="ic">🏠</span><b>店內維修</b><small>手機不外送，安心</small></div>
   </div>
 
   <h2 class="sec">來店資訊</h2>
