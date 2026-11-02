@@ -279,6 +279,18 @@ function renderStats() {
       ${ps.map((p) => `<div class="tp"><div style="flex:1;min-width:0"><a href="${esc(p.url)}" target="_blank" rel="noopener">${esc(p.t)}</a><div class="bar"><i style="width:${Math.round((p.views || 0) / mx * 100)}%"></i></div></div><span class="v">${n(p.views)}</span></div>`).join('')}
       <div class="note2">更新 ${esc(t.asOf || '')}・每天早上更新</div></section>`;
   }
+  const w = st.site;
+  if (w) {
+    const mx = Math.max(1, ...w.daily.map((d) => d[1]));
+    const diff = (a, b) => (b ? `（前 7 天 ${n(b)}）` : '');
+    h = `<section class="card"><h2>報價網站</h2><div class="meta">最近 7 天・不記錄個人資料</div>
+      <div class="kpis"><div class="kpi"><b>${n(w.view)}</b><span>人瀏覽${diff(w.view, w.viewPrev)}</span></div>
+      <div class="kpi"><b>${n(w.book)}</b><span>人按預約${diff(w.book, w.bookPrev)}</span></div>
+      <div class="kpi"><b>${w.view ? Math.round(w.book / w.view * 100) + '%' : '—'}</b><span>預約率</span></div></div>
+      <div style="display:flex;gap:6px;align-items:flex-end;height:64px;margin:10px 0 4px">${w.daily.map((d) => `<div style="flex:1;text-align:center;font-size:11px;color:var(--sub)"><div style="background:var(--accent);border-radius:4px 4px 0 0;height:${Math.max(2, Math.round(d[1] / mx * 44))}px;margin-bottom:3px" title="${d[1]}"></div>${esc(d[0].replace('-', '/'))}</div>`).join('')}</div>
+      ${w.top.length ? `<div class="sub-h">最常查的機型</div>` + w.top.map((m) => `<div class="tp"><span>${esc(m[0])}</span><span class="v">${n(m[1])} 次</span></div>`).join('') : '<div class="note2">還沒有人查機型</div>'}
+      <div class="note2">更新 ${esc(w.asOf || '')}</div></section>` + h;
+  }
   $('#stats').innerHTML = h || '<div class="empty">還沒有成效資料</div>';
 }
 
