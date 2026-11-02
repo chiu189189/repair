@@ -259,6 +259,9 @@ function build(csv){
   return out;
 }
 
+// 匿名計數（不記個資）：打開網站、查哪個機型、按預約 → 審稿頁「成效」顯示
+const HIT_URL = "https://script.google.com/macros/s/AKfycbwcStF05qkS0cKT8l6PoTTzj21ijwnnyyJkoSDqPYZjDxFVG6EadZCwCp2GrKpV7wNSow/exec";
+function hit(t, m){ try { const k = "chiu189_hit_" + t + (m || ""); if (sessionStorage.getItem(k)) return; sessionStorage.setItem(k, 1); navigator.sendBeacon(HIT_URL, new Blob([JSON.stringify({a: "hit", t: t, m: m || ""})], {type: "text/plain"})); } catch (e) {} }
 function fmt(p){ return /^\d+$/.test(p) ? "NT$ "+Number(p).toLocaleString() : isMasked(p) ? "NT$ "+p : p; }
 // 遮過的價格（3,••• 或 8••）：只露第一位數，完整價格到店報價
 function isMasked(p){ return /^\d+(,•••|•+)$/.test(p); }
@@ -307,7 +310,7 @@ function renderModels(){
     const lowItem=data[b][m].reduce((a,x)=>approx(x.price)<approx(a?a.price:"")?x:a,null);
     bt.innerHTML=`<span></span><small>${lowItem&&isFinite(approx(lowItem.price))?fmt(lowItem.price)+" 起":"檢測後報價"}</small>`;
     bt.firstChild.textContent=m;
-    bt.onclick=()=>{ brand=b; model=m; renderTabs(); renderModels(); renderPanel();
+    bt.onclick=()=>{ brand=b; model=m; hit("model", m); renderTabs(); renderModels(); renderPanel();
       if(innerWidth<=760) $("#panel").scrollIntoView({behavior:"smooth",block:"start"}); };
     li.append(bt); $("#models").append(li);
   });
@@ -381,6 +384,7 @@ function sendLine(){
   const total=masked?"\n合計：到店確認報價":sum?`\n合計：約 ${fmt(String(sum))}`+(tbd?"（另有檢測後報價項目）":""):"";
   const text=`【預約維修】\n姓名：${name}\n電話：${phone}\n時間：${$("#when").value.trim()||"未指定"}`+
     (items?`\n項目：\n${items}${total}`:"")+(memo?`\n說明：${memo}`:"");
+  hit("book");
   // 用按鈕跳轉、不放 line.me 連結在頁面上，避免被手機的廣告阻擋隱藏
   location.href = CONFIG.LINE_OA_ID
     ? `https://line.me/R/oaMessage/${encodeURIComponent(CONFIG.LINE_OA_ID)}/?${encodeURIComponent(text)}`
@@ -406,6 +410,7 @@ $("#fMap").href=CONFIG.MAP_URL;
 $("#fTel").href="tel:"+CONFIG.PHONE.replace(/[^\d+]/g,"");
 syncPicked();
 load();
+hit("view");
 </script>
 <script src="site.js?v=20"></script>
 </body>
