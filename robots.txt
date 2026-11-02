@@ -1,0 +1,7 @@
+User-agent: *
+Disallow: /review/
+Disallow: /pos.html
+Disallow: /r.html
+Disallow: /b.html
+Disallow: /threads/
+Sitemap: https://chiu189.com.tw/sitemap.xml

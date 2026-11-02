@@ -3,10 +3,10 @@ const SITE = {
   SHOP: "CHIU189 手機維修中心",
   BIZ_NAME: "小邱通訊企業社",   // 商業登記名稱
   TAX_ID: "61065710",           // 統一編號：填了才會顯示
-  EMAIL: "",                    // 公司 email：網域開通後填，例如 "service@chiu189.com.tw"；空白就不顯示
+  EMAIL: "service@chiu189.com.tw", // 公司 email：網域開通後填，例如 "service@chiu189.com.tw"；空白就不顯示
   ADDRESS: "臺中市龍井區東海里遠東街189號",
   PHONE: "0905-584-846",
-  V: 20,                        // 改版時加一，避免手機看到舊頁面
+  V: 21,                        // 改版時加一，避免手機看到舊頁面
 };
 (function(){
   const el = document.getElementById("sitefoot");

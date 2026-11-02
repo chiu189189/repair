@@ -27,8 +27,8 @@
     font-family:-apple-system,BlinkMacSystemFont,"PingFang TC","Noto Sans TC","Microsoft JhengHei",sans-serif;
     line-height:1.5;-webkit-text-size-adjust:100%}
   .wrap{max-width:1040px;margin:0 auto;padding:24px 16px 120px}  /* 跟維修頁同寬 */
-  .nav{display:flex;gap:8px;margin-bottom:18px;max-width:520px}
-  .nav a{flex:1;text-align:center;padding:10px;border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--ink);text-decoration:none;font-size:15px}
+  .nav{display:flex;gap:6px;margin-bottom:18px;max-width:560px}
+  .nav a{flex:1;text-align:center;padding:10px 4px;border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--ink);text-decoration:none;font-size:14px}
   .nav a.on{background:var(--ink);color:var(--bg);border-color:var(--ink);font-weight:700}
   header .eyebrow{color:var(--accent);font-size:13px;font-weight:700;letter-spacing:.05em}
   header h1{margin:4px 0 6px;font-size:26px}
@@ -84,7 +84,7 @@
 </head>
 <body>
 <div class="wrap">
-  <nav class="nav"><a href="./?v=20">維修價目</a><a href="recycle.html?v=20" class="on">舊機回收</a><a href="about.html?v=20">關於本店</a></nav>
+  <nav class="nav"><a href="./?v=21">首頁</a><a href="quote.html?v=21">維修價目</a><a href="recycle.html?v=21" class="on">舊機回收</a><a href="about.html?v=21">關於本店</a></nav>
   <header>
     <div class="eyebrow">CHIU189 手機維修中心</div>
     <h1>舊機回收估價</h1>
@@ -394,6 +394,6 @@ $("#fMap").href=CONFIG.MAP_URL;
 $("#fTel").href="tel:"+CONFIG.PHONE.replace(/[^\d+]/g,"");
 load();
 </script>
-<script src="site.js?v=20"></script>
+<script src="site.js?v=21"></script>
 </body>
 </html>
