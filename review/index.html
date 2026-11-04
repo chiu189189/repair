@@ -305,10 +305,21 @@ function renderStats() {
       <div class="note2">更新 ${esc(w.asOf || '')}</div></section>` + h;
   }
   const gl = (u, t, d) => `<a href="${u}" target="_blank" rel="noopener" style="display:block;flex:1;min-width:140px;padding:12px 14px;border-radius:12px;border:1px solid var(--line);background:var(--bg);color:inherit;text-decoration:none"><b style="display:block;font-size:15px">${t} ↗</b><span style="font-size:12px;color:var(--sub)">${d}</span></a>`;
-  const gcard = `<section class="card"><h2>官網搜尋與流量</h2><div class="meta">chiu189.com.tw・點了直接打開</div>
+  const wb = st.web || {}, sc = wb.search || {};
+  const wmx = Math.max(1, ...(wb.daily || []).map((d) => d[1]));
+  const gcard = `<section class="card"><h2>官網搜尋與流量</h2><div class="meta">chiu189.com.tw・最近 7 天${wb.now ? `・<b style="color:var(--ok,#06c755);display:inline">現在 ${n(wb.now)} 人在看</b>` : ''}</div>
+      ${wb.asOf ? `<div class="kpis"><div class="kpi"><b>${n(wb.users)}</b><span>人逛網站</span></div>
+      <div class="kpi"><b>${n(wb.phone)}</b><span>按打電話</span></div>
+      <div class="kpi"><b>${n(wb.line)}</b><span>按 LINE</span></div></div>
+      ${(wb.daily || []).length ? `<div style="display:flex;gap:6px;align-items:flex-end;height:64px;margin:10px 0 4px">${wb.daily.map((d) => `<div style="flex:1;text-align:center;font-size:11px;color:var(--sub)"><div style="background:var(--accent);border-radius:4px 4px 0 0;height:${Math.max(2, Math.round(d[1] / wmx * 44))}px;margin-bottom:3px"></div>${esc(d[0])}</div>`).join('')}</div>` : ''}
+      ${(wb.sources || []).length ? `<div class="sub-h">從哪裡來</div>` + wb.sources.map((x) => `<div class="tp"><span>${esc(x[0])}</span><span class="v">${n(x[1])} 次</span></div>`).join('') : ''}
+      <div class="sub-h">Google 搜尋${sc.range ? `（${esc(sc.range)}）` : ''}</div>
+      ${sc.error ? `<div class="note2">Search Console 暫時讀不到</div>` : `<div class="tp"><span>出現在搜尋結果</span><span class="v">${n(sc.impressions)} 次</span></div><div class="tp"><span>點進網站</span><span class="v">${n(sc.clicks)} 次</span></div>
+      ${(sc.queries || []).length ? `<div class="note2">大家搜尋：${sc.queries.map((q) => esc(q[0]) + `（${n(q[1])}）`).join('、')}</div>` : '<div class="note2">還沒有搜尋資料（Search Console 會晚 2～3 天）</div>'}`}
+      <div class="note2">更新 ${esc(wb.asOf)}・每 30 分鐘・GA 數字本身會晚幾小時</div>` : '<div class="note2">還沒有資料，電腦下次同步後會出現</div>'}
       <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px">
-      ${gl('https://analytics.google.com/analytics/web/#/a414660185p562343060/reports/intelligenthome', 'Google Analytics', '幾個人逛網站、按幾次電話／LINE')}
-      ${gl('https://search.google.com/search-console/performance/search-analytics?resource_id=https%3A%2F%2Fchiu189.com.tw%2F', 'Search Console', '客人搜什麼字找到你')}
+      ${gl('https://analytics.google.com/analytics/web/#/a414660185p562343060/reports/intelligenthome', 'Google Analytics', '看更多細節')}
+      ${gl('https://search.google.com/search-console/performance/search-analytics?resource_id=https%3A%2F%2Fchiu189.com.tw%2F', 'Search Console', '看更多搜尋字')}
       </div></section>`;
   $('#stats').innerHTML = gcard + h;
 }
