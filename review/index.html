@@ -191,7 +191,7 @@ async function load(quiet) {
     data = await r.json();
     render();
     const s = sched();
-    $('#upd').textContent = `頁面更新 ${new Date().toLocaleString('zh-TW', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false })}` + (s.updated ? `・行程資料 ${s.updated.slice(5).replace('-', '/').replace('T', ' ')}` : '');
+    $('#upd').textContent = `頁面更新 ${new Date().toLocaleString('zh-TW', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false })}` + (s.updated ? `・行程資料 ${s.updated.slice(5).replace('-', '/').replace('T', ' ')}（電腦開著時每 15 分鐘同步）` : '');
     let saved = ''; try { saved = sessionStorage.getItem('chiu189_tab') || ''; } catch (e) {}
     const waiting = reviews().filter((x) => !(data.decisions || {})[x.id]).length;
     if (firstLoad) { setTab(saved || (waiting ? 'review' : 'sched')); firstLoad = false; }
