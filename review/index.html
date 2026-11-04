@@ -308,7 +308,7 @@ function renderStats() {
         const f = w.funnel;
         if (f && f[0]) {
           const st = [['打開報價頁', f[0]], ['點機型', f[1]], ['加入維修項目', f[2]], ['按 LINE 預約', f[3]]];
-          o += `<div class="sub-h">客人走到哪一步</div>` + st.map(([t, v], i) => `<div class="tp"><div style="flex:1;min-width:0"><span>${t}</span><div class="bar"><i style="width:${Math.round((v || 0) / f[0] * 100)}%"></i></div></div><span class="v">${n(v)} 人${i ? `・${Math.round((v || 0) / f[0] * 100)}%` : ''}</span></div>`).join('');
+          o += `<div class="sub-h">客人走到哪一步${w.funnelFrom ? `（${esc(w.funnelFrom)} 起）` : ''}</div>` + st.map(([t, v], i) => `<div class="tp"><div style="flex:1;min-width:0"><span>${t}</span><div class="bar"><i style="width:${Math.round((v || 0) / f[0] * 100)}%"></i></div></div><span class="v">${n(v)} 人${i ? `・${Math.round((v || 0) / f[0] * 100)}%` : ''}</span></div>`).join('');
         }
         o += (w.items || []).length ? `<div class="sub-h">最想修的（機型＋項目，可參考備料）</div>` + w.items.map(row).join('') : '';
         o += w.top.length ? `<div class="sub-h">最常查的機型（↑↓ 跟上週比）</div>` + w.top.map(row).join('') : '<div class="note2">還沒有人查機型</div>';
