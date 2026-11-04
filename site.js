@@ -6,7 +6,7 @@ const SITE = {
   EMAIL: "service@chiu189.com.tw", // 公司 email：網域開通後填，例如 "service@chiu189.com.tw"；空白就不顯示
   ADDRESS: "臺中市龍井區東海里遠東街189號",
   PHONE: "0905-584-846",
-  V: 25,                        // 改版時加一，避免手機看到舊頁面
+  V: 26,                        // 改版時加一，避免手機看到舊頁面
   GA_ID: "G-KX7S54506Z",                  // Google Analytics 4 評估 ID（G-XXXXXXX）；空白就不載入
 };
 (function(){

@@ -15,6 +15,7 @@ body{margin:0;background:var(--bg);color:var(--ink);
 .nav{display:flex;gap:6px;margin-bottom:18px;max-width:560px}
 .nav a{flex:1;text-align:center;padding:10px 4px;border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--ink);text-decoration:none;font-size:14px;line-height:1.5}
 .nav a.on{background:var(--ink);color:var(--bg);border-color:var(--ink);font-weight:700}
+@media (max-width:420px){.nav a{font-size:13px;padding:10px 2px}}
 header .eyebrow{color:var(--accent);font-size:13px;font-weight:700;letter-spacing:.05em}
 header h1{margin:4px 0 6px;font-size:26px;line-height:1.35}
 header p{margin:0;color:var(--muted);font-size:14px}
