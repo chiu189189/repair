@@ -211,7 +211,7 @@ const reviews = () => (data.reviews || []).filter((r) => r.id !== '__schedule__'
 function setTab(t) {
   document.querySelectorAll('.tabs button').forEach((b) => b.setAttribute('aria-selected', String(b.dataset.tab === t)));
   ['review', 'sched', 'stats', 'ask'].forEach((k) => { $('#pane-' + k).hidden = k !== t; });
-  $('#today').hidden = t !== 'sched';
+  $('#today').hidden = t !== 'sched' || !$('#today').dataset.has;
   try { sessionStorage.setItem('chiu189_tab', t); } catch (e) {}
   if (t === 'ask' && !askLoaded) { askLoaded = true; loadAsk(); }
 }
@@ -285,11 +285,10 @@ function renderToday() {
   const line = (x) => `<div class="row"><span class="tm">${esc(x.at.slice(11, 16))}</span><span class="dot ${x.k}"></span><span class="t">${esc(clean(x.t))}</span></div>`;
   const td = items.filter((x) => x.at.slice(0, 10) === tk), tmr = items.filter((x) => x.at.slice(0, 10) === mk);
   const waiting = reviews().filter((x) => !(data.decisions || {})[x.id]).length;
-  $('#today').innerHTML = `<div class="hd">今天 ${now.getMonth() + 1}/${now.getDate()}（${WD[now.getDay()]}）${waiting ? `・<b style="color:var(--fix)">${waiting} 篇等你審</b>` : '・沒有要你審的'}</div>
-    ${td.length ? td.map(line).join('') : '<div class="none">今天沒有排發文</div>'}
-    <div class="hd" style="margin-top:10px">明天 ${tm.getMonth() + 1}/${tm.getDate()}（${WD[tm.getDay()]}）</div>
-    ${tmr.length ? tmr.map(line).join('') : '<div class="none">明天還沒有排</div>'}`;
+  // 2026-11-04 用戶：行程重複看兩次 → 不再列今天／明天，下面的行程表就有；只留沒發出去的警告
+  $('#today').innerHTML = '';
   const fails = items.filter((x) => x.ck === 'fail');
+  $('#today').dataset.has = fails.length ? '1' : '';
   if (fails.length) $('#today').innerHTML += `<div class="alert">⚠️ ${fails.length} 篇沒發出去：${fails.map((x) => esc(x.at.slice(5, 10).replace('-', '/') + ' ' + clean(x.t).slice(0, 14))).join('、')}<br>到「交代」打「補發」，或叫 Claude 處理。</div>`;
   const b = $('#badge'); b.hidden = !waiting; b.textContent = waiting;
 }
@@ -297,8 +296,16 @@ function renderToday() {
 function renderReview() {
   const rv = reviews();
   if (!rv.length) { $('#list').innerHTML = '<div class="empty">目前沒有要審的文章 ✨<br>每晚 8:10 新稿做好會傳 LINE 通知你</div>'; return; }
-  $('#list').innerHTML = rv.map((r, i) => [r, i]).sort((a, b) => (b[0].id || '').startsWith('hot-') - (a[0].id || '').startsWith('hot-')).map(([r, i]) => {
+  $('#list').innerHTML = rv.map((r, i) => [r, i]).sort((a, b) => { const w = (r) => ((data.decisions || {})[r.id] ? 0 : 2) + ((r.id || '').startsWith('hot-') ? 1 : 0); return w(b[0]) - w(a[0]); }).map(([r, i]) => {
     const d = (data.decisions || {})[r.id], st = d ? d.decision : 'wait', hot = (r.id || '').startsWith('hot-');
+    if (st !== 'wait') {   // 2026-11-04 用戶：已處理的不要佔版面 → 縮成一行
+      const lab = hot ? (st === 'ok' ? '已通過・5 分鐘內發 Threads' : '不發・等系統拿掉') : (st === 'ok' ? '已通過・等自動排程' : '已退回・等 Claude 改');
+      return `<article class="card done" data-i="${i}" style="padding:12px 16px;opacity:.75">
+      <div style="display:flex;align-items:center;gap:10px"><div style="flex:1;min-width:0"><div style="font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${hot ? '🔥 ' : ''}${esc(clean(r.title))}</div>
+      <div class="meta" style="margin:2px 0 0">${st === 'ok' ? '✅' : '↩️'} ${lab}${hot ? '' : `・${esc(r.when)}`}</div></div>
+      <button type="button" class="ghost" data-act="clear" style="flex:none;padding:6px 10px;font-size:13px">撤回</button></div>
+      <div class="msg"></div></article>`;
+    }
     if (hot) { const th = (r.caps || {}).Threads || '';
       const htag = st === 'ok' ? '<span class="tag ok">已通過・5 分鐘內發 Threads</span>' : st === 'fix' ? '<span class="tag fix">不發・等系統拿掉</span>' : '<span class="tag wait">等你審・6 小時沒按自動作廢</span>';
       return `<article class="card" data-i="${i}" style="border:2px solid #ff6a3d">
@@ -457,7 +464,25 @@ function renderStats() {
   let all = ccard + gcard + h;
   let open = {}; try { open = JSON.parse(localStorage.getItem('chiu189_open') || '{}'); } catch (e) {}
   all = all.replace(/<section class="card"><h2>([^<]*)<\/h2>/g, (m0, t) => `<details class="card fold" data-k="${esc(t)}"${open[t] ? ' open' : ''}><summary><h2>${t}</h2></summary>`).replace(/<\/section>/g, '</details>');
-  $('#stats').innerHTML = sum + all;
+  // 2026-11-04 用戶：成效看不懂 → 上面只放 3 件事＋最紅 3 篇，白話；原本的細節收進最下面
+  const want = wb.asOf ? (wb.phone || 0) + (wb.line || 0) : null;
+  const tops = (thr.posts || []).slice().sort((a, b) => (b.views || 0) - (a.views || 0)).slice(0, 3);
+  const vs = (a, b, unit) => { if (a == null || b == null) return ''; const d = a - b; const [c, t] = d > 0 ? ['up', `↑ 比${unit}多 ${n(d)}`] : d < 0 ? ['down', `↓ 比${unit}少 ${n(-d)}`] : ['flat', `跟${unit}一樣`]; return `<span class="dlt ${c}" style="font-size:12.5px;white-space:nowrap">${t}</span>`; };
+  // 2026-11-04 用戶：順序＋文字排版 → 照客人路徑「看到 → 逛官網 → 來店」由上往下；比較放右上、說明一行
+  const big = (emo, title, num, unit, desc, cmp, sub) => `<div class="card" style="padding:14px 16px;margin-bottom:6px">
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:8px"><div style="font-size:15px;font-weight:700">${emo} ${title}</div>${cmp}</div>
+    <div style="font-size:34px;font-weight:800;line-height:1.15;margin-top:6px">${num}<span style="font-size:15px;font-weight:600;color:var(--sub);margin-left:6px">${unit}</span></div>
+    <div style="font-size:13px;color:var(--sub);margin-top:4px">${desc}</div>${sub ? `<div style="font-size:13px;color:var(--sub);margin-top:2px">${sub}</div>` : ''}</div>`;
+  const arrow = '<div style="text-align:center;color:var(--sub);font-size:13px;margin:0 0 6px">↓</div>';
+  const simple = `<div class="note2" style="margin:2px 2px 10px;font-size:14px;line-height:1.6">由上往下看：客人<b>看到我們</b> → <b>逛官網</b> → <b>來店</b></div>`
+    + big('👀', '看到我們的人', n(tv), '次觀看', `Threads 最近 7 天・粉絲 ${n(thr.followers)} 人`, '', '')
+    + arrow
+    + big('🌐', '逛官網的人', wb.asOf ? n(wb.users) : '—', '人', '最近 7 天・chiu189.com.tw', wb.asOf ? vs(wb.users, wb.usersPrev, '上週') : '', `其中 ${want == null ? '—' : n(want)} 人按了電話或 LINE`)
+    + arrow
+    + big('🏃', '想來店的人', n(curM.dirs || 0), '次查路線', `Google 地圖 ${curM.m ? +curM.m.slice(5) + ' 月' : ''}有人按「路線」找店`, curM.m && preM.m ? vs(curM.dirs, preM.dirs, '上月') : '', '')
+    + (tops.length ? `<div class="card" style="padding:14px 16px;margin:14px 0 10px"><div style="font-size:15px;font-weight:700;margin-bottom:4px">🔥 最近最紅的 ${tops.length} 篇</div><div style="font-size:12.5px;color:var(--sub);margin-bottom:4px">Threads・最近 7 天・點標題打開</div>${tops.map((p, k) => `<div class="tp"><div style="flex:1;min-width:0;line-height:1.45"><a href="${esc(p.url)}" target="_blank" rel="noopener">${k + 1}. ${esc(p.t)}</a></div><span class="v" style="white-space:nowrap">${n(p.views)}</span></div>`).join('')}</div>` : '');
+  const more = `<details class="card fold" data-k="__more"${open.__more ? ' open' : ''}><summary><h2>看詳細數據</h2></summary><div class="note2" style="margin-bottom:8px">比較複雜，平常不用看；要問什麼直接到「交代」問就好。</div>${sum}${all}</details>`;
+  $('#stats').innerHTML = simple + more;
   $('#stats').querySelectorAll('details.fold').forEach((d) => d.addEventListener('toggle', () => { try { const o = JSON.parse(localStorage.getItem('chiu189_open') || '{}'); o[d.dataset.k] = d.open; localStorage.setItem('chiu189_open', JSON.stringify(o)); } catch (e) {} }));
 }
 
