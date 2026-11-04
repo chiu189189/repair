@@ -14,7 +14,7 @@
 <meta property="og:type" content="website">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="theme-color" content="#17171A">
-<link rel="stylesheet" href="info.css?v=22">
+<link rel="stylesheet" href="info.css?v=24">
 <style>
   body{padding-bottom:calc(84px + env(safe-area-inset-bottom))}
   /* 開頭：一句話說清楚＋現在有沒有開 */
@@ -53,6 +53,13 @@
   .trust b{font-size:14px}
   .trust small{font-size:12.5px;color:var(--muted);line-height:1.5}
   @media (max-width:640px){.trust{grid-template-columns:1fr 1fr}}
+  /* 晶片級維修專長 */
+  .pro{display:block;padding:16px;border-radius:16px;background:var(--card);border:1px solid var(--line);color:var(--ink);text-decoration:none;border-left:4px solid var(--accent)}
+  .pro p{margin:0 0 10px;font-size:15px}
+  .pro ul{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;list-style:none;padding:0;margin:0}
+  .pro li{font-size:13.5px;font-weight:700;padding:9px 10px;border-radius:10px;background:var(--bg);border:1px solid var(--line)}
+  .pro em{display:block;margin-top:10px;font-style:normal;font-weight:700;color:var(--accent);font-size:14px}
+  @media (max-width:640px){.pro ul{grid-template-columns:1fr 1fr}}
   /* 店家資訊 */
   .visit{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:16px;border-radius:16px;background:var(--card);border:1px solid var(--line)}
   .visit .row{font-size:15px;line-height:1.6}
@@ -122,17 +129,24 @@
     <img src="shop-bench.jpg" alt="CHIU189 手機維修中心店內維修工作台" width="1000" height="750" fetchpriority="high">
   </section>
 
-  <h2 class="sec">你的手機怎麼了？<small>點一下看價目，時間是大約參考</small></h2>
+  <h2 class="sec">你的手機怎麼了？<small>點一下看說明，時間是大約參考</small></h2>
   <div class="grid">
-    <a class="tile" href="quote.html?v=21"><span class="ic">📱</span><b>螢幕破了</b><span>破裂、漏液、觸控失靈</span><em>約 1 小時</em></a>
-    <a class="tile" href="quote.html?v=21"><span class="ic">🔋</span><b>電池不耐用</b><span>掉電快、自動關機、膨脹</span><em>約 30 分鐘</em></a>
-    <a class="tile" href="quote.html?v=21"><span class="ic">🔌</span><b>充不了電</b><span>充電孔、排線、按鍵</span><em>約 1 小時</em></a>
-    <a class="tile" href="quote.html?v=21"><span class="ic">📷</span><b>相機異常</b><span>鏡頭破、黑畫面、對焦</span><em>約 1 小時</em></a>
-    <a class="tile" href="quote.html?v=21"><span class="ic">💧</span><b>泡水了</b><span>先關機別充電，越早送越好</span><em>約 1～3 天</em></a>
-    <a class="tile" href="quote.html?v=21"><span class="ic">🔬</span><b>不開機</b><span>主機板、無訊號、Face ID</span><em>檢測後報價</em></a>
+    <a class="tile" href="screen.html?v=24"><span class="ic">📱</span><b>螢幕破了</b><span>破裂、漏液、觸控失靈</span><em>約 1 小時</em></a>
+    <a class="tile" href="battery.html?v=24"><span class="ic">🔋</span><b>電池不耐用</b><span>掉電快、自動關機、膨脹</span><em>約 30 分鐘</em></a>
+    <a class="tile" href="charging.html?v=24"><span class="ic">🔌</span><b>充不了電</b><span>充電孔、排線、按鍵</span><em>約 1 小時</em></a>
+    <a class="tile" href="camera.html?v=24"><span class="ic">📷</span><b>相機異常</b><span>鏡頭破、黑畫面、對焦</span><em>約 1 小時</em></a>
+    <a class="tile" href="water.html?v=24"><span class="ic">💧</span><b>泡水了</b><span>先關機別充電，越早送越好</span><em>約 1～3 天</em></a>
+    <a class="tile" href="board.html?v=24"><span class="ic">🔬</span><b>不開機</b><span>主機板、無訊號、Face ID</span><em>檢測後報價</em></a>
   </div>
   <a class="more" href="quote.html?v=21">查所有機型價目 →</a>
   <p class="muted" style="margin:8px 2px 0">支援 iPhone、iPad，以及三星、OPPO、vivo、小米、Google、華碩等 Android 手機。</p>
+
+  <h2 class="sec">不開機、別家說沒救？<small>我們做主機板晶片級維修</small></h2>
+  <a class="pro" href="board.html?v=24">
+    <p>很多不開機、沒訊號，其實只是主機板上一顆小零件壞掉。我們在顯微鏡底下找出壞掉的零件，只換那一顆，不用整片主機板換掉，<b>修好資料通常都還在</b>。</p>
+    <ul><li>🔬 晶片、電容更換</li><li>🧵 斷線飛線</li><li>🧠 CPU 重植</li><li>💧 進水主機板修復</li></ul>
+    <em>了解晶片級維修 →</em>
+  </a>
 
   <h2 class="sec">維修流程</h2>
   <ol class="flow">
@@ -146,7 +160,7 @@
   <div class="trust">
     <a href="https://maps.app.goo.gl/GdYtfryHyToNYyn66" target="_blank" rel="noopener"><span class="ic">⭐</span><b>Google 評價 5.0</b><small>點我看客人評論</small></a>
     <div><span class="ic">👀</span><b>維修現場透明</b><small>多數維修可在旁邊看</small></div>
-    <div><span class="ic">🔬</span><b>專業設備</b><small>顯微鏡、微焊接設備</small></div>
+    <div><span class="ic">🔬</span><b>專業設備</b><small>顯微鏡、微焊接、晶片級維修</small></div>
     <div><span class="ic">🏠</span><b>店內維修</b><small>手機不外送，安心</small></div>
   </div>
 
@@ -176,7 +190,7 @@
 
 <!-- 頁尾簡短版判斷要看到店家資訊（table.biz），這頁用 .visit，所以加一個隱藏的 table.biz 讓頁尾不重複地址 -->
 <table class="biz" hidden></table>
-<script src="site.js?v=23"></script>
+<script src="site.js?v=24"></script>
 <script>
 const OA = "@891llnje";
 document.getElementById("lineBtn").onclick = e => { e.preventDefault(); location.href = "https://line.me/R/oaMessage/" + encodeURIComponent(OA) + "/?" + encodeURIComponent("我想預約維修\n型號：\n問題：\n想來的時間："); };
