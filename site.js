@@ -6,7 +6,8 @@ const SITE = {
   EMAIL: "service@chiu189.com.tw", // 公司 email：網域開通後填，例如 "service@chiu189.com.tw"；空白就不顯示
   ADDRESS: "臺中市龍井區東海里遠東街189號",
   PHONE: "0905-584-846",
-  V: 22,                        // 改版時加一，避免手機看到舊頁面
+  V: 23,                        // 改版時加一，避免手機看到舊頁面
+  GA_ID: "G-KX7S54506Z",                  // Google Analytics 4 評估 ID（G-XXXXXXX）；空白就不載入
 };
 (function(){
   const el = document.getElementById("sitefoot");
@@ -53,4 +54,21 @@ const SITE = {
     '<p class="sf-line">電話 <a href="tel:' + tel + '">' + SITE.PHONE + '</a>' +
       (SITE.EMAIL ? '｜<a href="mailto:' + SITE.EMAIL + '">' + SITE.EMAIL + '</a>' : '') + '</p>' +
     links + tail;
+})();
+
+// Google Analytics 4：統計瀏覽，並記錄客人點「打電話」「LINE」的次數
+(function(){
+  if(!SITE.GA_ID) return;
+  const s = document.createElement("script"); s.async = true;
+  s.src = "https://www.googletagmanager.com/gtag/js?id=" + SITE.GA_ID; document.head.appendChild(s);
+  window.dataLayer = window.dataLayer || [];
+  window.gtag = function(){ dataLayer.push(arguments); };
+  gtag("js", new Date()); gtag("config", SITE.GA_ID);
+  document.addEventListener("click", function(e){
+    const a = e.target.closest && e.target.closest("a[href]"); if(!a) return;
+    const h = a.getAttribute("href");
+    if(h.indexOf("tel:") === 0) gtag("event", "click_phone", { link_url: h, page: location.pathname });
+    else if(/line\.me|lin\.ee/.test(h)) gtag("event", "click_line", { link_url: h, page: location.pathname });
+    else if(/maps\.app\.goo\.gl|google\.[^/]+\/maps/.test(h)) gtag("event", "click_map", { link_url: h, page: location.pathname });
+  }, true);
 })();
