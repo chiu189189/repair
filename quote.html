@@ -260,7 +260,7 @@ function build(csv){
   return out;
 }
 
-// 匿名計數（不記個資）：打開網站、查哪個機型、按預約 → 審稿頁「成效」顯示
+// 匿名計數（不記個資）：打開網站、查哪個機型、加入哪個維修項目、搜尋找不到的字、按預約 → 審稿頁「成效」顯示
 const HIT_URL = "https://script.google.com/macros/s/AKfycbwcStF05qkS0cKT8l6PoTTzj21ijwnnyyJkoSDqPYZjDxFVG6EadZCwCp2GrKpV7wNSow/exec";
 function hit(t, m){ try { const k = "chiu189_hit_" + t + (m || ""); if (sessionStorage.getItem(k)) return; sessionStorage.setItem(k, 1); navigator.sendBeacon(HIT_URL, new Blob([JSON.stringify({a: "hit", t: t, m: m || ""})], {type: "text/plain"})); } catch (e) {} }
 function fmt(p){ return /^\d+$/.test(p) ? "NT$ "+Number(p).toLocaleString() : isMasked(p) ? "NT$ "+p : p; }
@@ -303,6 +303,9 @@ function renderModels(){
                  : Object.keys(data[brand]||{}).map(m=>[brand,m]);
   const list = pool.filter(([,m])=>m.replace(/\s/g,"").toLowerCase().includes(q));
   $("#count").textContent = q ? (list.length ? "搜尋結果" : "找不到這個型號，直接 LINE 問我們") : "選擇你的機型";
+  // 搜尋找不到：停手 1.5 秒才記，避免打字到一半也算（只記搜尋字，不記個資）
+  clearTimeout(window._missT);
+  if(q && q.length>=2 && !list.length){ const raw=$("#q").value.trim().slice(0,30); window._missT=setTimeout(()=>hit("miss", raw), 1500); }
   $("#models").innerHTML="";
   list.forEach(([b,m])=>{
     const li=document.createElement("li"), bt=document.createElement("button");
@@ -311,7 +314,7 @@ function renderModels(){
     const lowItem=data[b][m].reduce((a,x)=>approx(x.price)<approx(a?a.price:"")?x:a,null);
     bt.innerHTML=`<span></span><small>${lowItem&&isFinite(approx(lowItem.price))?fmt(lowItem.price)+" 起":"檢測後報價"}</small>`;
     bt.firstChild.textContent=m;
-    bt.onclick=()=>{ brand=b; model=m; hit("model", m); renderTabs(); renderModels(); renderPanel();
+    bt.onclick=()=>{ brand=b; model=m; hit("model", m); hit("s_model"); renderTabs(); renderModels(); renderPanel();
       if(innerWidth<=760) $("#panel").scrollIntoView({behavior:"smooth",block:"start"}); };
     li.append(bt); $("#models").append(li);
   });
@@ -338,7 +341,7 @@ function renderPanel(){
     row.querySelector(".price").textContent=fmt(price);
     const add=row.querySelector(".add");
     const sync=()=>{ add.textContent=picked.has(key)?"✓ 已加入":"＋加入"; add.className="add"+(picked.has(key)?" on":""); };
-    add.onclick=()=>{ picked.has(key)?picked.delete(key):picked.set(key,{model,item,price}); sync(); syncPicked(); };
+    add.onclick=()=>{ if(picked.has(key)) picked.delete(key); else { picked.set(key,{model,item,price}); hit("item", model+"｜"+item); hit("s_add"); } sync(); syncPicked(); };
     sync(); p.append(row);
   });
 }
