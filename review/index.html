@@ -301,7 +301,20 @@ function renderStats() {
       <div class="kpi"><b>${n(w.book)}</b><span>人按預約${diff(w.book, w.bookPrev)}</span></div>
       <div class="kpi"><b>${w.view ? Math.round(w.book / w.view * 100) + '%' : '—'}</b><span>預約率</span></div></div>
       <div style="display:flex;gap:6px;align-items:flex-end;height:64px;margin:10px 0 4px">${w.daily.map((d) => `<div style="flex:1;text-align:center;font-size:11px;color:var(--sub)"><div style="background:var(--accent);border-radius:4px 4px 0 0;height:${Math.max(2, Math.round(d[1] / mx * 44))}px;margin-bottom:3px" title="${d[1]}"></div>${esc(d[0].replace('-', '/'))}</div>`).join('')}</div>
-      ${w.top.length ? `<div class="sub-h">最常查的機型</div>` + w.top.map((m) => `<div class="tp"><span>${esc(m[0])}</span><span class="v">${n(m[1])} 次</span></div>`).join('') : '<div class="note2">還沒有人查機型</div>'}
+      ${(() => {
+        const dl = (x) => x == null ? '' : x > 0 ? ` <span style="color:var(--ok,#06c755);font-size:12px">↑${x}</span>` : x < 0 ? ` <span style="color:var(--fix);font-size:12px">↓${-x}</span>` : '';
+        const row = (m) => `<div class="tp"><span>${esc(m[0])}</span><span class="v">${n(m[1])} 次${dl(m[2])}</span></div>`;
+        let o = '';
+        const f = w.funnel;
+        if (f && f[0]) {
+          const st = [['打開報價頁', f[0]], ['點機型', f[1]], ['加入維修項目', f[2]], ['按 LINE 預約', f[3]]];
+          o += `<div class="sub-h">客人走到哪一步</div>` + st.map(([t, v], i) => `<div class="tp"><div style="flex:1;min-width:0"><span>${t}</span><div class="bar"><i style="width:${Math.round((v || 0) / f[0] * 100)}%"></i></div></div><span class="v">${n(v)} 人${i ? `・${Math.round((v || 0) / f[0] * 100)}%` : ''}</span></div>`).join('');
+        }
+        o += (w.items || []).length ? `<div class="sub-h">最想修的（機型＋項目，可參考備料）</div>` + w.items.map(row).join('') : '';
+        o += w.top.length ? `<div class="sub-h">最常查的機型（↑↓ 跟上週比）</div>` + w.top.map(row).join('') : '<div class="note2">還沒有人查機型</div>';
+        o += (w.miss || []).length ? `<div class="sub-h">搜尋找不到的（價目表可以補）</div>` + w.miss.map(row).join('') : '';
+        return o;
+      })()}
       <div class="note2">更新 ${esc(w.asOf || '')}</div></section>` + h;
   }
   const wb = st.web || {}, sc = wb.search || {};
