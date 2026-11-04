@@ -297,8 +297,20 @@ function renderToday() {
 function renderReview() {
   const rv = reviews();
   if (!rv.length) { $('#list').innerHTML = '<div class="empty">目前沒有要審的文章 ✨<br>每晚 8:10 新稿做好會傳 LINE 通知你</div>'; return; }
-  $('#list').innerHTML = rv.map((r, i) => {
-    const d = (data.decisions || {})[r.id], st = d ? d.decision : 'wait';
+  $('#list').innerHTML = rv.map((r, i) => [r, i]).sort((a, b) => (b[0].id || '').startsWith('hot-') - (a[0].id || '').startsWith('hot-')).map(([r, i]) => {
+    const d = (data.decisions || {})[r.id], st = d ? d.decision : 'wait', hot = (r.id || '').startsWith('hot-');
+    if (hot) { const th = (r.caps || {}).Threads || '';
+      const htag = st === 'ok' ? '<span class="tag ok">已通過・5 分鐘內發 Threads</span>' : st === 'fix' ? '<span class="tag fix">不發・等系統拿掉</span>' : '<span class="tag wait">等你審・6 小時沒按自動作廢</span>';
+      return `<article class="card" data-i="${i}" style="border:2px solid #ff6a3d">
+      <h2>🔥 ${esc(clean(r.title))}</h2>
+      <div class="meta"><b>熱議快訊・只發 Threads</b>・按通過 5 分鐘內發</div>
+      ${htag}
+      <div class="imgs">${(r.imgs || []).map((src, k) => `<img src="${esc(src)}" alt="第 ${k + 1} 張圖" loading="lazy">`).join('')}</div>
+      <ul class="check">${(r.check || []).map((c) => `<li>${esc(c)}</li>`).join('')}</ul>
+      <div class="capbox">${esc(th)}</div>
+      ${st === 'wait' ? '<div class="btns"><button type="button" class="okb" data-act="ok">通過，馬上發</button><button type="button" data-act="hotno">不發</button></div>' : '<div class="btns"><button type="button" class="ghost" data-act="clear">按錯了，撤回決定</button></div>'}
+      <div class="msg"></div>
+    </article>`; }
     const tag = st === 'ok' ? '<span class="tag ok">已通過・等自動排程</span>' : st === 'fix' ? '<span class="tag fix">已退回・等 Claude 改</span>' : '<span class="tag wait">等你審</span>';
     const caps = r.caps || {}, n = (r.imgs || []).length;
     return `<article class="card" data-i="${i}">
@@ -483,6 +495,7 @@ $('#list').addEventListener('click', (e) => {
   else if (act === 'cancel') { box.hidden = true; dbox.hidden = true; }
   else if (act === 'sendfix') { const t = box.querySelector('textarea').value.trim(); if (!t) { box.querySelector('textarea').focus(); return; } decide(card, 'fix', t); }
   else if (act === 'clear') decide(card, 'clear');
+  else if (act === 'hotno') decide(card, 'fix', '熱議不發');
 });
 $('#stats').addEventListener('click', async (e) => {
   const b = e.target.closest('button[data-topic]'); if (!b) return;
