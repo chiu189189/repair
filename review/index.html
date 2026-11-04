@@ -14,7 +14,7 @@
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon.png">
 <link rel="icon" href="icon.png">
-<title>CHIU189 審稿行程</title>
+<title>CHIU189 秘書</title>
 <style>
 :root {
   --bg: #f4f1ea; --card: #ffffff; --soft: #f1ece2; --ink: #1e1b14; --sub: #6b6458; --line: #e6dfd2;
@@ -161,29 +161,63 @@ textarea { width: 100%; min-height: 90px; border-radius: 10px; border: 1px solid
 .mini:disabled { opacity: .5; }
 .toast { position: fixed; left: 50%; bottom: calc(20px + env(safe-area-inset-bottom)); transform: translateX(-50%); background: var(--ink); color: var(--bg); padding: 10px 16px; border-radius: 12px; font-size: 14.5px; z-index: 20; max-width: calc(100% - 32px); box-shadow: 0 4px 14px rgba(0,0,0,.2); }
 .toast[hidden] { display: none; }
+/* 2026-11-04 首頁改版 */
+.greet { margin: 2px 2px 12px; }
+.greet b { display: block; font-size: 22px; line-height: 1.3; }
+.greet span { font-size: 14px; color: var(--sub); }
+.sec { font-size: 13px; font-weight: 700; color: var(--sub); margin: 18px 2px 8px; display: flex; justify-content: space-between; align-items: baseline; }
+.sec button { background: none; border: 0; color: var(--sub); font: inherit; font-weight: 400; cursor: pointer; padding: 4px 0 4px 8px; }
+.act { padding: 14px; }
+.act.hot { border: 2px solid #ff6a3d; }
+.act .row1 { display: flex; gap: 12px; }
+.act .th { flex: none; width: 84px; height: 105px; border-radius: 10px; overflow: hidden; background: var(--soft); border: 1px solid var(--line); }
+.act .th img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.act .bd { flex: 1; min-width: 0; }
+.act .kd { font-size: 12.5px; font-weight: 700; color: var(--accent); }
+.act.hot .kd { color: #e8562a; }
+.act .tt { font-size: 16.5px; font-weight: 800; line-height: 1.35; margin: 2px 0 4px; }
+.act .pv { font-size: 13.5px; color: var(--sub); line-height: 1.45; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; white-space: pre-line; }
+.act .ckl { font-size: 12.5px; margin-top: 4px; color: var(--sub); }
+.act .ckl .w { color: var(--fix); font-weight: 700; }
+.act .btns { margin-top: 12px; }
+.act .btns button { min-height: 48px; font-size: 16px; }
+.act .full { margin-top: 12px; border-top: 1px dashed var(--line); padding-top: 6px; }
+.act .full[hidden] { display: none; }
+.linkb { background: none; border: 0; color: var(--sub); font: inherit; font-size: 13.5px; padding: 8px 0 0; cursor: pointer; }
+.mini3 .it { padding: 9px 14px; }
+.mini3 .st { font-size: 12.5px; white-space: nowrap; color: var(--sub); padding-top: 2px; }
+.mini3 .st.w { color: var(--fix); font-weight: 700; }
+.mini3 .st.g { color: var(--ok); }
+.funnel { display: flex; align-items: center; justify-content: space-between; gap: 6px; width: 100%; text-align: left; font: inherit; color: var(--ink); cursor: pointer; }
+.funnel .f { text-align: center; flex: 1; }
+.funnel .f b { display: block; font-size: 20px; font-variant-numeric: tabular-nums; }
+.funnel .f span { font-size: 12px; color: var(--sub); }
+.funnel .ar { color: var(--sub); }
+.card.flash { box-shadow: 0 0 0 3px var(--accent); transition: box-shadow .3s; }
+.toast button { background: none; border: 0; color: var(--accent); font: inherit; font-weight: 800; margin-left: 12px; cursor: pointer; padding: 4px; }
 .foot { text-align: center; color: var(--sub); font-size: 12.5px; padding: 0 0 calc(24px + env(safe-area-inset-bottom)); }
 </style>
 </head>
 <body>
 <div class="top">
   <div class="wrap">
-    <div class="brand"><h1><span>CHIU189</span> 審稿行程</h1><button id="reload" type="button">↻ 重新整理</button></div>
+    <div class="brand"><h1><span>CHIU189</span> 秘書</h1><button id="reload" type="button">↻ 重新整理</button></div>
     <div class="tabs" role="tablist">
-      <button type="button" role="tab" data-tab="review" aria-selected="true">審稿<span class="badge" id="badge" hidden></span></button>
+      <button type="button" role="tab" data-tab="review" aria-selected="true">首頁<span class="badge" id="badge" hidden></span></button>
       <button type="button" role="tab" data-tab="sched" aria-selected="false">行程</button>
       <button type="button" role="tab" data-tab="stats" aria-selected="false">成效</button>
-      <button type="button" role="tab" data-tab="ask" aria-selected="false">交代</button>
+      <button type="button" role="tab" data-tab="ask" aria-selected="false">問我</button>
     </div>
   </div>
 </div>
 
 <main class="wrap">
   <div id="today" class="today"><div class="hd">載入中…</div></div>
-  <section class="pane" id="pane-review"><div id="todo" class="todo"></div><div id="list"></div></section>
+  <section class="pane" id="pane-review"><div id="greet" class="greet"></div><div id="list"></div><div id="todo"></div><div id="mini"></div><div id="done"></div></section>
   <section class="pane" id="pane-sched" hidden><div id="sched"></div></section>
   <section class="pane" id="pane-stats" hidden><div id="stats"></div></section>
   <section class="pane" id="pane-ask" hidden>
-    <div class="card"><h2>交代小秘</h2><div class="meta">想改排程、問成效、指定下一篇題目…打一句話就好。每天 12:20、20:40 處理，結果會傳 LINE 也會顯示在下面。</div>
+    <div class="card"><h2>有事問我</h2><div class="meta">想改排程、問成效、指定下一篇題目…打一句話就好。每天 12:20、20:40 處理，結果會傳 LINE 也會顯示在下面。</div>
       <textarea id="askText" placeholder="例如：下一篇做 iOS 27.2 耗電／11/5 的影片改到 11/6／這週哪篇最多人看？"></textarea>
       <div class="btns"><button type="button" class="okb" id="askSend">送出</button></div><div class="msg" id="askMsg"></div></div>
     <div id="askList"></div>
@@ -229,19 +263,24 @@ async function load(quiet) {
     $('#upd').textContent = `頁面更新 ${new Date().toLocaleString('zh-TW', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false })}` + (s.updated ? `・行程資料 ${s.updated.slice(5).replace('-', '/').replace('T', ' ')}（電腦開著時每 15 分鐘同步）` : '');
     let saved = ''; try { saved = sessionStorage.getItem('chiu189_tab') || ''; } catch (e) {}
     const waiting = reviews().filter((x) => !(data.decisions || {})[x.id]).length;
-    if (firstLoad) { setTab(saved || (waiting ? 'review' : 'sched')); firstLoad = false; }
+    if (firstLoad) { setTab(saved || 'review'); firstLoad = false; }
     else { const cur = document.querySelector('.tabs button[aria-selected="true"]'); setTab(cur ? cur.dataset.tab : 'review'); if (cur && cur.dataset.tab === 'ask') loadAsk(); }
     lastLoad = Date.now();
+    if (location.hash.length > 1 && !load._jumped) { load._jumped = true; setTab('review'); const el = document.getElementById('c-' + decodeURIComponent(location.hash.slice(1))); if (el) { el.scrollIntoView({ block: 'center' }); el.classList.add('flash'); setTimeout(() => el.classList.remove('flash'), 2500); } }
     btn.textContent = '✓ 已更新';
     setTimeout(() => { btn.textContent = '↻ 重新整理'; }, 1500);
   } catch (e) { if (!quiet) $('#today').innerHTML = '<div class="none">讀不到資料，請稍後按右上角「重新整理」。</div>'; btn.textContent = '↻ 重新整理'; }
   btn.disabled = false; loading = false;
 }
 
-function render() { renderToday(); renderTodo(); renderReview(); renderSched(); renderStats(); }
+function render() { renderToday(); renderReview(); renderTodo(); renderMini(); renderSched(); renderStats(); }
 
 
-function toast(t) { const el = $('#toast'); el.textContent = t; el.hidden = false; clearTimeout(toast._t); toast._t = setTimeout(() => { el.hidden = true; }, 3500); }
+function toast(t, undo) {
+  const el = $('#toast'); el.textContent = t; el.hidden = false;
+  if (undo) { const b = document.createElement('button'); b.type = 'button'; b.textContent = '復原'; b.onclick = () => { el.hidden = true; undo(); }; el.appendChild(b); }
+  clearTimeout(toast._t); toast._t = setTimeout(() => { el.hidden = true; }, undo ? 6000 : 3500);
+}
 
 // ① 待辦：所有要你動手的事集中在這裡
 function renderTodo() {
@@ -249,7 +288,7 @@ function renderTodo() {
   const now = new Date(), tk = dayKey(now), out = [];
   const md = (k) => { const d = new Date(k + 'T00:00:00'); return `${d.getMonth() + 1}/${d.getDate()}（${WD[d.getDay()]}）`; };
   const waiting = rv.filter((x) => !(data.decisions || {})[x.id]).length;
-  if (waiting) out.push(['o', `${waiting} 篇等你審`, 'review', '往下看']);
+  todoN = out.length;
   const g = st.gbp;
   if (g && g.unreplied) out.push(['r', `${g.unreplied} 則 Google 評論還沒回（每週一更新）`, 'https://business.google.com/reviews', '去回覆']);
   const ago = new Date(now.getTime() - 3 * 864e5);
@@ -266,12 +305,20 @@ function renderTodo() {
   if (noVid.length) out.push(['y', `晚上還沒有影片：${noVid.slice(0, 3).map(md).join('、')}${noVid.length > 3 ? ` 等 ${noVid.length} 天` : ''}（影片丟進「待發」）`, 'sched', '看行程']);
   const miss = ((st.site || {}).miss || []).filter((m) => !/測試/.test(m[0]));
   if (miss.length) out.push(['y', `有人搜「${miss.slice(0, 3).map((m) => m[0]).join('」「')}」找不到（價目表可以補）`, 'stats', '看成效']);
-  $('#todo').innerHTML = `<div class="hd">待辦・${now.getMonth() + 1}/${now.getDate()}（${WD[now.getDay()]}）</div>` + (out.length
-    ? out.map(([c, t, go, gl]) => /^https?:/.test(go)
+  todoN = out.length;
+  const fixes = rv.filter((x) => ((data.decisions || {})[x.id] || {}).decision === 'fix' && !(x.id || '').startsWith('hot-')).length;
+  const nowait = !rv.some((x) => !(data.decisions || {})[x.id]);
+  $('#todo').innerHTML = out.length ? `<div class="sec">其他要做的</div><div class="todo">` + out.map(([c, t, go, gl]) => /^https?:/.test(go)
       ? `<a href="${esc(go)}" target="_blank" rel="noopener"><span class="ic ${c}"></span><span class="tx">${esc(t)}</span><span class="go">${gl} ↗</span></a>`
-      : `<button type="button" class="ti" data-go="${go}"><span class="ic ${c}"></span><span class="tx">${esc(t)}</span><span class="go">${gl} ›</span></button>`).join('')
-    : '<div class="calm">今天沒事 ✨</div>');
+      : `<button type="button" class="ti" data-go="${go}"><span class="ic ${c}"></span><span class="tx">${esc(t)}</span><span class="go">${gl} ›</span></button>`).join('') + '</div>' : '';
+  // 招呼語＋總件數
+  const hr = now.getHours(), hi = hr < 11 ? '早安' : hr < 18 ? '午安' : '晚安';
+  const waitN = rv.filter((x) => !(data.decisions || {})[x.id]).length, total = waitN + out.length;
+  $('#greet').innerHTML = total
+    ? `<b>${hi}右丞，還有 ${total} 件事要你處理</b><span>${waitN ? `${waitN} 篇等你審` : ''}${waitN && out.length ? '・' : ''}${out.length ? `${out.length} 件其他待辦` : ''}${fixes ? `・${fixes} 篇 Claude 改稿中` : ''}</span>`
+    : `<b>${hi}右丞，今天沒事了 ✅</b><span>${nowait ? '新稿做好會傳 LINE 給你' : ''}</span>`;
 }
+let todoN = 0;
 $('#todo').addEventListener('click', (e) => {
   const b = e.target.closest('button[data-go]'); if (!b) return;
   if (b.dataset.go === 'review') { const l = $('#list'); if (l) l.scrollIntoView({ behavior: 'smooth' }); }
@@ -293,22 +340,19 @@ function renderToday() {
   const b = $('#badge'); b.hidden = !waiting; b.textContent = waiting;
 }
 
-function renderReview() {
-  const rv = reviews();
-  if (!rv.length) { $('#list').innerHTML = '<div class="empty">目前沒有要審的文章 ✨<br>每晚 8:10 新稿做好會傳 LINE 通知你</div>'; return; }
-  $('#list').innerHTML = rv.map((r, i) => [r, i]).sort((a, b) => { const w = (r) => ((data.decisions || {})[r.id] ? 0 : 2) + ((r.id || '').startsWith('hot-') ? 1 : 0); return w(b[0]) - w(a[0]); }).map(([r, i]) => {
-    const d = (data.decisions || {})[r.id], st = d ? d.decision : 'wait', hot = (r.id || '').startsWith('hot-');
-    if (st !== 'wait') {   // 2026-11-04 用戶：已處理的不要佔版面 → 縮成一行
-      const lab = hot ? (st === 'ok' ? '已通過・5 分鐘內發 Threads' : '不發・等系統拿掉') : (st === 'ok' ? '已通過・等自動排程' : '已退回・等 Claude 改');
-      return `<article class="card done" data-i="${i}" style="padding:12px 16px;opacity:.75">
-      <div style="display:flex;align-items:center;gap:10px"><div style="flex:1;min-width:0"><div style="font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${hot ? '🔥 ' : ''}${esc(clean(r.title))}</div>
-      <div class="meta" style="margin:2px 0 0">${st === 'ok' ? '✅' : '↩️'} ${lab}${hot ? '' : `・${esc(r.when)}`}</div></div>
-      <button type="button" class="ghost" data-act="clear" style="flex:none;padding:6px 10px;font-size:13px">撤回</button></div>
-      <div class="msg"></div></article>`;
-    }
+function hotExpire(id) {
+  const m = /^hot-(\d{4})(\d{2})(\d{2})-(\d{2})(\d{2})/.exec(id || ''); if (!m) return null;
+  const d = new Date(+m[1], +m[2] - 1, +m[3], +m[4], +m[5]);
+  if (d.getHours() >= 22 || d.getHours() < 7) { const e = new Date(d); if (d.getHours() >= 22) e.setDate(e.getDate() + 1); e.setHours(10, 0, 0, 0); return e; }
+  return new Date(d.getTime() + 6 * 3600e3);
+}
+function fullCard(r, i) {
+  // 原本的完整卡片（圖、查證、文案、改日期、要改）→ 收在「看全文」裡
+  const d = (data.decisions || {})[r.id], st = d ? d.decision : 'wait', hot = (r.id || '').startsWith('hot-');
+  const inner = (() => {
     if (hot) { const th = (r.caps || {}).Threads || '';
       const htag = st === 'ok' ? '<span class="tag ok">已通過・5 分鐘內發 Threads</span>' : st === 'fix' ? '<span class="tag fix">不發・等系統拿掉</span>' : '<span class="tag wait">等你審・6 小時沒按自動作廢</span>';
-      return `<article class="card" data-i="${i}" style="border:2px solid #ff6a3d">
+      return `<div>
       <h2>🔥 ${esc(clean(r.title))}</h2>
       <div class="meta"><b>熱議快訊・只發 Threads</b>・按通過 5 分鐘內發</div>
       ${htag}
@@ -316,11 +360,10 @@ function renderReview() {
       <ul class="check">${(r.check || []).map((c) => `<li>${esc(c)}</li>`).join('')}</ul>
       <div class="capbox">${esc(th)}</div>
       ${st === 'wait' ? '<div class="btns"><button type="button" class="okb" data-act="ok">通過，馬上發</button><button type="button" data-act="hotno">不發</button></div>' : '<div class="btns"><button type="button" class="ghost" data-act="clear">按錯了，撤回決定</button></div>'}
-      <div class="msg"></div>
-    </article>`; }
+    </div>`; }
     const tag = st === 'ok' ? '<span class="tag ok">已通過・等自動排程</span>' : st === 'fix' ? '<span class="tag fix">已退回・等 Claude 改</span>' : '<span class="tag wait">等你審</span>';
     const caps = r.caps || {}, n = (r.imgs || []).length;
-    return `<article class="card" data-i="${i}">
+    return `<div>
       <h2>${esc(clean(r.title))}</h2>
       <div class="meta">預計 <b>${esc(r.when)}</b>・${r.kind === 'vid' ? '影片・FB／IG' : 'FB／IG／Threads'}</div>
       ${tag}
@@ -333,10 +376,62 @@ function renderReview() {
       <div class="datebox" hidden><input type="date" min="${dayKey(new Date(Date.now() + 864e5))}"><div class="note2">選好日期按「用這天通過」，${r.kind === 'vid' ? '晚上 7 點' : '中午 11 點'}發。那天已經有貼文會自動順延。不用 Claude 改稿。</div><div class="btns"><button type="button" class="okb" data-act="okdate">用這天通過</button><button type="button" data-act="cancel">取消</button></div></div>
       <div class="fixbox" hidden><div class="chips">${(r.kind === 'vid' ? ['開頭再好笑一點', '文案短一點', '換 hashtag', '機型寫錯了'] : ['換封面', '標題再短一點', '口氣再好笑一點', '圖片字太多', 'Threads 換一句']).map((c) => `<button type="button" data-chip="${esc(c)}" aria-pressed="false">${esc(c)}</button>`).join('')}</div><textarea placeholder="點上面的選項，或自己寫：例如第 3 張字太多、換題目"></textarea><div class="note2">一次把意見寫完整，Claude 只要改一次，比較省額度。</div><div class="btns"><button type="button" class="okb" data-act="sendfix">送出意見</button><button type="button" data-act="cancel">取消</button></div></div>
       ${st !== 'wait' ? '<div class="btns"><button type="button" class="ghost" data-act="clear">按錯了，撤回決定</button></div>' : ''}
+    </div>`;
+  })();
+  return inner;
+}
+function renderReview() {
+  const rv = reviews(), dec = data.decisions || {};
+  const wait = rv.map((r, i) => [r, i]).filter(([r]) => !dec[r.id]).sort((a, b) => ((b[0].id || '').startsWith('hot-') - (a[0].id || '').startsWith('hot-')));
+  const done = rv.map((r, i) => [r, i]).filter(([r]) => dec[r.id]);
+  $('#list').innerHTML = wait.map(([r, i]) => {
+    const hot = (r.id || '').startsWith('hot-'), vid = r.kind === 'vid', caps = r.caps || {};
+    const ex = hot ? hotExpire(r.id) : null;
+    const left = ex ? Math.max(0, Math.round((ex - Date.now()) / 36e5 * 10) / 10) : null;
+    const kd = hot ? `🔥 熱議・只發 Threads${left != null ? `・${left < 1 ? '快過期了' : `還有 ${Math.round(left)} 小時`}` : ''}` : vid ? `🎬 影片・${esc(r.when)}` : `📝 教學文・${esc(r.when)}`;
+    const pv = hot ? (caps.Threads || '') : (caps.FB || caps.Threads || '');
+    const ck = r.check || [], okN = ck.filter((c) => c.startsWith('✅')).length, wN = ck.length - okN;
+    const ckl = ck.length ? (wN ? `查證 ✅ ${okN} 項・<span class="w">⚠️ ${wN} 項要注意</span>` : `查證 ✅ ${okN} 項全部通過`) : '';
+    return `<article class="card act${hot ? ' hot' : ''}" data-i="${i}" id="c-${esc(r.id)}">
+      <div class="row1">${(r.imgs || [])[0] ? `<div class="th"><img src="${esc(r.imgs[0])}" alt="封面"></div>` : ''}
+        <div class="bd"><div class="kd">${kd}</div><div class="tt">${esc(clean(String(r.title || '').split('｜')[0]))}</div><div class="pv">${esc(pv)}</div>${ckl ? `<div class="ckl">${ckl}</div>` : ''}</div></div>
+      <div class="btns">${hot ? '<button type="button" class="okb" data-act="ok">通過，馬上發</button><button type="button" data-act="hotno">不發</button>' : '<button type="button" class="okb" data-act="ok">通過</button><button type="button" data-act="fixopen">要改</button>'}</div>
+      <button type="button" class="linkb" data-act="toggle">看全文${(r.imgs || []).length > 1 ? `（${r.imgs.length} 張圖）` : ''} ›</button>
+      <div class="full" hidden>${fullCard(r, i)}</div>
       <div class="msg"></div>
     </article>`;
   }).join('');
+  $('#done').innerHTML = done.length ? `<div class="sec">已處理</div>` + done.map(([r, i]) => {
+    const st = dec[r.id].decision, hot = (r.id || '').startsWith('hot-');
+    const lab = hot ? (st === 'ok' ? '已通過・5 分鐘內發 Threads' : '不發・等系統拿掉') : (st === 'ok' ? '已通過・等自動排程' : '已退回・等 Claude 改');
+    return `<article class="card done" data-i="${i}" style="padding:12px 16px;opacity:.75">
+      <div style="display:flex;align-items:center;gap:10px"><div style="flex:1;min-width:0"><div style="font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${hot ? '🔥 ' : ''}${esc(clean(String(r.title || '').split('｜')[0]))}</div>
+      <div class="meta" style="margin:2px 0 0">${st === 'ok' ? '✅' : '↩️'} ${lab}${hot ? '' : `・${esc(r.when)}`}</div></div>
+      <button type="button" class="ghost" data-act="clear" style="flex:none;padding:6px 10px;font-size:13px;border:1px dashed var(--line);border-radius:10px;background:none;color:var(--sub)">撤回</button></div>
+      <div class="msg"></div></article>`;
+  }).join('') : '';
 }
+function renderMini() {
+  // 接下來 3 天（含今天還沒到的）＋這週一行成效
+  const items = sched().schedule || [], now = new Date(), end = dayKey(new Date(now.getTime() + 2 * 864e5)), tk = dayKey(now);
+  const up = items.filter((x) => x.at.slice(0, 10) >= tk && x.at.slice(0, 10) <= end && !x.done);
+  const rv = reviews(), dec = data.decisions || {};
+  const mdk = (w) => { const m = /(\d{1,2})\/(\d{1,2})/.exec(w || ''); return m ? pad(+m[1]) + pad(+m[2]) : '9999'; };
+  const pend = rv.filter((r) => !(r.id || '').startsWith('hot-') && (!dec[r.id] || dec[r.id].decision === 'ok')).map((r) => ({ at: r.when, t: String(r.title || '').split('｜')[0], k: r.kind === 'vid' ? 'vid' : 'img', p: !dec[r.id] ? 'wait' : 'ok' })).sort((a, b) => mdk(a.at).localeCompare(mdk(b.at)));
+  const md = (k) => { const d = new Date(k + 'T00:00:00'); return `${d.getMonth() + 1}/${d.getDate()}`; };
+  const rows = up.map((x) => `<div class="it"><span class="tm">${md(x.at.slice(0, 10))}<br><span style="font-weight:400;color:var(--sub);font-size:12.5px">${esc(x.at.slice(11, 16))}</span></span><div class="bd"><div class="tt"><span class="dot ${x.k}"></span>${esc(clean(x.t))}</div></div><span class="st ${x.ck === 'fail' ? 'w' : 'g'}">${x.ck === 'fail' ? '❌ 沒發出去' : '✅ 已排'}</span></div>`)
+    .concat(pend.map((x) => `<div class="it"><span class="tm" style="font-size:13px">${esc(String(x.at || '').replace(/（.）/, ' '))}</span><div class="bd"><div class="tt"><span class="dot ${x.k}"></span>${esc(clean(x.t))}</div></div><span class="st ${x.p === 'wait' ? 'w' : ''}">${x.p === 'wait' ? '⏳ 等你審' : '🕒 等排程'}</span></div>`));
+  const st = sched().stats || {}, wb = st.web || {}, thr = st.threads || {}, gm = (st.gbp || {}).months || [];
+  const thisM = `${now.getFullYear()}-${pad(now.getMonth() + 1)}`, full = gm.filter((x) => x.m < thisM), curM = full[full.length - 1] || {};
+  const n = (x) => (x == null ? '—' : Number(x).toLocaleString('zh-TW'));
+  const tv = (thr.posts || []).reduce((a, p) => a + (p.views || 0), 0);
+  $('#mini').innerHTML = `<div class="sec">接下來 3 天<button type="button" data-go="sched">看全部 ›</button></div>`
+    + (rows.length ? `<div class="list mini3">${rows.join('')}</div>` : '<div class="empty" style="padding:16px">這 3 天還沒有排</div>')
+    + `<div class="sec">這週成效<button type="button" data-go="stats">看細節 ›</button></div>
+    <button type="button" class="card funnel" data-go="stats"><div class="f"><b>${n(tv)}</b><span>👀 看到</span></div><span class="ar">→</span><div class="f"><b>${wb.asOf ? n(wb.users) : '—'}</b><span>🌐 逛官網</span></div><span class="ar">→</span><div class="f"><b>${n(curM.dirs)}</b><span>🏃 查路線</span></div></button>`;
+}
+$('#mini').addEventListener('click', (e) => { const b = e.target.closest('[data-go]'); if (b) { setTab(b.dataset.go); window.scrollTo({ top: 0 }); } });
+$('#done').addEventListener('click', (e) => { const b = e.target.closest('button[data-act="clear"]'); if (b) decide(b.closest('.card'), 'clear'); });
 
 function renderSched() {
   const items = sched().schedule || [];
@@ -490,7 +585,7 @@ async function decide(card, decision, note) {
   const r = reviews()[+card.dataset.i];
   const pin = getPin() || askPin();
   if (!pin) return;
-  const msg = card.querySelector('.msg');
+  const msg = card.querySelector(':scope > .msg') || card.querySelector('.msg');
   card.querySelectorAll('button').forEach((b) => (b.disabled = true));
   msg.textContent = '存檔中…';
   try {
@@ -499,8 +594,11 @@ async function decide(card, decision, note) {
     if (!j.ok && j.error === 'pin') { setPin(''); msg.textContent = '密碼不對，請再按一次重新輸入。'; card.querySelectorAll('button').forEach((b) => (b.disabled = false)); return; }
     if (!j.ok) throw new Error(j.error);
     if (decision === 'clear') delete data.decisions[r.id]; else data.decisions[r.id] = { decision };
-    renderToday(); renderReview();
-    const m = document.querySelector(`.card[data-i="${card.dataset.i}"] .msg`);
+    renderToday(); renderReview(); renderTodo(); renderMini();
+    const idx = card.dataset.i;
+    if (decision === 'ok' || decision === 'fix') toast(decision === 'ok' ? ((r.id || '').startsWith('hot-') ? '✅ 已通過，5 分鐘內發 Threads' : '✅ 已通過，會自動排程') : (note === '熱議不發' ? '好，這篇不發' : '意見收到，Claude 改好會傳 LINE'), () => { const c = document.querySelector(`.card[data-i="${idx}"]`); if (c) decide(c, 'clear'); });
+    else toast('已復原');
+    const m = null;
     if (m) m.textContent = decision === 'ok' ? (note && note.startsWith('日期:') ? `已存好！會排在 ${+note.slice(8, 10)}/${+note.slice(11, 13)}，晚上 9:30 或早上 10:00 自動排程。` : '已存好！晚上 9:30 或早上 10:00 會自動排程，排好傳 LINE 給你。') : decision === 'fix' ? '意見收到，Claude 改好會再傳 LINE 給你。' : '已撤回。';
   } catch (e) { msg.textContent = '沒存到，請再按一次。'; card.querySelectorAll('button').forEach((b) => (b.disabled = false)); }
 }
@@ -512,6 +610,8 @@ $('#list').addEventListener('click', (e) => {
   if (ch) { const ta = ch.closest('.fixbox').querySelector('textarea'), on = ch.getAttribute('aria-pressed') !== 'true', c = ch.dataset.chip; ch.setAttribute('aria-pressed', String(on)); const parts = ta.value.split('、').map((x) => x.trim()).filter(Boolean).filter((x) => x !== c); if (on) parts.push(c); ta.value = parts.join('、'); return; }
   const b = e.target.closest('button[data-act]'); if (!b) return;
   const card = b.closest('.card'), act = b.dataset.act, box = card.querySelector('.fixbox');
+  if (act === 'toggle') { const f = card.querySelector('.full'); f.hidden = !f.hidden; b.textContent = f.hidden ? '看全文 ›' : '收起全文'; return; }
+  if (act === 'fixopen') { const f = card.querySelector('.full'); f.hidden = false; card.querySelector('[data-act="toggle"]').textContent = '收起全文'; if (box) { box.hidden = false; const dd = card.querySelector('.datebox'); if (dd) dd.hidden = true; box.querySelector('textarea').focus(); } return; }
   const dbox = card.querySelector('.datebox');
   if (act === 'ok') decide(card, 'ok');
   else if (act === 'fix') { dbox.hidden = true; box.hidden = false; }
