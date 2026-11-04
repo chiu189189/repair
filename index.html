@@ -20,7 +20,7 @@
   /* 開頭：一句話說清楚＋現在有沒有開 */
   .hero{display:grid;grid-template-columns:1.1fr 1fr;gap:0;border-radius:18px;overflow:hidden;border:1px solid var(--line);background:var(--card)}
   .hero .txt{padding:22px 20px;display:flex;flex-direction:column;justify-content:center}
-  .hero .eyebrow{color:var(--accent);font-size:13px;font-weight:700;letter-spacing:.05em}
+  .hero .eyebrow{display:block;margin-bottom:6px;line-height:1.4;color:var(--accent);font-size:13px;font-weight:700;letter-spacing:.05em}
   .hero h1{margin:6px 0 8px;font-size:30px;line-height:1.25}
   .hero p{margin:0 0 12px;color:var(--muted);font-size:15px}
   .hero img{display:block;width:100%;height:100%;object-fit:cover;min-height:220px}
@@ -115,8 +115,7 @@
 
   <section class="hero">
     <div class="txt">
-      <div class="eyebrow">CHIU189 手機維修中心</div>
-      <h1>手機壞了？<br>先帶來免費檢測</h1>
+      <h1><span class="eyebrow">台中龍井手機維修｜CHIU189</span>手機壞了？<br>先帶來免費檢測</h1>
       <p>台中龍井・東海商圈｜iPhone、Android 手機與平板維修，先報價、您同意才修，維修過程現場看得到。</p>
       <span class="open" id="open"><i></i><span>營業時間 12:00–22:00（週一公休）</span></span>
     </div>
