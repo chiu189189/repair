@@ -8,6 +8,10 @@
 <meta name="theme-color" content="#14130f" media="(prefers-color-scheme: dark)">
 <meta name="theme-color" content="#f4f1ea" media="(prefers-color-scheme: light)">
 <meta name="apple-mobile-web-app-title" content="CHIU189 審稿">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon.png">
 <link rel="icon" href="icon.png">
 <title>CHIU189 審稿行程</title>
@@ -172,11 +176,15 @@ const reviews = () => (data.reviews || []).filter((r) => r.id !== '__schedule__'
 function setTab(t) {
   document.querySelectorAll('.tabs button').forEach((b) => b.setAttribute('aria-selected', String(b.dataset.tab === t)));
   ['review', 'sched', 'stats', 'ask'].forEach((k) => { $('#pane-' + k).hidden = k !== t; });
+  $('#today').hidden = t !== 'sched';
   try { sessionStorage.setItem('chiu189_tab', t); } catch (e) {}
   if (t === 'ask' && !askLoaded) { askLoaded = true; loadAsk(); }
 }
 
-async function load() {
+let firstLoad = true, loading = false, lastLoad = 0;
+async function load(quiet) {
+  if (loading) return; loading = true;
+  const btn = $('#reload'); btn.textContent = '更新中…'; btn.disabled = true;
   try {
     let r;
     try { r = await fetch(API + '?t=' + Date.now()); } catch (e1) { await new Promise((ok) => setTimeout(ok, 1500)); r = await fetch(API + '?t=' + Date.now()); }
@@ -186,8 +194,13 @@ async function load() {
     $('#upd').textContent = `頁面更新 ${new Date().toLocaleString('zh-TW', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false })}` + (s.updated ? `・行程資料 ${s.updated.slice(5).replace('-', '/').replace('T', ' ')}` : '');
     let saved = ''; try { saved = sessionStorage.getItem('chiu189_tab') || ''; } catch (e) {}
     const waiting = reviews().filter((x) => !(data.decisions || {})[x.id]).length;
-    setTab(saved || (waiting ? 'review' : 'sched'));
-  } catch (e) { $('#today').innerHTML = '<div class="none">讀不到資料，請稍後按右上角「重新整理」。</div>'; }
+    if (firstLoad) { setTab(saved || (waiting ? 'review' : 'sched')); firstLoad = false; }
+    else { const cur = document.querySelector('.tabs button[aria-selected="true"]'); setTab(cur ? cur.dataset.tab : 'review'); if (cur && cur.dataset.tab === 'ask') loadAsk(); }
+    lastLoad = Date.now();
+    btn.textContent = '✓ 已更新';
+    setTimeout(() => { btn.textContent = '↻ 重新整理'; }, 1500);
+  } catch (e) { if (!quiet) $('#today').innerHTML = '<div class="none">讀不到資料，請稍後按右上角「重新整理」。</div>'; btn.textContent = '↻ 重新整理'; }
+  btn.disabled = false; loading = false;
 }
 
 function render() { renderToday(); renderReview(); renderSched(); renderStats(); }
@@ -355,7 +368,10 @@ $('#askSend').addEventListener('click', async () => {
   $('#askSend').disabled = false;
 });
 let askLoaded = false;
-$('#reload').addEventListener('click', () => { $('#today').innerHTML = '<div class="hd">載入中…</div>'; load(); });
+$('#reload').addEventListener('click', () => load());
+// 像 APP：切回這個畫面就自動更新；開著的時候每 5 分鐘更新一次
+document.addEventListener('visibilitychange', () => { if (!document.hidden && Date.now() - lastLoad > 30000) load(true); });
+setInterval(() => { if (!document.hidden) load(true); }, 5 * 60 * 1000);
 load();
 </script>
 </body>

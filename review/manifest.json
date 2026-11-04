@@ -1,0 +1,10 @@
+{
+  "name": "CHIU189 審稿行程",
+  "short_name": "CHIU189 審稿",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f4f1ea",
+  "theme_color": "#f4f1ea",
+  "icons": [{ "src": "icon.png", "sizes": "180x180", "type": "image/png" }]
+}
