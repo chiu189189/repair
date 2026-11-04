@@ -127,6 +127,40 @@ textarea { width: 100%; min-height: 90px; border-radius: 10px; border: 1px solid
 .req .q { font-weight: 700; overflow-wrap: anywhere; }
 .req .a { margin-top: 6px; font-size: 14.5px; white-space: pre-wrap; overflow-wrap: anywhere; }
 .req .s { font-size: 12.5px; color: var(--sub); margin-top: 4px; }
+
+/* 2026-11-04 改版：待辦、成效總覽、可收合卡片、文案分頁、快選 */
+.badge[hidden] { display: none; }
+.todo { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 6px 16px; margin-bottom: 14px; }
+.todo .hd { font-size: 13px; color: var(--sub); padding: 8px 0 2px; }
+.todo a, .todo button.ti { display: flex; gap: 10px; align-items: center; width: 100%; text-align: left; padding: 11px 0; border: 0; border-top: 1px solid var(--line); background: none; color: var(--ink); font: inherit; font-size: 15px; text-decoration: none; cursor: pointer; }
+.todo .hd + a, .todo .hd + button.ti { border-top: 0; }
+.todo .ic { flex: none; width: 10px; height: 10px; border-radius: 50%; }
+.todo .ic.r { background: var(--fix); } .todo .ic.o { background: #e8a33d; } .todo .ic.y { background: color-mix(in srgb, var(--accent) 70%, transparent); }
+.todo .tx { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.todo .go { color: var(--sub); font-size: 13px; flex: none; }
+.todo .calm { padding: 14px 0; color: var(--sub); font-size: 15px; }
+.sum { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin-bottom: 14px; }
+.sum .kpi { background: var(--card); border: 1px solid var(--line); }
+.sum .kpi b { font-size: 26px; }
+.sum .dlt { font-size: 12.5px; font-weight: 700; margin-left: 4px; }
+.sum .up { color: var(--ok); } .sum .down { color: var(--fix); } .sum .flat { color: var(--sub); font-weight: 400; }
+.card.fold { padding: 0 16px; }
+.card.fold > summary { padding: 14px 0; min-height: 52px; }
+.card.fold > summary h2 { margin: 0; }
+.card.fold > summary::after { font-size: 13px; }
+.card.fold[open] { padding-bottom: 14px; }
+.seg { display: flex; gap: 4px; background: var(--soft); border-radius: 10px; padding: 3px; margin-top: 10px; }
+.seg button { flex: 1; border: 0; background: none; font: inherit; font-size: 14px; font-weight: 700; color: var(--sub); min-height: 36px; border-radius: 8px; cursor: pointer; }
+.seg button[aria-pressed="true"] { background: var(--card); color: var(--ink); box-shadow: 0 1px 2px rgba(0,0,0,.12); }
+.capbox { white-space: pre-wrap; word-break: break-word; font-size: 15px; background: var(--soft); border-radius: 10px; padding: 12px; margin-top: 6px; max-height: 320px; overflow: auto; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.chips button { border: 1px solid var(--line); background: var(--soft); color: var(--ink); font: inherit; font-size: 14px; border-radius: 999px; padding: 6px 12px; cursor: pointer; min-height: 36px; }
+.chips button[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.datebox input { width: 100%; min-height: 46px; border-radius: 10px; border: 1px solid var(--line); background: var(--bg); color: var(--ink); font: inherit; padding: 8px 10px; margin-top: 10px; }
+.mini { border: 1px solid var(--accent); color: var(--accent); background: none; font: inherit; font-size: 12.5px; border-radius: 8px; padding: 3px 8px; margin-left: 8px; cursor: pointer; white-space: nowrap; }
+.mini:disabled { opacity: .5; }
+.toast { position: fixed; left: 50%; bottom: calc(20px + env(safe-area-inset-bottom)); transform: translateX(-50%); background: var(--ink); color: var(--bg); padding: 10px 16px; border-radius: 12px; font-size: 14.5px; z-index: 20; max-width: calc(100% - 32px); box-shadow: 0 4px 14px rgba(0,0,0,.2); }
+.toast[hidden] { display: none; }
 .foot { text-align: center; color: var(--sub); font-size: 12.5px; padding: 0 0 calc(24px + env(safe-area-inset-bottom)); }
 </style>
 </head>
@@ -145,7 +179,7 @@ textarea { width: 100%; min-height: 90px; border-radius: 10px; border: 1px solid
 
 <main class="wrap">
   <div id="today" class="today"><div class="hd">載入中…</div></div>
-  <section class="pane" id="pane-review"><div id="list"></div></section>
+  <section class="pane" id="pane-review"><div id="todo" class="todo"></div><div id="list"></div></section>
   <section class="pane" id="pane-sched" hidden><div id="sched"></div></section>
   <section class="pane" id="pane-stats" hidden><div id="stats"></div></section>
   <section class="pane" id="pane-ask" hidden>
@@ -156,6 +190,7 @@ textarea { width: 100%; min-height: 90px; border-radius: 10px; border: 1px solid
   </section>
 </main>
 <div class="foot" id="upd"></div>
+<div class="toast" id="toast" hidden></div>
 
 <script>
 const API = 'https://script.google.com/macros/s/AKfycbwcStF05qkS0cKT8l6PoTTzj21ijwnnyyJkoSDqPYZjDxFVG6EadZCwCp2GrKpV7wNSow/exec';
@@ -203,7 +238,45 @@ async function load(quiet) {
   btn.disabled = false; loading = false;
 }
 
-function render() { renderToday(); renderReview(); renderSched(); renderStats(); }
+function render() { renderToday(); renderTodo(); renderReview(); renderSched(); renderStats(); }
+
+
+function toast(t) { const el = $('#toast'); el.textContent = t; el.hidden = false; clearTimeout(toast._t); toast._t = setTimeout(() => { el.hidden = true; }, 3500); }
+
+// ① 待辦：所有要你動手的事集中在這裡
+function renderTodo() {
+  const items = sched().schedule || [], st = sched().stats || {}, rv = reviews();
+  const now = new Date(), tk = dayKey(now), out = [];
+  const md = (k) => { const d = new Date(k + 'T00:00:00'); return `${d.getMonth() + 1}/${d.getDate()}（${WD[d.getDay()]}）`; };
+  const waiting = rv.filter((x) => !(data.decisions || {})[x.id]).length;
+  if (waiting) out.push(['o', `${waiting} 篇等你審`, 'review', '往下看']);
+  const g = st.gbp;
+  if (g && g.unreplied) out.push(['r', `${g.unreplied} 則 Google 評論還沒回（每週一更新）`, 'https://business.google.com/reviews', '去回覆']);
+  const ago = new Date(now.getTime() - 3 * 864e5);
+  items.filter((x) => x.ck === 'fail' && new Date(x.at.replace(' ', 'T')) > ago).forEach((x) => out.push(['r', `${md(x.at.slice(0, 10))}「${clean(x.t).slice(0, 16)}」沒發出去`, 'sched', '看行程']));
+  // 接下來 7 天：中午沒圖文、晚上沒影片（已審待排的也算有）
+  const noImg = [], noVid = [];
+  for (let i = 1; i <= 7; i++) {
+    const k = dayKey(new Date(now.getTime() + i * 864e5));
+    const day = items.filter((x) => x.at.slice(0, 10) === k);
+    if (!day.some((x) => x.k === 'img') && !rv.some((r) => r.kind !== 'vid' && String(r.when || '').startsWith(`${+k.slice(5, 7)}/${+k.slice(8)}`))) noImg.push(k);
+    if (!day.some((x) => x.k === 'vid') && !rv.some((r) => r.kind === 'vid' && String(r.when || '').startsWith(`${+k.slice(5, 7)}/${+k.slice(8)}`))) noVid.push(k);
+  }
+  if (noImg.length) out.push(['y', `中午還沒有圖文：${noImg.slice(0, 3).map(md).join('、')}${noImg.length > 3 ? ` 等 ${noImg.length} 天` : ''}`, 'sched', '看行程']);
+  if (noVid.length) out.push(['y', `晚上還沒有影片：${noVid.slice(0, 3).map(md).join('、')}${noVid.length > 3 ? ` 等 ${noVid.length} 天` : ''}（影片丟進「待發」）`, 'sched', '看行程']);
+  const miss = ((st.site || {}).miss || []).filter((m) => !/測試/.test(m[0]));
+  if (miss.length) out.push(['y', `有人搜「${miss.slice(0, 3).map((m) => m[0]).join('」「')}」找不到（價目表可以補）`, 'stats', '看成效']);
+  $('#todo').innerHTML = `<div class="hd">待辦・${now.getMonth() + 1}/${now.getDate()}（${WD[now.getDay()]}）</div>` + (out.length
+    ? out.map(([c, t, go, gl]) => /^https?:/.test(go)
+      ? `<a href="${esc(go)}" target="_blank" rel="noopener"><span class="ic ${c}"></span><span class="tx">${esc(t)}</span><span class="go">${gl} ↗</span></a>`
+      : `<button type="button" class="ti" data-go="${go}"><span class="ic ${c}"></span><span class="tx">${esc(t)}</span><span class="go">${gl} ›</span></button>`).join('')
+    : '<div class="calm">今天沒事 ✨</div>');
+}
+$('#todo').addEventListener('click', (e) => {
+  const b = e.target.closest('button[data-go]'); if (!b) return;
+  if (b.dataset.go === 'review') { const l = $('#list'); if (l) l.scrollIntoView({ behavior: 'smooth' }); }
+  else { setTab(b.dataset.go); window.scrollTo({ top: 0 }); }
+});
 
 function renderToday() {
   const now = new Date(), tk = dayKey(now);
@@ -235,9 +308,11 @@ function renderReview() {
       <div class="imgs">${(r.imgs || []).map((src, k) => `<img src="${esc(src)}" alt="第 ${k + 1} 張圖" loading="lazy">`).join('')}</div>
       ${n > 1 ? `<div class="hint">${r.kind === 'vid' ? `影片畫面 ${n} 張` : `共 ${n} 張`}，左右滑 →</div>` : ''}
       <ul class="check">${(r.check || []).map((c) => `<li>${esc(c)}</li>`).join('')}</ul>
-      ${['FB', 'IG', 'Threads'].filter((k) => caps[k]).filter((k, j, a) => !(k === 'IG' && caps.IG === caps.FB)).map((k) => `<details><summary>${k === 'FB' && caps.IG === caps.FB ? 'FB／IG' : k} 文案</summary><pre>${esc(caps[k])}</pre></details>`).join('')}
-      <div class="btns"><button type="button" class="okb" data-act="ok"${st === 'ok' ? ' disabled' : ''}>${st === 'ok' ? '已通過 ✓' : '通過'}</button><button type="button" data-act="fix">要改</button></div>
-      <div class="fixbox" hidden><textarea placeholder="哪裡要改？例如：第 3 張字太多、Threads 開頭換一句、換題目"></textarea><div class="btns"><button type="button" class="okb" data-act="sendfix">送出意見</button><button type="button" data-act="cancel">取消</button></div></div>
+      ${(() => { const ks = ['FB', 'IG', 'Threads'].filter((k) => caps[k]).filter((k) => !(k === 'IG' && caps.IG === caps.FB)); if (!ks.length) return ''; const lab = (k) => k === 'FB' && caps.IG === caps.FB ? 'FB／IG' : k;
+        return `<div class="seg" role="group" aria-label="文案">${ks.map((k, j) => `<button type="button" data-cap="${k}" aria-pressed="${j === 0}">${lab(k)}</button>`).join('')}</div><div class="capbox">${esc(caps[ks[0]])}</div>`; })()}
+      <div class="btns"><button type="button" class="okb" data-act="ok"${st === 'ok' ? ' disabled' : ''}>${st === 'ok' ? '已通過 ✓' : '通過'}</button><button type="button" data-act="date">改日期</button><button type="button" data-act="fix">要改</button></div>
+      <div class="datebox" hidden><input type="date" min="${dayKey(new Date(Date.now() + 864e5))}"><div class="note2">選好日期按「用這天通過」，${r.kind === 'vid' ? '晚上 7 點' : '中午 11 點'}發。那天已經有貼文會自動順延。不用 Claude 改稿。</div><div class="btns"><button type="button" class="okb" data-act="okdate">用這天通過</button><button type="button" data-act="cancel">取消</button></div></div>
+      <div class="fixbox" hidden><div class="chips">${(r.kind === 'vid' ? ['開頭再好笑一點', '文案短一點', '換 hashtag', '機型寫錯了'] : ['換封面', '標題再短一點', '口氣再好笑一點', '圖片字太多', 'Threads 換一句']).map((c) => `<button type="button" data-chip="${esc(c)}" aria-pressed="false">${esc(c)}</button>`).join('')}</div><textarea placeholder="點上面的選項，或自己寫：例如第 3 張字太多、換題目"></textarea><div class="note2">一次把意見寫完整，Claude 只要改一次，比較省額度。</div><div class="btns"><button type="button" class="okb" data-act="sendfix">送出意見</button><button type="button" data-act="cancel">取消</button></div></div>
       ${st !== 'wait' ? '<div class="btns"><button type="button" class="ghost" data-act="clear">按錯了，撤回決定</button></div>' : ''}
       <div class="msg"></div>
     </article>`;
@@ -310,7 +385,8 @@ function renderStats() {
           const st = [['打開報價頁', f[0]], ['點機型', f[1]], ['加入維修項目', f[2]], ['按 LINE 預約', f[3]]];
           o += `<div class="sub-h">客人走到哪一步${w.funnelFrom ? `（${esc(w.funnelFrom)} 起）` : ''}</div>` + st.map(([t, v], i) => `<div class="tp"><div style="flex:1;min-width:0"><span>${t}</span><div class="bar"><i style="width:${Math.round((v || 0) / f[0] * 100)}%"></i></div></div><span class="v">${n(v)} 人${i ? `・${Math.round((v || 0) / f[0] * 100)}%` : ''}</span></div>`).join('');
         }
-        o += (w.items || []).length ? `<div class="sub-h">最想修的（機型＋項目，可參考備料）</div>` + w.items.map(row).join('') : '';
+        const trow = (m) => `<div class="tp"><span>${esc(m[0])}</span><span class="v">${n(m[1])} 次${dl(m[2])}<button type="button" class="mini" data-topic="${esc(m[0])}">做成貼文</button></span></div>`;
+        o += (w.items || []).length ? `<div class="sub-h">最想修的（機型＋項目，可參考備料）</div>` + w.items.map(trow).join('') : '';
         o += w.top.length ? `<div class="sub-h">最常查的機型（↑↓ 跟上週比）</div>` + w.top.map(row).join('') : '<div class="note2">還沒有人查機型</div>';
         o += (w.miss || []).length ? `<div class="sub-h">搜尋找不到的（價目表可以補）</div>` + w.miss.map(row).join('') : '';
         return o;
@@ -330,7 +406,25 @@ function renderStats() {
       ${(sc.queries || []).length ? `<div class="note2">大家搜尋：${sc.queries.map((q) => esc(q[0]) + `（${n(q[1])}）`).join('、')}</div>` : '<div class="note2">還沒有搜尋資料（Search Console 會晚 2～3 天）</div>'}`}
       <div class="note2">更新 ${esc(wb.asOf)}・每 30 分鐘・GA 數字本身會晚幾小時</div>` : '<div class="note2">還沒有資料，電腦下次同步後會出現</div>'}
       </section>`;
-  $('#stats').innerHTML = gcard + h;
+  // ② 最上面一排：本週 vs 上週
+  const dlt = (a, b) => { if (a == null || b == null) return ''; const d = a - b; return d > 0 ? `<span class="dlt up">↑${n(d)}</span>` : d < 0 ? `<span class="dlt down">↓${n(-d)}</span>` : '<span class="dlt flat">持平</span>'; };
+  const site = st.site || {}, gm = ((st.gbp || {}).months || []), thr = st.threads || {};
+  const tv = (thr.posts || []).reduce((a, p) => a + (p.views || 0), 0);
+  // 查路線用「上一個完整月份」比，避免月初拿 4 天跟整個月比
+  const thisM = `${new Date().getFullYear()}-${pad(new Date().getMonth() + 1)}`;
+  const full = gm.filter((x) => x.m < thisM), curM = full[full.length - 1] || {}, preM = full[full.length - 2] || {};
+  const kp = [
+    [wb.asOf ? n(wb.users) : '—', '人逛官網（7 天）', wb.asOf ? dlt(wb.users, wb.usersPrev) : ''],
+    [wb.asOf ? n((wb.phone || 0) + (wb.line || 0)) : '—', '按電話＋LINE（7 天）', wb.asOf ? dlt((wb.phone || 0) + (wb.line || 0), wb.contactPrev) : ''],
+    [n(curM.dirs), `Google 地圖查路線（${curM.m ? +curM.m.slice(5) + ' 月' : '本月'}）`, curM.m && preM.m ? dlt(curM.dirs, preM.dirs) : ''],
+    [n(tv), 'Threads 觀看（7 天）', ''],
+  ];
+  const sum = `<div class="sum">${kp.map(([v, l, d]) => `<div class="kpi"><b>${v}${d}</b><span>${l}</span></div>`).join('')}</div><div class="note2" style="margin:-6px 2px 10px">↑↓ 跟上週比（查路線跟上個月比）・點卡片看細節</div>`;
+  let all = gcard + h;
+  let open = {}; try { open = JSON.parse(localStorage.getItem('chiu189_open') || '{}'); } catch (e) {}
+  all = all.replace(/<section class="card"><h2>([^<]*)<\/h2>/g, (m0, t) => `<details class="card fold" data-k="${esc(t)}"${open[t] ? ' open' : ''}><summary><h2>${t}</h2></summary>`).replace(/<\/section>/g, '</details>');
+  $('#stats').innerHTML = sum + all;
+  $('#stats').querySelectorAll('details.fold').forEach((d) => d.addEventListener('toggle', () => { try { const o = JSON.parse(localStorage.getItem('chiu189_open') || '{}'); o[d.dataset.k] = d.open; localStorage.setItem('chiu189_open', JSON.stringify(o)); } catch (e) {} }));
 }
 
 async function decide(card, decision, note) {
@@ -348,18 +442,34 @@ async function decide(card, decision, note) {
     if (decision === 'clear') delete data.decisions[r.id]; else data.decisions[r.id] = { decision };
     renderToday(); renderReview();
     const m = document.querySelector(`.card[data-i="${card.dataset.i}"] .msg`);
-    if (m) m.textContent = decision === 'ok' ? '已存好！晚上 9:30 或早上 10:00 會自動排程，排好傳 LINE 給你。' : decision === 'fix' ? '意見收到，Claude 改好會再傳 LINE 給你。' : '已撤回。';
+    if (m) m.textContent = decision === 'ok' ? (note && note.startsWith('日期:') ? `已存好！會排在 ${+note.slice(8, 10)}/${+note.slice(11, 13)}，晚上 9:30 或早上 10:00 自動排程。` : '已存好！晚上 9:30 或早上 10:00 會自動排程，排好傳 LINE 給你。') : decision === 'fix' ? '意見收到，Claude 改好會再傳 LINE 給你。' : '已撤回。';
   } catch (e) { msg.textContent = '沒存到，請再按一次。'; card.querySelectorAll('button').forEach((b) => (b.disabled = false)); }
 }
 
 $('#list').addEventListener('click', (e) => {
+  const cb = e.target.closest('button[data-cap]');
+  if (cb) { const card = cb.closest('.card'), r = reviews()[+card.dataset.i]; card.querySelectorAll('.seg button').forEach((x) => x.setAttribute('aria-pressed', String(x === cb))); card.querySelector('.capbox').textContent = (r.caps || {})[cb.dataset.cap] || ''; return; }
+  const ch = e.target.closest('button[data-chip]');
+  if (ch) { const ta = ch.closest('.fixbox').querySelector('textarea'), on = ch.getAttribute('aria-pressed') !== 'true', c = ch.dataset.chip; ch.setAttribute('aria-pressed', String(on)); const parts = ta.value.split('、').map((x) => x.trim()).filter(Boolean).filter((x) => x !== c); if (on) parts.push(c); ta.value = parts.join('、'); return; }
   const b = e.target.closest('button[data-act]'); if (!b) return;
   const card = b.closest('.card'), act = b.dataset.act, box = card.querySelector('.fixbox');
+  const dbox = card.querySelector('.datebox');
   if (act === 'ok') decide(card, 'ok');
-  else if (act === 'fix') { box.hidden = false; box.querySelector('textarea').focus(); }
-  else if (act === 'cancel') box.hidden = true;
+  else if (act === 'fix') { dbox.hidden = true; box.hidden = false; }
+  else if (act === 'date') { box.hidden = true; dbox.hidden = false; }
+  else if (act === 'okdate') { const v = dbox.querySelector('input').value; if (!v) { dbox.querySelector('input').focus(); return; } decide(card, 'ok', '日期:' + v); }
+  else if (act === 'cancel') { box.hidden = true; dbox.hidden = true; }
   else if (act === 'sendfix') { const t = box.querySelector('textarea').value.trim(); if (!t) { box.querySelector('textarea').focus(); return; } decide(card, 'fix', t); }
   else if (act === 'clear') decide(card, 'clear');
+});
+$('#stats').addEventListener('click', async (e) => {
+  const b = e.target.closest('button[data-topic]'); if (!b) return;
+  e.preventDefault();
+  const topic = b.dataset.topic.replace('｜', ' ');
+  if (!confirm(`把「${topic}」設成下一篇貼文的題目？`)) return;
+  b.disabled = true;
+  try { const j = await askApi({ a: 'ask', text: `【下一篇題目】${topic}（報價頁很多人想修）` }); if (j) { b.textContent = '✓ 已指定'; toast('收到！15 分鐘內排進下一篇，晚上 8:10 做稿會用這題。'); } else b.disabled = false; }
+  catch (err) { b.disabled = false; toast(err.message === 'pin' ? '密碼不對，請再按一次。' : '沒送出去，請再按一次。'); }
 });
 $('#sched').addEventListener('click', (e) => { if (e.target.id === 'more') { showAll = true; renderSched(); } });
 document.querySelector('.tabs').addEventListener('click', (e) => { const b = e.target.closest('button[data-tab]'); if (b) { setTab(b.dataset.tab); window.scrollTo({ top: 0 }); } });
