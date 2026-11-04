@@ -365,7 +365,7 @@ function renderStats() {
       <div class="kpi"><b>${n(tot)}</b><span>總觀看</span></div></div>
       <div class="sub-h">每則觀看（高到低，點標題打開）</div>
       ${ps.map((p) => `<div class="tp"><div style="flex:1;min-width:0"><a href="${esc(p.url)}" target="_blank" rel="noopener">${esc(p.t)}</a><div class="bar"><i style="width:${Math.round((p.views || 0) / mx * 100)}%"></i></div></div><span class="v">${n(p.views)}</span></div>`).join('')}
-      <div class="note2">更新 ${esc(t.asOf || '')}・每天早上更新</div></section>`;
+      <div class="note2">更新 ${esc(t.asOf || '')}・每 30 分鐘更新</div></section>`;
   }
   const w = st.site;
   if (w) {
