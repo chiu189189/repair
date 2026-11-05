@@ -287,9 +287,12 @@ async function load(){
   renderTabs(); renderModels(); renderPanel();
 }
 
+// 品牌順序照客人多寡排（不照試算表順序）；沒列到的品牌排最後
+const BRAND_ORDER=["iPhone","三星","iPad","小米／紅米","OPPO","VIVO"];
+const brandRank=b=>{ const i=BRAND_ORDER.indexOf(b); return i<0?99:i; };
 function renderTabs(){
   $("#tabs").innerHTML="";
-  Object.keys(data).forEach(b=>{
+  Object.keys(data).sort((x,y)=>brandRank(x)-brandRank(y)).forEach(b=>{
     const el=document.createElement("button");
     el.textContent=b; el.className=b===brand?"on":"";
     el.onclick=()=>{ brand=b; model=null; $("#q").value=""; renderTabs(); renderModels(); renderPanel(); };
