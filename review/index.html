@@ -40,6 +40,9 @@ body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.55 -app
 .brand { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; padding: 14px 0 10px; }
 .brand h1 { font-size: 20px; margin: 0; letter-spacing: .02em; }
 .brand h1 span { color: var(--accent); }
+.brand .tools { display: flex; align-items: center; gap: 4px; }
+#bell { font-size: 17px !important; padding: 4px 8px !important; border-radius: 999px; opacity: .45; filter: grayscale(1); }
+#bell.on { opacity: 1; filter: none; }
 .brand button { background: none; border: 0; color: var(--sub); font: inherit; font-size: 13px; padding: 6px 0 6px 8px; cursor: pointer; }
 .tabs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; background: var(--soft); border-radius: 12px; padding: 4px; margin-bottom: 10px; }
 .tabs button { border: 0; background: none; color: var(--sub); font: inherit; font-weight: 700; font-size: 15px; min-height: 40px; border-radius: 9px; cursor: pointer; position: relative; }
@@ -201,7 +204,7 @@ textarea { width: 100%; min-height: 90px; border-radius: 10px; border: 1px solid
 <body>
 <div class="top">
   <div class="wrap">
-    <div class="brand"><h1><span>CHIU189</span> 秘書</h1><button id="reload" type="button">↻ 重新整理</button></div>
+    <div class="brand"><h1><span>CHIU189</span> 秘書</h1><span class="tools"><button id="bell" type="button" aria-label="手機通知">🔔</button><button id="reload" type="button">↻ 重新整理</button></span></div>
     <div class="tabs" role="tablist">
       <button type="button" role="tab" data-tab="review" aria-selected="true">首頁<span class="badge" id="badge" hidden></span></button>
       <button type="button" role="tab" data-tab="sched" aria-selected="false">行程</button>
@@ -351,7 +354,7 @@ function fullCard(r, i) {
   const d = (data.decisions || {})[r.id], st = d ? d.decision : 'wait', hot = (r.id || '').startsWith('hot-');
   const inner = (() => {
     if (hot) { const th = (r.caps || {}).Threads || '';
-      const htag = st === 'ok' ? '<span class="tag ok">已通過・5 分鐘內發 Threads</span>' : st === 'fix' ? '<span class="tag fix">不發・等系統拿掉</span>' : '<span class="tag wait">等你審・6 小時沒按自動作廢</span>';
+      const htag = st === 'ok' ? '<span class="tag ok">已通過・5 分鐘內發 Threads</span>' : st === 'fix' ? '<span class="tag fix">不發・等系統拿掉</span>' : '<span class="tag wait">等你審・沒按會自動作廢（晚上做的留到早上 10 點）</span>';
       return `<div>
       <h2>🔥 ${esc(clean(r.title))}</h2>
       <div class="meta"><b>熱議快訊・只發 Threads</b>・按通過 5 分鐘內發</div>
@@ -663,6 +666,36 @@ $('#reload').addEventListener('click', () => load());
 document.addEventListener('visibilitychange', () => { if (!document.hidden && Date.now() - lastLoad > 30000) load(true); });
 setInterval(() => { if (!document.hidden) load(true); }, 5 * 60 * 1000);
 load();
+
+// 🔔 手機通知（2026-11-05）：取代 LINE 秘書。iPhone 要先「加入主畫面」再從圖示打開
+const VKEY = 'BLhs0DJUE33sMiuIRjj2soT-aUv_vdtW3cdyiIPmvblvO-Ze0STOGeTNL3GMBRmfIBC3vI5y11X1QyTTRH-gAkA';
+const bell = $('#bell'), canPush = 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window;
+const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent), standalone = navigator.standalone || matchMedia('(display-mode: standalone)').matches;
+let swReg = null;
+const b64key = (s) => { s = s.replace(/-/g, '+').replace(/_/g, '/'); s += '='.repeat((4 - s.length % 4) % 4); return Uint8Array.from(atob(s), (c) => c.charCodeAt(0)); };
+const setBell = (on) => bell.classList.toggle('on', on);
+async function saveSub(sub, a) { const pin = getPin() || askPin(); if (!pin) throw new Error('nopin'); const res = await fetch(API, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ a: a || 'push_sub', pin, sub: sub.toJSON() }) }); const j = await res.json(); if (!j.ok && j.error === 'pin') { setPin(''); throw new Error('pin'); } if (!j.ok) throw new Error(j.error); }
+if (canPush) {
+  swReg = navigator.serviceWorker.register('sw.js').then(() => navigator.serviceWorker.ready);
+  swReg.then((r) => r.pushManager.getSubscription()).then((sub) => { if (sub && Notification.permission === 'granted') { setBell(true); if (getPin()) saveSub(sub).catch(() => {}); } }).catch(() => {});
+}
+bell.addEventListener('click', async () => {
+  if (/Line\//.test(navigator.userAgent)) return alert('LINE 裡面沒辦法開通知，請按右上角「⋯」→ 用預設瀏覽器開啟，再按 🔔。');
+  if (isIOS && !standalone) return alert('iPhone 要先加到主畫面：\n1. 用 Safari 打開這頁\n2. 按下方「分享」⬆︎\n3. 選「加入主畫面」\n4. 從主畫面的 CHIU189 審稿 圖示打開，再按 🔔');
+  if (!canPush) return alert('這個瀏覽器不支援通知，請用 iPhone 主畫面圖示或 Chrome 打開。');
+  try {
+    const r = await swReg;
+    let sub = await r.pushManager.getSubscription();
+    if (bell.classList.contains('on') && sub) {
+      if (!confirm('要關掉手機通知嗎？')) return;
+      await saveSub(sub, 'push_unsub').catch(() => {}); await sub.unsubscribe(); setBell(false); return toast('已關掉通知');
+    }
+    const p = await Notification.requestPermission();
+    if (p !== 'granted') return alert('通知被關掉了：請到 iPhone「設定 → 通知 → CHIU189 審稿」打開，再按一次 🔔。');
+    sub = sub || await r.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64key(VKEY) });
+    await saveSub(sub); setBell(true); toast('已開啟！有新稿、排程結果會直接通知你 🔔');
+  } catch (e) { toast(e.message === 'pin' ? '密碼不對，請再按一次 🔔' : e.message === 'nopin' ? '要輸入審稿密碼才能開通知' : '沒開成功，請再按一次 🔔'); }
+});
 </script>
 </body>
 </html>
