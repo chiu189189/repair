@@ -7,7 +7,7 @@
 <meta http-equiv="Cache-Control" content="no-cache">
 <meta name="theme-color" content="#14130f" media="(prefers-color-scheme: dark)">
 <meta name="theme-color" content="#f4f1ea" media="(prefers-color-scheme: light)">
-<meta name="apple-mobile-web-app-title" content="CHIU189 審稿">
+<meta name="apple-mobile-web-app-title" content="秘書">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -186,6 +186,7 @@ textarea { width: 100%; min-height: 90px; border-radius: 10px; border: 1px solid
 .act .btns button { min-height: 48px; font-size: 16px; }
 .act .full { margin-top: 12px; border-top: 1px dashed var(--line); padding-top: 6px; }
 .act .full[hidden] { display: none; }
+.act:has(.full:not([hidden])) .row1 .th { display: none; }  /* 展開全文時藏縮圖，照片不重複 */
 .linkb { background: none; border: 0; color: var(--sub); font: inherit; font-size: 13.5px; padding: 8px 0 0; cursor: pointer; }
 .mini3 .it { padding: 9px 14px; }
 .mini3 .st { font-size: 12.5px; white-space: nowrap; color: var(--sub); padding-top: 2px; }
