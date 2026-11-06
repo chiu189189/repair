@@ -430,8 +430,8 @@ function renderMini() {
   const tv = (thr.posts || []).reduce((a, p) => a + (p.views || 0), 0);
   $('#mini').innerHTML = `<div class="sec">接下來 3 天<button type="button" data-go="sched">看全部 ›</button></div>`
     + (rows.length ? `<div class="list mini3">${rows.join('')}</div>` : '<div class="empty" style="padding:16px">這 3 天還沒有排</div>')
-    + `<div class="sec">這週成效<button type="button" data-go="stats">看細節 ›</button></div>
-    <button type="button" class="card funnel" data-go="stats"><div class="f"><b>${n(tv)}</b><span>👀 看到</span></div><span class="ar">→</span><div class="f"><b>${wb.asOf ? n(wb.users) : '—'}</b><span>🌐 逛官網</span></div><span class="ar">→</span><div class="f"><b>${n(curM.dirs)}</b><span>🏃 查路線</span></div></button>`;
+    + `<div class="sec">最近成效<button type="button" data-go="stats">看細節 ›</button></div>
+    <button type="button" class="card funnel" data-go="stats"><div class="f"><b>${n(tv)}</b><span>👀 看到</span></div><span class="ar">→</span><div class="f"><b>${wb.asOf ? n(wb.users) : '—'}</b><span>🌐 逛官網</span></div><span class="ar">→</span><div class="f"><b>${n(curM.dirs)}</b><span>🏃 ${curM.m ? +curM.m.slice(5) + '月' : ''}查路線</span></div></button>`;
 }
 $('#mini').addEventListener('click', (e) => { const b = e.target.closest('[data-go]'); if (b) { setTab(b.dataset.go); window.scrollTo({ top: 0 }); } });
 $('#done').addEventListener('click', (e) => { const b = e.target.closest('button[data-act="clear"]'); if (b) decide(b.closest('.card'), 'clear'); });
@@ -531,7 +531,7 @@ function renderStats() {
   const thisM = `${new Date().getFullYear()}-${pad(new Date().getMonth() + 1)}`;
   const full = gm.filter((x) => x.m < thisM), curM = full[full.length - 1] || {}, preM = full[full.length - 2] || {};
   const kp = [
-    [wb.asOf ? n(wb.users) : '—', '人逛官網（7 天）', wb.asOf ? dlt(wb.users, wb.usersPrev) : ''],
+    [wb.asOf ? n(wb.users) : '—', '人逛官網（7 天）', wb.asOf && wb.usersPrev ? dlt(wb.users, wb.usersPrev) : ''],
     [wb.asOf ? n((wb.phone || 0) + (wb.line || 0)) : '—', '按電話＋LINE（7 天）', wb.asOf ? dlt((wb.phone || 0) + (wb.line || 0), wb.contactPrev) : ''],
     [n(curM.dirs), `Google 地圖查路線（${curM.m ? +curM.m.slice(5) + ' 月' : '本月'}）`, curM.m && preM.m ? dlt(curM.dirs, preM.dirs) : ''],
     [n(tv), 'Threads 觀看（7 天）', ''],
@@ -575,7 +575,7 @@ function renderStats() {
   const simple = `<div class="note2" style="margin:2px 2px 10px;font-size:14px;line-height:1.6">由上往下看：客人<b>看到我們</b> → <b>逛官網</b> → <b>來店</b></div>`
     + big('👀', '看到我們的人', n(tv), '次觀看', `Threads 最近 7 天・粉絲 ${n(thr.followers)} 人`, '', '')
     + arrow
-    + big('🌐', '逛官網的人', wb.asOf ? n(wb.users) : '—', '人', '最近 7 天・chiu189.com.tw', wb.asOf ? vs(wb.users, wb.usersPrev, '上週') : '', `其中 ${want == null ? '—' : n(want)} 人按了電話或 LINE`)
+    + big('🌐', '逛官網的人', wb.asOf ? n(wb.users) : '—', '人', '最近 7 天・chiu189.com.tw', wb.asOf ? (wb.usersPrev ? vs(wb.users, wb.usersPrev, '上週') : '<span class="dlt flat" style="font-size:12.5px;white-space:nowrap">11/4 才開始記錄</span>') : '', `其中 ${want == null ? '—' : n(want)} 人按了電話或 LINE`)
     + arrow
     + big('🏃', '想來店的人', n(curM.dirs || 0), '次查路線', `${curM.m ? +curM.m.slice(5) + ' 月' : '上個月'}在 Google 地圖按「路線」的次數（Google 只給到上個月）`, curM.m && preM.m ? vs(curM.dirs, preM.dirs, '上月') : '', '')
     + (tops.length ? `<div class="card" style="padding:14px 16px;margin:14px 0 10px"><div style="font-size:15px;font-weight:700;margin-bottom:4px">🔥 最近最紅的 ${tops.length} 篇</div><div style="font-size:12.5px;color:var(--sub);margin-bottom:4px">Threads・最近 7 天・點標題打開</div>${tops.map((p, k) => `<div class="tp"><div style="flex:1;min-width:0;line-height:1.45"><a href="${esc(p.url)}" target="_blank" rel="noopener">${k + 1}. ${esc(p.t)}</a></div><span class="v" style="white-space:nowrap">${n(p.views)}</span></div>`).join('')}</div>` : '');
