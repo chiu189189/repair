@@ -577,7 +577,7 @@ function renderStats() {
     + arrow
     + big('🌐', '逛官網的人', wb.asOf ? n(wb.users) : '—', '人', '最近 7 天・chiu189.com.tw', wb.asOf ? vs(wb.users, wb.usersPrev, '上週') : '', `其中 ${want == null ? '—' : n(want)} 人按了電話或 LINE`)
     + arrow
-    + big('🏃', '想來店的人', n(curM.dirs || 0), '次查路線', `Google 地圖 ${curM.m ? +curM.m.slice(5) + ' 月' : ''}有人按「路線」找店`, curM.m && preM.m ? vs(curM.dirs, preM.dirs, '上月') : '', '')
+    + big('🏃', '想來店的人', n(curM.dirs || 0), '次查路線', `${curM.m ? +curM.m.slice(5) + ' 月' : '上個月'}在 Google 地圖按「路線」的次數（Google 只給到上個月）`, curM.m && preM.m ? vs(curM.dirs, preM.dirs, '上月') : '', '')
     + (tops.length ? `<div class="card" style="padding:14px 16px;margin:14px 0 10px"><div style="font-size:15px;font-weight:700;margin-bottom:4px">🔥 最近最紅的 ${tops.length} 篇</div><div style="font-size:12.5px;color:var(--sub);margin-bottom:4px">Threads・最近 7 天・點標題打開</div>${tops.map((p, k) => `<div class="tp"><div style="flex:1;min-width:0;line-height:1.45"><a href="${esc(p.url)}" target="_blank" rel="noopener">${k + 1}. ${esc(p.t)}</a></div><span class="v" style="white-space:nowrap">${n(p.views)}</span></div>`).join('')}</div>` : '');
   const more = `<details class="card fold" data-k="__more"${open.__more ? ' open' : ''}><summary><h2>看詳細數據</h2></summary><div class="note2" style="margin-bottom:8px">比較複雜，平常不用看；要問什麼直接到「交代」問就好。</div>${sum}${all}</details>`;
   $('#stats').innerHTML = simple + more;
