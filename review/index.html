@@ -60,6 +60,10 @@ body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.55 -app
 /* 要你處理 vs 提醒 */
 .todo.act a, .todo.act button.ti { font-weight: 600; }
 .todo.act .go { background: var(--accent); color: var(--accent-ink); font-weight: 700; padding: 6px 12px; border-radius: 999px; font-size: 13.5px; }
+.vchips { display: flex; flex-wrap: wrap; gap: 8px; }
+.vchips button { border: 1px solid var(--line); background: var(--soft); color: var(--ink); font: inherit; font-size: 14.5px; padding: 8px 12px; border-radius: 999px; cursor: pointer; min-height: 40px; }
+.vchips button b { color: var(--accent); margin-left: 2px; }
+.vchips button:active { transform: scale(.96); }
 .remind { display: flex; gap: 10px; align-items: center; width: 100%; text-align: left; background: var(--soft); border: 0; border-radius: 12px; padding: 10px 14px; margin: 0 0 8px; color: var(--sub); font: inherit; font-size: 14px; cursor: pointer; }
 .remind .tx { flex: 1; min-width: 0; }
 .remind .go { font-size: 13px; flex: none; }
@@ -232,7 +236,7 @@ textarea { width: 100%; min-height: 90px; border-radius: 10px; border: 1px solid
 
 <main class="wrap">
   <div id="today" class="today"><div class="hd">載入中…</div></div>
-  <section class="pane" id="pane-review"><div id="greet" class="greet"></div><div id="list"></div><div id="todo"></div><div id="mini"></div><div id="done"></div></section>
+  <section class="pane" id="pane-review"><div id="greet" class="greet"></div><div id="list"></div><div id="todo"></div><div id="visit"></div><div id="mini"></div><div id="done"></div></section>
   <section class="pane" id="pane-sched" hidden><div id="sched"></div></section>
   <section class="pane" id="pane-stats" hidden><div id="stats"></div></section>
   <section class="pane" id="pane-ask" hidden>
@@ -299,7 +303,7 @@ async function load(quiet) {
   btn.disabled = false; loading = false;
 }
 
-function render() { renderToday(); renderReview(); renderTodo(); renderMini(); renderSched(); renderStats(); }
+function render() { renderToday(); renderReview(); renderTodo(); renderVisit(); renderMini(); renderSched(); renderStats(); }
 
 
 function toast(t, undo) {
@@ -316,7 +320,7 @@ function renderTodo() {
   const waiting = rv.filter((x) => !(data.decisions || {})[x.id]).length;
   todoN = out.length;
   const g = st.gbp;
-  if (g && g.unreplied) out.push(['r', `${g.unreplied} 則 Google 評論還沒回（每週一更新）`, 'https://business.google.com/reviews', '去回覆']);
+  if (g && g.unreplied) out.push(['r', `${g.unreplied} 則 Google 評論還沒回（${String(g.reviewsAsOf || g.asOf || '').slice(5, 16).replace('-', '/')} 的資料，每晚更新）`, 'https://business.google.com/reviews', '去回覆']);
   const ago = new Date(now.getTime() - 3 * 864e5);
   items.filter((x) => x.ck === 'fail' && new Date(x.at.replace(' ', 'T')) > ago).forEach((x) => out.push(['r', `${md(x.at.slice(0, 10))}「${clean(x.t).slice(0, 16)}」沒發出去`, 'sched', '看行程']));
   // 接下來 7 天：中午沒圖文、晚上沒影片（已審待排的也算有）
@@ -443,6 +447,29 @@ function renderReview() {
       <div class="msg"></div></article>`;
   }).join('') : '';
 }
+// 今天來店：客人修完點一下從哪來（2026-11-07）
+const VSRC = ['Google 地圖', 'IG', 'FB', 'Threads', 'LINE 廣告', '官網', '路過', '熟客介紹', '其他'];
+function renderVisit() {
+  const today = (data.visits || {})[dayKey(new Date())] || {}, tot = Object.values(today).reduce((a, b) => a + b, 0);
+  $('#visit').innerHTML = `<div class="sec">今天來店<span style="font-weight:400">${tot ? `已記 ${tot} 位` : '客人修完點一下從哪來'}</span></div>
+    <div class="card" style="padding:12px 14px"><div class="vchips">${VSRC.map((s) => `<button type="button" data-src="${esc(s)}">${esc(s)}${today[s] ? ` <b>${today[s]}</b>` : ''}</button>`).join('')}</div></div>`;
+}
+$('#visit').addEventListener('click', async (e) => {
+  const b = e.target.closest('button[data-src]'); if (!b) return;
+  const src = b.dataset.src;
+  const send = async (op) => {
+    const pin = getPin() || askPin(); if (!pin) return null;
+    const res = await fetch(API, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ a: 'visit', src, op, pin }) });
+    const j = await res.json();
+    if (!j.ok && j.error === 'pin') { setPin(''); toast('密碼不對，請再按一次。'); return null; }
+    if (!j.ok) throw new Error(j.error);
+    (data.visits = data.visits || {})[dayKey(new Date())] = j.today; renderVisit(); renderStats(); return j;
+  };
+  b.disabled = true;
+  try { if (await send('add')) toast(`已記一位：${src}`, () => send('undo').then(() => toast('已復原')).catch(() => toast('沒復原到，請再按一次'))); }
+  catch (err) { toast('沒記到，請再按一次。'); }
+  b.disabled = false;
+});
 function renderMini() {
   // 接下來 3 天（含今天還沒到的）＋這週一行成效
   const items = sched().schedule || [], now = new Date(), end = dayKey(new Date(now.getTime() + 2 * 864e5)), tk = dayKey(now);
@@ -600,13 +627,42 @@ function renderStats() {
     <div style="display:flex;align-items:center;justify-content:space-between;gap:8px"><div style="font-size:15px;font-weight:700">${emo} ${title}</div>${cmp}</div>
     <div style="font-size:34px;font-weight:800;line-height:1.15;margin-top:6px">${num}<span style="font-size:15px;font-weight:600;color:var(--sub);margin-left:6px">${unit}</span></div>
     <div style="font-size:13px;color:var(--sub);margin-top:4px">${desc}</div>${sub ? `<div style="font-size:13px;color:var(--sub);margin-top:2px">${sub}</div>` : ''}</div>`;
-  const arrow = '<div style="text-align:center;color:var(--sub);font-size:13px;margin:0 0 6px">↓</div>';
-  const simple = `<div class="note2" style="margin:2px 2px 10px;font-size:14px;line-height:1.6">由上往下看：客人<b>看到我們</b> → <b>逛官網</b> → <b>來店</b></div>`
-    + big('👀', '看到我們的人', n(tv), '次觀看', `Threads 最近 7 天・粉絲 ${n(thr.followers)} 人`, '', '')
-    + arrow
+  const arrow = '';
+  // 2026-11-07 成效改版：結果（來店）放最上面 → 廣告 → 官網 → 社群曝光；最上面一兩句建議
+  const V = data.visits || {};
+  const vSum = (days) => { const out = {}; let tot = 0; for (let i = 0; i < days; i++) { const k = dayKey(new Date(Date.now() - i * 864e5)); Object.entries(V[k] || {}).forEach(([s, c]) => { out[s] = (out[s] || 0) + c; tot += c; }); } return [tot, out]; };
+  const [v30, v30s] = vSum(30), [v7] = vSum(7);
+  const ads = (st.ads || {}).ads || [];
+  const views = (thr.posts || []).map((p) => p.views || 0).sort((a, b) => a - b);
+  const med = views.length ? views[Math.floor((views.length - 1) / 2)] : null;
+  const topP = tops[0], share = topP && tv ? Math.round((topP.views || 0) / tv * 100) : 0;
+  // 這週建議（最多 2 句）
+  const tips = [];
+  if (g && g.unreplied) tips.push(`有 ${g.unreplied} 則 Google 評論還沒回，回了會讓更多人信任你。`);
+  const live = ads.filter((a) => a.clicks >= 10 && a.cpc_twd);
+  if (live.length >= 2) { const s = live.slice().sort((a, b) => a.cpc_twd - b.cpc_twd); const x = s[s.length - 1].cpc_twd / s[0].cpc_twd; if (x >= 1.5) tips.push(`廣告「${s[0].name}」每次點擊 NT$${s[0].cpc_twd}，比「${s[s.length - 1].name}」便宜 ${x.toFixed(1)} 倍。`); }
+  if (ct && ct.by && ct.by.kind && ct.by.kind.IG) { const k = ct.by.kind.IG.filter((r) => r[2] >= 3).sort((a, b) => b[1] - a[1]); if (k.length >= 2 && k[0][1] >= k[k.length - 1][1] * 1.5) tips.push(`IG 上「${k[0][0]}」一般一篇 ${n(k[0][1])} 次，是「${k[k.length - 1][0]}」的 ${(k[0][1] / Math.max(1, k[k.length - 1][1])).toFixed(1)} 倍，可以多排。`); }
+  if (!v7) tips.push('客人修完在首頁點一下「今天來店」的來源，一個月後就知道哪個管道真的帶客人。');
+  const tipBox = tips.length ? `<div class="card" style="padding:12px 16px;margin-bottom:12px;background:var(--soft);border-color:transparent"><div style="font-size:13px;font-weight:700;color:var(--sub);margin-bottom:4px">💡 這週建議</div>${tips.slice(0, 2).map((t) => `<div style="font-size:15px;line-height:1.55;margin:2px 0">・${esc(t)}</div>`).join('')}</div>` : '';
+  const line = (l, v, s) => `<div class="tp"><span>${l}</span><span class="v" style="white-space:nowrap">${v}${s ? ` <span style="color:var(--sub);font-size:12px;font-weight:400">${s}</span>` : ''}</span></div>`;
+  const vmax = Math.max(1, ...Object.values(v30s));
+  const visitCard = `<div class="card" style="padding:14px 16px;margin-bottom:10px">
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:8px"><div style="font-size:15px;font-weight:700">🏃 來店訊號</div></div>
+    <div style="font-size:34px;font-weight:800;line-height:1.15;margin-top:6px">${n(v30)}<span style="font-size:15px;font-weight:600;color:var(--sub);margin-left:6px">位客人有記錄來源</span></div>
+    <div style="font-size:13px;color:var(--sub);margin:2px 0 6px">最近 30 天・在首頁「今天來店」點的</div>
+    ${Object.entries(v30s).sort((a, b) => b[1] - a[1]).map(([s, c]) => `<div class="tp"><div style="flex:1;min-width:0"><span>${esc(s)}</span><div class="bar"><i style="width:${Math.round(c / vmax * 100)}%"></i></div></div><span class="v">${c} 位</span></div>`).join('')}
+    ${line('Google 地圖查路線', n(curM.dirs), (curM.m ? +curM.m.slice(5) + ' 月整月' : '') + (curM.m && preM.m && curM.dirs != null && preM.dirs != null ? `（${curM.dirs >= preM.dirs ? '+' : ''}${curM.dirs - preM.dirs}）` : ''))}
+    ${line('Google 商家打電話', n(curM.calls), curM.m ? +curM.m.slice(5) + ' 月整月' : '')}
+    ${line('官網按電話／LINE', want == null ? '—' : n(want), '近 7 天')}</div>`;
+  const adCard = ads.length ? `<div class="card" style="padding:14px 16px;margin-bottom:10px">
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:8px"><div style="font-size:15px;font-weight:700">📣 廣告</div><span style="font-size:12.5px;color:var(--sub)">${esc(st.ads.range)}</span></div>
+    <div style="font-size:34px;font-weight:800;line-height:1.15;margin-top:6px">NT$${n(st.ads.twd)}<span style="font-size:15px;font-weight:600;color:var(--sub);margin-left:6px">換到 ${n(st.ads.clicks)} 次點擊</span></div>
+    ${ads.map((a) => `<div class="tp" style="align-items:flex-start"><div style="flex:1;min-width:0;line-height:1.4"><b style="font-weight:600">${esc(a.name)}</b><div style="font-size:12.5px;color:var(--sub)">${a.on ? `播到 ${esc(a.end)}` : '已停'}・看到 ${n(a.reach)} 人・NT$${n(a.twd)}</div></div><span class="v" style="text-align:right;white-space:nowrap">${n(a.clicks)} 次點擊<div style="font-size:12px;color:var(--sub);font-weight:400">每次 NT$${a.cpc_twd == null ? '—' : a.cpc_twd}</div></span></div>`).join('')}
+    <div class="note2">美金約 ×${st.ads.rate} 換算・更新 ${esc(st.ads.asOf)}・每 2 小時</div></div>` : '';
+  const simple = tipBox + visitCard + adCard
     + big('🌐', '逛官網的人', wb.asOf ? n(wb.users) : '—', '人', '最近 7 天・chiu189.com.tw', wb.asOf ? (wb.usersPrev ? vs(wb.users, wb.usersPrev, '上週') : '<span class="dlt flat" style="font-size:12.5px;white-space:nowrap">11/4 才開始記錄</span>') : '', `其中 ${want == null ? '—' : n(want)} 人按了電話或 LINE`)
-    + arrow
-    + big('🏃', '想來店的人', n(curM.dirs || 0), '次查路線', `${curM.m ? +curM.m.slice(5) + ' 月' : '上個月'}在 Google 地圖按「路線」的次數（Google 只給到上個月）`, curM.m && preM.m ? vs(curM.dirs, preM.dirs, '上月') : '', '')
+    + `<div style="height:4px"></div>`
+    + big('👀', 'Threads 一般一篇', med == null ? '—' : n(med), '次觀看', `最近 7 天 ${views.length} 篇・粉絲 ${n(thr.followers)} 人（中位數，不會被爆紅那篇拉高）`, '', topP && share >= 40 ? `🔥 爆紅 1 篇占了 ${share}%：${esc(String(topP.t).slice(0, 18))}…` : '')
     + (tops.length ? `<div class="card" style="padding:14px 16px;margin:14px 0 10px"><div style="font-size:15px;font-weight:700;margin-bottom:4px">🔥 最近最紅的 ${tops.length} 篇</div><div style="font-size:12.5px;color:var(--sub);margin-bottom:4px">Threads・最近 7 天・點標題打開</div>${tops.map((p, k) => `<div class="tp"><div style="flex:1;min-width:0;line-height:1.45"><a href="${esc(p.url)}" target="_blank" rel="noopener">${k + 1}. ${esc(p.t)}</a></div><span class="v" style="white-space:nowrap">${n(p.views)}</span></div>`).join('')}</div>` : '');
   const more = `<details class="card fold" data-k="__more"${open.__more ? ' open' : ''}><summary><h2>看詳細數據</h2></summary><div class="note2" style="margin-bottom:8px">比較複雜，平常不用看；要問什麼直接到「交代」問就好。</div>${sum}${all}</details>`;
   $('#stats').innerHTML = simple + more;
