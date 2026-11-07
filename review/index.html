@@ -84,6 +84,10 @@ body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.55 -app
 .qbar { flex: 1; height: 8px; background: var(--soft); border-radius: 4px; overflow: hidden; }
 .qbar i { display: block; height: 100%; background: var(--accent); border-radius: 4px; }
 .qv { width: 44px; text-align: right; font-weight: 700; font-variant-numeric: tabular-nums; font-size: 13.5px; }
+.qdays { display: flex; align-items: flex-end; gap: 3px; height: 74px; margin: 10px 0 4px; }
+.qdays div { flex: 1; min-width: 0; height: 100%; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; }
+.qdays i { display: block; width: 100%; background: color-mix(in srgb, var(--accent) 75%, transparent); border-radius: 3px 3px 0 0; }
+.qdays span { font-size: 10.5px; color: var(--sub); margin-top: 3px; white-space: nowrap; height: 14px; }
 .qmiss { display: flex; flex-wrap: wrap; gap: 6px; padding-bottom: 6px; }
 .qmiss span { background: color-mix(in srgb, var(--fix) 10%, transparent); color: var(--fix); border-radius: 999px; padding: 3px 10px; font-size: 13.5px; font-weight: 600; }
 .sv .mini { margin-left: 8px; }
@@ -565,32 +569,7 @@ function renderStats() {
       ${ps.map((p) => `<div class="tp"><div style="flex:1;min-width:0"><a href="${esc(p.url)}" target="_blank" rel="noopener">${esc(p.t)}</a><div class="bar"><i style="width:${Math.round((p.views || 0) / mx * 100)}%"></i></div></div><span class="v">${n(p.views)}</span></div>`).join('')}
       <div class="note2">更新 ${esc(t.asOf || '')}・每 30 分鐘更新</div></section>`;
   }
-  const w = st.site;
-  if (w) {
-    const mx = Math.max(1, ...w.daily.map((d) => d[1]));
-    const diff = (a, b) => (b ? `（前 7 天 ${n(b)}）` : '');
-    h = `<section class="card"><h2>報價網站</h2><div class="meta">最近 7 天・不記錄個人資料</div>
-      <div class="kpis"><div class="kpi"><b>${n(w.view)}</b><span>人瀏覽${diff(w.view, w.viewPrev)}</span></div>
-      <div class="kpi"><b>${n(w.book)}</b><span>人按預約${diff(w.book, w.bookPrev)}</span></div>
-      <div class="kpi"><b>${w.view ? Math.round(w.book / w.view * 100) + '%' : '—'}</b><span>預約率</span></div></div>
-      <div style="display:flex;gap:6px;align-items:flex-end;height:64px;margin:10px 0 4px">${w.daily.map((d) => `<div style="flex:1;text-align:center;font-size:11px;color:var(--sub)"><div style="background:var(--accent);border-radius:4px 4px 0 0;height:${Math.max(2, Math.round(d[1] / mx * 44))}px;margin-bottom:3px" title="${d[1]}"></div>${esc(d[0].replace('-', '/'))}</div>`).join('')}</div>
-      ${(() => {
-        const dl = (x) => x == null ? '' : x > 0 ? ` <span style="color:var(--ok,#06c755);font-size:12px">↑${x}</span>` : x < 0 ? ` <span style="color:var(--fix);font-size:12px">↓${-x}</span>` : '';
-        const row = (m) => `<div class="tp"><span>${esc(m[0])}</span><span class="v">${n(m[1])} 次${dl(m[2])}</span></div>`;
-        let o = '';
-        const f = w.funnel;
-        if (f && f[0]) {
-          const st = [['打開報價頁', f[0]], ['點機型', f[1]], ['加入維修項目', f[2]], ['按 LINE 預約', f[3]]];
-          o += `<div class="sub-h">客人走到哪一步${w.funnelFrom ? `（${esc(w.funnelFrom)} 起）` : ''}</div>` + st.map(([t, v], i) => `<div class="tp"><div style="flex:1;min-width:0"><span>${t}</span><div class="bar"><i style="width:${Math.round((v || 0) / f[0] * 100)}%"></i></div></div><span class="v">${n(v)} 人${i ? `・${Math.round((v || 0) / f[0] * 100)}%` : ''}</span></div>`).join('');
-        }
-        const trow = (m) => `<div class="tp"><span>${esc(m[0])}</span><span class="v">${n(m[1])} 次${dl(m[2])}<button type="button" class="mini" data-topic="${esc(m[0])}">做成貼文</button></span></div>`;
-        o += (w.items || []).length ? `<div class="sub-h">最想修的（機型＋項目，可參考備料）</div>` + w.items.map(trow).join('') : '';
-        o += w.top.length ? `<div class="sub-h">最常查的機型（↑↓ 跟上週比）</div>` + w.top.map(row).join('') : '<div class="note2">還沒有人查機型</div>';
-        o += (w.miss || []).length ? `<div class="sub-h">搜尋找不到的（價目表可以補）</div>` + w.miss.map(row).join('') : '';
-        return o;
-      })()}
-      <div class="note2">更新 ${esc(w.asOf || '')}</div></section>` + h;
-  }
+  // 2026-11-07：舊「報價網站」卡和最上面「🔍 客人在查什麼」重複，拿掉
   const wb = st.web || {}, sc = wb.search || {};
   const wmx = Math.max(1, ...(wb.daily || []).map((d) => d[1]));
   const gcard = `<section class="card"><h2>官網搜尋與流量</h2><div class="meta">chiu189.com.tw・最近 7 天${wb.now ? `・<b style="color:var(--ok,#06c755);display:inline">現在 ${n(wb.now)} 人在看</b>` : ''}</div>
@@ -696,7 +675,9 @@ function renderStats() {
     const brands = bt ? (Q.brands || []).filter((b) => b[0] !== '其他' || b[1] / bt >= .05).map(([k, v]) => `${esc(k)} ${Math.round(v / bt * 100)}%`).join('・') : '';
     const sub = (t, x) => `<div class="qh">${t}${x ? `<small>${x}</small>` : ''}</div>`;
     return `<div class="sc"><div class="sc-hd"><span>🔍 客人在查什麼</span><span class="seg2">${['7', '30'].map((k) => `<button type="button" data-qr="${k}" aria-pressed="${qr === k}">${k} 天</button>`).join('')}</span></div>
-      <div class="sc-big"><b>${n(Q.view)}</b><i>次打開報價頁</i></div><div class="sc-desc">${(Q.funnel || [])[0] !== Q.view ? '下面的步驟從 11/4 開始記錄，所以第一格比較少' : '下面是一步步走到預約的人數'}</div>
+      <div class="sc-big"><b>${n(Q.view)}</b><i>次打開報價頁</i></div>
+      ${(Q.daily || []).length ? (() => { const dd = Q.daily, mx = Math.max(1, ...dd.map((x) => x[1])); return `<div class="qdays">${dd.map(([d, v], i) => `<div title="${esc(d)} ${v} 次"><i style="height:${Math.max(2, Math.round(v / mx * 100))}%"></i>${dd.length <= 7 || i === 0 || i === dd.length - 1 || i % 7 === 0 ? `<span>${esc(d)}</span>` : '<span></span>'}</div>`).join('')}</div>`; })() : ''}
+      <div class="sc-desc qdesc">${(Q.funnel || [])[0] !== Q.view ? '下面的步驟從 11/4 開始記錄，所以第一格比較少' : '下面是一步步走到預約的人數'}</div>
       ${steps}
       ${(Q.cats || []).length ? sub('想修什麼', '客人加進報價的項目') + bars(Q.cats, ' 次') : ''}
       ${(Q.models || []).length ? sub('查最多的機型', brands) + bars(Q.models.slice(0, 6), ' 次') : ''}
