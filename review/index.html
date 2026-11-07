@@ -350,12 +350,17 @@ function hotExpire(id) {
   if (d.getHours() >= 22 || d.getHours() < 7) { const e = new Date(d); if (d.getHours() >= 22) e.setDate(e.getDate() + 1); e.setHours(10, 0, 0, 0); return e; }
   return new Date(d.getTime() + 6 * 3600e3);
 }
+function hotFixLab(d) {
+  // 熱議按「不發」或「要改」都是 decision fix；意見只存在按的那支手機上，別台看到的是通用文字
+  const n = (d && d.note) || '';
+  return n === '熱議不發' ? '不發・等系統拿掉' : n ? '要改・Claude 改好會傳 LINE' : '不發或要改・等系統處理';
+}
 function fullCard(r, i) {
   // 原本的完整卡片（圖、查證、文案、改日期、要改）→ 收在「看全文」裡
   const d = (data.decisions || {})[r.id], st = d ? d.decision : 'wait', hot = (r.id || '').startsWith('hot-');
   const inner = (() => {
     if (hot) { const th = (r.caps || {}).Threads || '';
-      const htag = st === 'ok' ? '<span class="tag ok">已通過・5 分鐘內發 Threads</span>' : st === 'fix' ? '<span class="tag fix">不發・等系統拿掉</span>' : '<span class="tag wait">等你審・沒按會自動作廢（晚上做的留到早上 10 點）</span>';
+      const htag = st === 'ok' ? '<span class="tag ok">已通過・5 分鐘內發 Threads</span>' : st === 'fix' ? `<span class="tag fix">${hotFixLab(d)}</span>` : '<span class="tag wait">等你審・沒按會自動作廢（晚上做的留到早上 10 點）</span>';
       return `<div>
       <h2>🔥 ${esc(clean(r.title))}</h2>
       <div class="meta"><b>熱議快訊・只發 Threads</b>・按通過 5 分鐘內發</div>
@@ -363,7 +368,8 @@ function fullCard(r, i) {
       <div class="imgs">${(r.imgs || []).map((src, k) => `<img src="${esc(src)}" alt="第 ${k + 1} 張圖" loading="lazy">`).join('')}</div>
       <ul class="check">${(r.check || []).map((c) => `<li>${esc(c)}</li>`).join('')}</ul>
       <div class="capbox">${esc(th)}</div>
-      ${st === 'wait' ? '<div class="btns"><button type="button" class="okb" data-act="ok">通過，馬上發</button><button type="button" data-act="hotno">不發</button></div>' : '<div class="btns"><button type="button" class="ghost" data-act="clear">按錯了，撤回決定</button></div>'}
+      ${st === 'wait' ? `<div class="btns"><button type="button" class="okb" data-act="ok">通過，馬上發</button><button type="button" data-act="fix">要改</button><button type="button" data-act="hotno">不發</button></div>
+      <div class="fixbox" hidden><div class="chips">${['文案再短一點', '口氣再好笑一點', '換一張圖', '圖上的字改一下', '傳聞要寫清楚'].map((c) => `<button type="button" data-chip="${esc(c)}" aria-pressed="false">${esc(c)}</button>`).join('')}</div><textarea placeholder="點上面的選項，或自己寫：例如文案改成「…」、圖換成背面"></textarea><div class="note2">Claude 改好會放回這裡、傳 LINE 給你，再按通過才發。熱議有時效，大約 10～20 分鐘改好。</div><div class="btns"><button type="button" class="okb" data-act="sendfix">送出意見</button><button type="button" data-act="cancel">取消</button></div></div>` : '<div class="btns"><button type="button" class="ghost" data-act="clear">按錯了，撤回決定</button></div>'}
     </div>`; }
     const tag = st === 'ok' ? '<span class="tag ok">已通過・等自動排程</span>' : st === 'fix' ? '<span class="tag fix">已退回・等 Claude 改</span>' : '<span class="tag wait">等你審</span>';
     const caps = r.caps || {}, n = (r.imgs || []).length;
@@ -399,7 +405,7 @@ function renderReview() {
     return `<article class="card act${hot ? ' hot' : ''}" data-i="${i}" id="c-${esc(r.id)}">
       <div class="row1">${(r.imgs || [])[0] ? `<div class="th"><img src="${esc(r.imgs[0])}" alt="封面"></div>` : ''}
         <div class="bd"><div class="kd">${kd}</div><div class="tt">${esc(clean(String(r.title || '').split('｜')[0]))}</div><div class="pv">${esc(pv)}</div>${ckl ? `<div class="ckl">${ckl}</div>` : ''}</div></div>
-      <div class="btns">${hot ? '<button type="button" class="okb" data-act="ok">通過，馬上發</button><button type="button" data-act="hotno">不發</button>' : '<button type="button" class="okb" data-act="ok">通過</button><button type="button" data-act="fixopen">要改</button>'}</div>
+      <div class="btns">${hot ? '<button type="button" class="okb" data-act="ok">通過，馬上發</button><button type="button" data-act="fixopen">要改</button><button type="button" data-act="hotno">不發</button>' : '<button type="button" class="okb" data-act="ok">通過</button><button type="button" data-act="fixopen">要改</button>'}</div>
       <button type="button" class="linkb" data-act="toggle">看全文${(r.imgs || []).length > 1 ? `（${r.imgs.length} 張圖）` : ''} ›</button>
       <div class="full" hidden>${fullCard(r, i)}</div>
       <div class="msg"></div>
@@ -407,7 +413,7 @@ function renderReview() {
   }).join('');
   $('#done').innerHTML = done.length ? `<div class="sec">已處理</div>` + done.map(([r, i]) => {
     const st = dec[r.id].decision, hot = (r.id || '').startsWith('hot-');
-    const lab = hot ? (st === 'ok' ? '已通過・5 分鐘內發 Threads' : '不發・等系統拿掉') : (st === 'ok' ? '已通過・等自動排程' : '已退回・等 Claude 改');
+    const lab = hot ? (st === 'ok' ? '已通過・5 分鐘內發 Threads' : hotFixLab(dec[r.id])) : (st === 'ok' ? '已通過・等自動排程' : '已退回・等 Claude 改');
     return `<article class="card done" data-i="${i}" style="padding:12px 16px;opacity:.75">
       <div style="display:flex;align-items:center;gap:10px"><div style="flex:1;min-width:0"><div style="font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${hot ? '🔥 ' : ''}${esc(clean(String(r.title || '').split('｜')[0]))}</div>
       <div class="meta" style="margin:2px 0 0">${st === 'ok' ? '✅' : '↩️'} ${lab}${hot ? '' : `・${esc(r.when)}`}</div></div>
@@ -597,7 +603,7 @@ async function decide(card, decision, note) {
     const j = await res.json();
     if (!j.ok && j.error === 'pin') { setPin(''); msg.textContent = '密碼不對，請再按一次重新輸入。'; card.querySelectorAll('button').forEach((b) => (b.disabled = false)); return; }
     if (!j.ok) throw new Error(j.error);
-    if (decision === 'clear') delete data.decisions[r.id]; else data.decisions[r.id] = { decision };
+    if (decision === 'clear') delete data.decisions[r.id]; else data.decisions[r.id] = { decision, note: note || '' };
     renderToday(); renderReview(); renderTodo(); renderMini();
     const idx = card.dataset.i;
     if (decision === 'ok' || decision === 'fix') toast(decision === 'ok' ? ((r.id || '').startsWith('hot-') ? '✅ 已通過，5 分鐘內發 Threads' : '✅ 已通過，會自動排程') : (note === '熱議不發' ? '好，這篇不發' : '意見收到，Claude 改好會傳 LINE'), () => { const c = document.querySelector(`.card[data-i="${idx}"]`); if (c) decide(c, 'clear'); });
@@ -618,10 +624,10 @@ $('#list').addEventListener('click', (e) => {
   if (act === 'fixopen') { const f = card.querySelector('.full'); f.hidden = false; card.querySelector('[data-act="toggle"]').textContent = '收起全文'; if (box) { box.hidden = false; const dd = card.querySelector('.datebox'); if (dd) dd.hidden = true; box.querySelector('textarea').focus(); } return; }
   const dbox = card.querySelector('.datebox');
   if (act === 'ok') decide(card, 'ok');
-  else if (act === 'fix') { dbox.hidden = true; box.hidden = false; }
+  else if (act === 'fix') { if (dbox) dbox.hidden = true; box.hidden = false; box.querySelector('textarea').focus(); }
   else if (act === 'date') { box.hidden = true; dbox.hidden = false; }
   else if (act === 'okdate') { const v = dbox.querySelector('input').value; if (!v) { dbox.querySelector('input').focus(); return; } decide(card, 'ok', '日期:' + v); }
-  else if (act === 'cancel') { box.hidden = true; dbox.hidden = true; }
+  else if (act === 'cancel') { box.hidden = true; if (dbox) dbox.hidden = true; }
   else if (act === 'sendfix') { const t = box.querySelector('textarea').value.trim(); if (!t) { box.querySelector('textarea').focus(); return; } decide(card, 'fix', t); }
   else if (act === 'clear') decide(card, 'clear');
   else if (act === 'hotno') decide(card, 'fix', '熱議不發');
