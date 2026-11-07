@@ -67,6 +67,26 @@ body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.55 -app
 .mth img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .mtm { font-size: 12.5px; font-weight: 700; color: var(--sub); font-variant-numeric: tabular-nums; }
 .mtt { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; margin-top: 2px; }
+/* 🔍 客人在查什麼 */
+.seg2 { display: inline-flex; background: var(--soft); border-radius: 999px; padding: 2px; }
+.seg2 button { border: 0; background: none; font: inherit; font-size: 12.5px; font-weight: 700; color: var(--sub); padding: 3px 10px; border-radius: 999px; cursor: pointer; }
+.seg2 button[aria-pressed="true"] { background: var(--card); color: var(--ink); box-shadow: 0 1px 2px rgba(0,0,0,.1); }
+.qsteps { display: flex; align-items: stretch; gap: 2px; margin: 8px 0 4px; }
+.qs { flex: 1; min-width: 0; background: var(--soft); border-radius: 10px; padding: 8px 4px; text-align: center; }
+.qs b { display: block; font-size: 20px; font-weight: 800; font-variant-numeric: tabular-nums; }
+.qs span { display: block; font-size: 11.5px; color: var(--sub); line-height: 1.3; }
+.qs small { display: block; font-size: 11.5px; color: var(--accent); font-weight: 700; }
+.qa { font-style: normal; color: var(--sub); align-self: center; font-size: 14px; }
+.qh { font-size: 13.5px; font-weight: 700; margin: 14px 0 6px; padding-top: 10px; border-top: 1px solid var(--line); }
+.qh small { display: block; font-weight: 400; font-size: 12px; color: var(--sub); }
+.qb { display: flex; align-items: center; gap: 8px; padding: 4px 0; font-size: 14px; }
+.qk { width: 38%; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.qbar { flex: 1; height: 8px; background: var(--soft); border-radius: 4px; overflow: hidden; }
+.qbar i { display: block; height: 100%; background: var(--accent); border-radius: 4px; }
+.qv { width: 44px; text-align: right; font-weight: 700; font-variant-numeric: tabular-nums; font-size: 13.5px; }
+.qmiss { display: flex; flex-wrap: wrap; gap: 6px; padding-bottom: 6px; }
+.qmiss span { background: color-mix(in srgb, var(--fix) 10%, transparent); color: var(--fix); border-radius: 999px; padding: 3px 10px; font-size: 13.5px; font-weight: 600; }
+.sv .mini { margin-left: 8px; }
 /* 成效卡（2026-11-07 排版整理） */
 .sc { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 14px 16px 6px; margin-bottom: 10px; }
 .sc-hd { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 14.5px; font-weight: 700; color: var(--sub); }
@@ -664,7 +684,27 @@ function renderStats() {
   const thrCard = card('👀', 'Threads 一般一篇', '近 7 天', med == null ? '—' : n(med), '次觀看', '', `${views.length} 篇的中位數・粉絲 ${n(thr.followers)} 人`,
     tops.map((p, k) => `<a class="sr link" href="${esc(p.url)}" target="_blank" rel="noopener"><div class="sl"><span class="rk">${k + 1}</span>${esc(p.t)}</div><div class="sv">${n(p.views)}</div></a>`).join(''),
     topP && share >= 40 ? `第 1 篇占了全部觀看的 ${share}%` : '');
-  const simple = tipBox + visitCard + adCard + webCard + thrCard;
+  // 2026-11-07 🔍 客人在查什麼（報價網站）：7 天／30 天切換
+  let qr = '7'; try { qr = localStorage.getItem('chiu189_qr') || '7'; } catch (e) {}
+  const Q = ((st.site || {}).q || {})[qr];
+  const qCard = Q ? (() => {
+    const f = Q.funnel || [0, 0, 0, 0], lab = ['打開報價頁', '點機型', '加入項目', '按 LINE 預約'];
+    const pc = (a, b) => (b ? Math.round(a / b * 100) + '%' : '');
+    const steps = `<div class="qsteps">${f.map((v, i) => `<div class="qs"><b>${n(v)}</b><span>${lab[i]}</span>${i ? `<small>${pc(v, f[i - 1])}</small>` : '<small>&nbsp;</small>'}</div>`).join('<i class="qa">›</i>')}</div>`;
+    const bars = (arr, unit) => { const mx = Math.max(1, ...arr.map((x) => x[1])); return arr.map(([k, v]) => `<div class="qb"><span class="qk">${esc(k)}</span><span class="qbar"><i style="width:${Math.round(v / mx * 100)}%"></i></span><span class="qv">${n(v)}${unit}</span></div>`).join(''); };
+    const bt = (Q.brands || []).reduce((a, b) => a + b[1], 0);
+    const brands = bt ? (Q.brands || []).filter((b) => b[0] !== '其他' || b[1] / bt >= .05).map(([k, v]) => `${esc(k)} ${Math.round(v / bt * 100)}%`).join('・') : '';
+    const sub = (t, x) => `<div class="qh">${t}${x ? `<small>${x}</small>` : ''}</div>`;
+    return `<div class="sc"><div class="sc-hd"><span>🔍 客人在查什麼</span><span class="seg2">${['7', '30'].map((k) => `<button type="button" data-qr="${k}" aria-pressed="${qr === k}">${k} 天</button>`).join('')}</span></div>
+      <div class="sc-big"><b>${n(Q.view)}</b><i>次打開報價頁</i></div><div class="sc-desc">${(Q.funnel || [])[0] !== Q.view ? '下面的步驟從 11/4 開始記錄，所以第一格比較少' : '下面是一步步走到預約的人數'}</div>
+      ${steps}
+      ${(Q.cats || []).length ? sub('想修什麼', '客人加進報價的項目') + bars(Q.cats, ' 次') : ''}
+      ${(Q.models || []).length ? sub('查最多的機型', brands) + bars(Q.models.slice(0, 6), ' 次') : ''}
+      ${(Q.items || []).length ? sub('客人想修的（機型＋項目）', '可以拿來備料或做貼文') + Q.items.slice(0, 6).map(([k, v]) => `<div class="sr"><div class="sl">${esc(k.replace('｜', ' ・ '))}</div><div class="sv">${n(v)} 次<button type="button" class="mini" data-topic="${esc(k)}">做成貼文</button></div></div>`).join('') : ''}
+      ${(Q.miss || []).length ? sub('搜尋找不到的', '價目表可以補這些') + `<div class="qmiss">${Q.miss.map(([k, v]) => `<span>${esc(k)}${v > 1 ? ` ×${v}` : ''}</span>`).join('')}</div>` : ''}
+      <div class="sc-foot">${((st.site || {}).q || {}).first ? `${esc(String(st.site.q.first).slice(5).replace('-', '/'))} 開始記錄・` : ''}不記錄個人資料・自己測試也會算進去</div></div>`;
+  })() : '';
+  const simple = tipBox + qCard + visitCard + adCard + webCard + thrCard;
   const more = `<details class="card fold" data-k="__more"${open.__more ? ' open' : ''}><summary><h2>看詳細數據</h2></summary><div class="note2" style="margin-bottom:8px">比較複雜，平常不用看；要問什麼直接到「交代」問就好。</div>${sum}${all}</details>`;
   $('#stats').innerHTML = simple + more;
   $('#stats').querySelectorAll('details.fold').forEach((d) => d.addEventListener('toggle', () => { try { const o = JSON.parse(localStorage.getItem('chiu189_open') || '{}'); o[d.dataset.k] = d.open; localStorage.setItem('chiu189_open', JSON.stringify(o)); } catch (e) {} }));
@@ -712,6 +752,8 @@ $('#list').addEventListener('click', (e) => {
   else if (act === 'hotno') decide(card, 'fix', '熱議不發');
 });
 $('#stats').addEventListener('click', async (e) => {
+  const q = e.target.closest('button[data-qr]');
+  if (q) { try { localStorage.setItem('chiu189_qr', q.dataset.qr); } catch (err) {} renderStats(); return; }
   const b = e.target.closest('button[data-topic]'); if (!b) return;
   e.preventDefault();
   const topic = b.dataset.topic.replace('｜', ' ');
