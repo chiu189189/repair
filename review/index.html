@@ -47,9 +47,29 @@ body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.55 -app
 .tabs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; background: var(--soft); border-radius: 12px; padding: 4px; margin-bottom: 10px; }
 .tabs button { border: 0; background: none; color: var(--sub); font: inherit; font-weight: 700; font-size: 15px; min-height: 40px; border-radius: 9px; cursor: pointer; position: relative; }
 .tabs button[aria-selected="true"] { background: var(--card); color: var(--ink); box-shadow: 0 1px 3px rgba(0,0,0,.12); }
+/* 2026-11-07 分頁列移到畫面最下面（單手拇指按得到） */
+.tabs { position: fixed; left: 0; right: 0; bottom: 0; z-index: 6; margin: 0; border-radius: 0; gap: 0; padding: 6px max(8px, env(safe-area-inset-left)) calc(6px + env(safe-area-inset-bottom)) max(8px, env(safe-area-inset-right)); background: color-mix(in srgb, var(--card) 94%, transparent); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-top: 1px solid var(--line); }
+.tabs button { min-height: 52px; font-size: 12.5px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; }
+.tabs button .ti-ic { font-size: 20px; line-height: 1; filter: grayscale(1); opacity: .6; }
+.tabs button[aria-selected="true"] { background: none; box-shadow: none; color: var(--accent); }
+.tabs button[aria-selected="true"] .ti-ic { filter: none; opacity: 1; }
+.tabs .badge { position: absolute; top: 4px; left: calc(50% + 6px); margin: 0; }
+/* 圖文／影片改用圖示，不再用顏色點 */
+.dot { width: auto !important; height: auto !important; background: none !important; border-radius: 0 !important; font-size: 13px; vertical-align: 0 !important; }
+.dot.img::before { content: '📝'; } .dot.vid::before { content: '🎬'; }
+/* 要你處理 vs 提醒 */
+.todo.act a, .todo.act button.ti { font-weight: 600; }
+.todo.act .go { background: var(--accent); color: var(--accent-ink); font-weight: 700; padding: 6px 12px; border-radius: 999px; font-size: 13.5px; }
+.remind { display: flex; gap: 10px; align-items: center; width: 100%; text-align: left; background: var(--soft); border: 0; border-radius: 12px; padding: 10px 14px; margin: 0 0 8px; color: var(--sub); font: inherit; font-size: 14px; cursor: pointer; }
+.remind .tx { flex: 1; min-width: 0; }
+.remind .go { font-size: 13px; flex: none; }
+.funnel .f small { display: block; font-size: 11.5px; color: var(--sub); margin-top: 1px; }
+.foot .warn { color: var(--fix); font-weight: 700; }
+main.wrap { padding-bottom: calc(96px + env(safe-area-inset-bottom)); }
+.todo > a:first-child, .todo > button.ti:first-child { border-top: 0; }
 .badge { display: inline-block; min-width: 20px; height: 20px; line-height: 20px; border-radius: 10px; background: var(--fix); color: #fff; font-size: 12px; padding: 0 6px; margin-left: 4px; vertical-align: 1px; }
 
-main { padding: 14px 0 40px; }
+main { padding: 14px 0 calc(96px + env(safe-area-inset-bottom)); }
 .pane[hidden] { display: none; }
 
 /* 今日摘要 */
@@ -162,7 +182,7 @@ textarea { width: 100%; min-height: 90px; border-radius: 10px; border: 1px solid
 .datebox input { width: 100%; min-height: 46px; border-radius: 10px; border: 1px solid var(--line); background: var(--bg); color: var(--ink); font: inherit; padding: 8px 10px; margin-top: 10px; }
 .mini { border: 1px solid var(--accent); color: var(--accent); background: none; font: inherit; font-size: 12.5px; border-radius: 8px; padding: 3px 8px; margin-left: 8px; cursor: pointer; white-space: nowrap; }
 .mini:disabled { opacity: .5; }
-.toast { position: fixed; left: 50%; bottom: calc(20px + env(safe-area-inset-bottom)); transform: translateX(-50%); background: var(--ink); color: var(--bg); padding: 10px 16px; border-radius: 12px; font-size: 14.5px; z-index: 20; max-width: calc(100% - 32px); box-shadow: 0 4px 14px rgba(0,0,0,.2); }
+.toast { position: fixed; left: 50%; bottom: calc(84px + env(safe-area-inset-bottom)); transform: translateX(-50%); background: var(--ink); color: var(--bg); padding: 10px 16px; border-radius: 12px; font-size: 14.5px; z-index: 20; max-width: calc(100% - 32px); box-shadow: 0 4px 14px rgba(0,0,0,.2); }
 .toast[hidden] { display: none; }
 /* 2026-11-04 首頁改版 */
 .greet { margin: 2px 2px 12px; }
@@ -199,19 +219,14 @@ textarea { width: 100%; min-height: 90px; border-radius: 10px; border: 1px solid
 .funnel .ar { color: var(--sub); }
 .card.flash { box-shadow: 0 0 0 3px var(--accent); transition: box-shadow .3s; }
 .toast button { background: none; border: 0; color: var(--accent); font: inherit; font-weight: 800; margin-left: 12px; cursor: pointer; padding: 4px; }
-.foot { text-align: center; color: var(--sub); font-size: 12.5px; padding: 0 0 calc(24px + env(safe-area-inset-bottom)); }
+.foot { text-align: center; color: var(--sub); font-size: 13px; padding: 0 16px; margin: -80px 0 0; position: relative; }
+.foot:empty { display: none; }
 </style>
 </head>
 <body>
 <div class="top">
   <div class="wrap">
     <div class="brand"><h1><span>CHIU189</span> 秘書</h1><span class="tools"><button id="bell" type="button" aria-label="手機通知">🔔</button><button id="reload" type="button">↻ 重新整理</button></span></div>
-    <div class="tabs" role="tablist">
-      <button type="button" role="tab" data-tab="review" aria-selected="true">首頁<span class="badge" id="badge" hidden></span></button>
-      <button type="button" role="tab" data-tab="sched" aria-selected="false">行程</button>
-      <button type="button" role="tab" data-tab="stats" aria-selected="false">成效</button>
-      <button type="button" role="tab" data-tab="ask" aria-selected="false">問我</button>
-    </div>
   </div>
 </div>
 
@@ -229,6 +244,12 @@ textarea { width: 100%; min-height: 90px; border-radius: 10px; border: 1px solid
 </main>
 <div class="foot" id="upd"></div>
 <div class="toast" id="toast" hidden></div>
+<nav class="tabs" role="tablist" aria-label="分頁">
+  <button type="button" role="tab" data-tab="review" aria-selected="true"><span class="ti-ic" aria-hidden="true">🏠</span>首頁<span class="badge" id="badge" hidden></span></button>
+  <button type="button" role="tab" data-tab="sched" aria-selected="false"><span class="ti-ic" aria-hidden="true">📅</span>行程</button>
+  <button type="button" role="tab" data-tab="stats" aria-selected="false"><span class="ti-ic" aria-hidden="true">📈</span>成效</button>
+  <button type="button" role="tab" data-tab="ask" aria-selected="false"><span class="ti-ic" aria-hidden="true">💬</span>問我</button>
+</nav>
 
 <script>
 const API = 'https://script.google.com/macros/s/AKfycbwcStF05qkS0cKT8l6PoTTzj21ijwnnyyJkoSDqPYZjDxFVG6EadZCwCp2GrKpV7wNSow/exec';
@@ -264,7 +285,8 @@ async function load(quiet) {
     data = await r.json();
     render();
     const s = sched();
-    $('#upd').textContent = `頁面更新 ${new Date().toLocaleString('zh-TW', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false })}` + (s.updated ? `・行程資料 ${s.updated.slice(5).replace('-', '/').replace('T', ' ')}（電腦開著時每 15 分鐘同步）` : '');
+    const age = s.updated ? (Date.now() - new Date(s.updated).getTime()) / 6e4 : 0;   // 行程資料多久沒更新（分鐘）
+    $('#upd').innerHTML = age > 60 ? `<span class="warn">⚠️ 行程資料 ${age > 180 ? Math.round(age / 60) + ' 小時' : Math.round(age) + ' 分鐘'}沒更新了，店裡的電腦可能關機或睡眠</span>` : '';
     let saved = ''; try { saved = sessionStorage.getItem('chiu189_tab') || ''; } catch (e) {}
     const waiting = reviews().filter((x) => !(data.decisions || {})[x.id]).length;
     if (firstLoad) { setTab(saved || 'review'); firstLoad = false; }
@@ -305,26 +327,26 @@ function renderTodo() {
     if (!day.some((x) => x.k === 'img') && !rv.some((r) => r.kind !== 'vid' && String(r.when || '').startsWith(`${+k.slice(5, 7)}/${+k.slice(8)}`))) noImg.push(k);
     if (!day.some((x) => x.k === 'vid') && !rv.some((r) => r.kind === 'vid' && String(r.when || '').startsWith(`${+k.slice(5, 7)}/${+k.slice(8)}`))) noVid.push(k);
   }
-  if (noImg.length) out.push(['y', `中午還沒有圖文：${noImg.slice(0, 3).map(md).join('、')}${noImg.length > 3 ? ` 等 ${noImg.length} 天` : ''}`, 'sched', '看行程']);
-  if (noVid.length) out.push(['y', `晚上還沒有影片：${noVid.slice(0, 3).map(md).join('、')}${noVid.length > 3 ? ` 等 ${noVid.length} 天` : ''}（影片丟進「待發」）`, 'sched', '看行程']);
-  const miss = ((st.site || {}).miss || []).filter((m) => !/測試/.test(m[0]));
-  if (miss.length) out.push(['y', `有人搜「${miss.slice(0, 3).map((m) => m[0]).join('」「')}」找不到（價目表可以補）`, 'stats', '看成效']);
+  // 排程缺口只是提醒（合併成一行）；「搜尋找不到」放成效分頁
+  const gap = [noImg.length ? `圖文缺 ${noImg.length} 天` : '', noVid.length ? `影片缺 ${noVid.length} 天` : ''].filter(Boolean).join('、');
+  const first = [...noImg, ...noVid].sort()[0];
+  const remind = gap ? `<button type="button" class="remind" data-go="sched"><span class="tx">📅 排程缺口：${gap}（最近 ${md(first)}）${noVid.length ? '・影片丟進「待發」' : ''}</span><span class="go">看行程 ›</span></button>` : '';
   todoN = out.length;
   const fixes = rv.filter((x) => ((data.decisions || {})[x.id] || {}).decision === 'fix' && !(x.id || '').startsWith('hot-')).length;
   const nowait = !rv.some((x) => !(data.decisions || {})[x.id]);
-  $('#todo').innerHTML = out.length ? `<div class="sec">其他要做的</div><div class="todo">` + out.map(([c, t, go, gl]) => /^https?:/.test(go)
+  $('#todo').innerHTML = (out.length ? `<div class="sec">要你處理</div><div class="todo act">` + out.map(([c, t, go, gl]) => /^https?:/.test(go)
       ? `<a href="${esc(go)}" target="_blank" rel="noopener"><span class="ic ${c}"></span><span class="tx">${esc(t)}</span><span class="go">${gl} ↗</span></a>`
-      : `<button type="button" class="ti" data-go="${go}"><span class="ic ${c}"></span><span class="tx">${esc(t)}</span><span class="go">${gl} ›</span></button>`).join('') + '</div>' : '';
+      : `<button type="button" class="ti" data-go="${go}"><span class="ic ${c}"></span><span class="tx">${esc(t)}</span><span class="go">${gl} ›</span></button>`).join('') + '</div>' : '') + (remind ? `<div class="sec">提醒</div>${remind}` : '');
   // 招呼語＋總件數
   const hr = now.getHours(), hi = hr < 11 ? '早安' : hr < 18 ? '午安' : '晚安';
   const waitN = rv.filter((x) => !(data.decisions || {})[x.id]).length, total = waitN + out.length;
   $('#greet').innerHTML = total
-    ? `<b>${hi}右丞，還有 ${total} 件事要你處理</b><span>${waitN ? `${waitN} 篇等你審` : ''}${waitN && out.length ? '・' : ''}${out.length ? `${out.length} 件其他待辦` : ''}${fixes ? `・${fixes} 篇 Claude 改稿中` : ''}</span>`
+    ? `<b>${hi}右丞，還有 ${total} 件事要你處理</b><span>${waitN ? `${waitN} 篇等你審` : ''}${waitN && out.length ? '・' : ''}${out.length ? `${out.length} 件要處理` : ''}${fixes ? `・${fixes} 篇 Claude 改稿中` : ''}</span>`
     : `<b>${hi}右丞，今天沒事了 ✅</b><span>${nowait ? '新稿做好會傳 LINE 給你' : ''}</span>`;
 }
 let todoN = 0;
 $('#todo').addEventListener('click', (e) => {
-  const b = e.target.closest('button[data-go]'); if (!b) return;
+  const b = e.target.closest('[data-go]'); if (!b) return;
   if (b.dataset.go === 'review') { const l = $('#list'); if (l) l.scrollIntoView({ behavior: 'smooth' }); }
   else { setTab(b.dataset.go); window.scrollTo({ top: 0 }); }
 });
@@ -429,7 +451,7 @@ function renderMini() {
   const mdk = (w) => { const m = /(\d{1,2})\/(\d{1,2})/.exec(w || ''); return m ? pad(+m[1]) + pad(+m[2]) : '9999'; };
   const pend = rv.filter((r) => !(r.id || '').startsWith('hot-') && (!dec[r.id] || dec[r.id].decision === 'ok')).map((r) => ({ at: r.when, t: String(r.title || '').split('｜')[0], k: r.kind === 'vid' ? 'vid' : 'img', p: !dec[r.id] ? 'wait' : 'ok' })).sort((a, b) => mdk(a.at).localeCompare(mdk(b.at)));
   const md = (k) => { const d = new Date(k + 'T00:00:00'); return `${d.getMonth() + 1}/${d.getDate()}`; };
-  const rows = up.map((x) => `<div class="it"><span class="tm">${md(x.at.slice(0, 10))}<br><span style="font-weight:400;color:var(--sub);font-size:12.5px">${esc(x.at.slice(11, 16))}</span></span><div class="bd"><div class="tt"><span class="dot ${x.k}"></span>${esc(clean(x.t))}</div></div><span class="st ${x.ck === 'fail' ? 'w' : 'g'}">${x.ck === 'fail' ? '❌ 沒發出去' : '✅ 已排'}</span></div>`)
+  const rows = up.map((x) => `<div class="it"><span class="tm">${md(x.at.slice(0, 10))}<br><span style="font-weight:400;color:var(--sub);font-size:12.5px">${esc(x.at.slice(11, 16))}</span></span><div class="bd"><div class="tt"><span class="dot ${x.k}"></span>${esc(clean(x.t))}</div></div>${x.ck === 'fail' ? '<span class="st w">❌ 沒發出去</span>' : ''}</div>`)
     .concat(pend.map((x) => `<div class="it"><span class="tm" style="font-size:13px">${esc(String(x.at || '').replace(/（.）/, ' '))}</span><div class="bd"><div class="tt"><span class="dot ${x.k}"></span>${esc(clean(x.t))}</div></div><span class="st ${x.p === 'wait' ? 'w' : ''}">${x.p === 'wait' ? '⏳ 等你審' : '🕒 等排程'}</span></div>`));
   const st = sched().stats || {}, wb = st.web || {}, thr = st.threads || {}, gm = (st.gbp || {}).months || [];
   const thisM = `${now.getFullYear()}-${pad(now.getMonth() + 1)}`, full = gm.filter((x) => x.m < thisM), curM = full[full.length - 1] || {};
@@ -438,7 +460,7 @@ function renderMini() {
   $('#mini').innerHTML = `<div class="sec">接下來 3 天<button type="button" data-go="sched">看全部 ›</button></div>`
     + (rows.length ? `<div class="list mini3">${rows.join('')}</div>` : '<div class="empty" style="padding:16px">這 3 天還沒有排</div>')
     + `<div class="sec">最近成效<button type="button" data-go="stats">看細節 ›</button></div>
-    <button type="button" class="card funnel" data-go="stats"><div class="f"><b>${n(tv)}</b><span>👀 看到</span></div><span class="ar">→</span><div class="f"><b>${wb.asOf ? n(wb.users) : '—'}</b><span>🌐 逛官網</span></div><span class="ar">→</span><div class="f"><b>${n(curM.dirs)}</b><span>🏃 ${curM.m ? +curM.m.slice(5) + '月' : ''}查路線</span></div></button>`;
+    <button type="button" class="card funnel" data-go="stats"><div class="f"><b>${n(tv)}</b><span>👀 Threads 觀看</span><small>近 7 天</small></div><div class="f"><b>${wb.asOf ? n(wb.users) : '—'}</b><span>🌐 逛官網的人</span><small>近 7 天</small></div><div class="f"><b>${n(curM.dirs)}</b><span>🏃 地圖查路線</span><small>${curM.m ? +curM.m.slice(5) + ' 月整月' : '上個月'}</small></div></button>`;
 }
 $('#mini').addEventListener('click', (e) => { const b = e.target.closest('[data-go]'); if (b) { setTab(b.dataset.go); window.scrollTo({ top: 0 }); } });
 $('#done').addEventListener('click', (e) => { const b = e.target.closest('button[data-act="clear"]'); if (b) decide(b.closest('.card'), 'clear'); });
