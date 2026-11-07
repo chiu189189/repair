@@ -500,6 +500,8 @@ function renderReview() {
   }).join('') : '';
 }
 function renderMini() {
+  // 2026-11-07 用戶：「接下來 3 天」跟行程分頁、「最近成效」跟成效分頁重複 → 首頁只留要你處理的事
+  $('#mini').innerHTML = ''; return;
   // 接下來 3 天（含今天還沒到的）＋這週一行成效
   const items = sched().schedule || [], now = new Date(), end = dayKey(new Date(now.getTime() + 2 * 864e5)), tk = dayKey(now);
   const up = items.filter((x) => x.at.slice(0, 10) >= tk && x.at.slice(0, 10) <= end && !x.done);
