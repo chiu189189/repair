@@ -67,6 +67,27 @@ body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.55 -app
 .mth img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .mtm { font-size: 12.5px; font-weight: 700; color: var(--sub); font-variant-numeric: tabular-nums; }
 .mtt { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; margin-top: 2px; }
+/* 成效卡（2026-11-07 排版整理） */
+.sc { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 14px 16px 6px; margin-bottom: 10px; }
+.sc-hd { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 14.5px; font-weight: 700; color: var(--sub); }
+.chip { font-size: 12px; font-weight: 600; color: var(--sub); background: var(--soft); border-radius: 999px; padding: 2px 9px; white-space: nowrap; }
+.sc-big { display: flex; align-items: baseline; gap: 6px; flex-wrap: wrap; margin-top: 4px; }
+.sc-big b { font-size: 34px; font-weight: 800; line-height: 1.15; font-variant-numeric: tabular-nums; letter-spacing: -.01em; }
+.sc-big i { font-style: normal; font-size: 15px; font-weight: 600; color: var(--sub); }
+.dl { font-size: 13px; font-weight: 700; padding: 2px 8px; border-radius: 999px; background: var(--soft); color: var(--sub); margin-left: 2px; white-space: nowrap; }
+.dl.up { color: var(--ok); background: color-mix(in srgb, var(--ok) 12%, transparent); }
+.dl.down { color: var(--fix); background: color-mix(in srgb, var(--fix) 12%, transparent); }
+.sc-desc { font-size: 13px; color: var(--sub); margin: 2px 0 6px; }
+.sr { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 10px 0; border-top: 1px solid var(--line); color: var(--ink); text-decoration: none; }
+.sl { flex: 1; min-width: 0; font-size: 15px; line-height: 1.4; }
+.sl small, .sv small { display: block; font-size: 12.5px; color: var(--sub); font-weight: 400; margin-top: 1px; }
+.sv { text-align: right; font-size: 15px; font-weight: 700; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.sr.link .sl { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.rk { display: inline-block; width: 20px; color: var(--accent); font-weight: 800; }
+.sc-foot { font-size: 12px; color: var(--sub); padding: 8px 0 6px; border-top: 1px solid var(--line); }
+.sc.tips { background: var(--soft); border-color: transparent; padding-bottom: 10px; }
+.tip { display: flex; gap: 8px; align-items: baseline; font-size: 15px; line-height: 1.5; margin-top: 6px; }
+.tip .ti { flex: none; width: 20px; text-align: center; }
 .vchips { display: flex; flex-wrap: wrap; gap: 8px; }
 .vchips button { border: 1px solid var(--line); background: var(--soft); color: var(--ink); font: inherit; font-size: 14.5px; padding: 8px 12px; border-radius: 999px; cursor: pointer; min-height: 40px; }
 .vchips button b { color: var(--accent); margin-left: 2px; }
@@ -620,31 +641,30 @@ function renderStats() {
   const views = (thr.posts || []).map((p) => p.views || 0).sort((a, b) => a - b);
   const med = views.length ? views[Math.floor((views.length - 1) / 2)] : null;
   const topP = tops[0], share = topP && tv ? Math.round((topP.views || 0) / tv * 100) : 0;
-  // 這週建議（最多 2 句）
+  // 2026-11-07 排版整理：每張卡同一套格式＝標題列（左標題、右期間小標籤）→ 大數字（右邊變化）→ 一句說明 → 明細列（左名稱＋小字、右數字＋小字）
   const tips = [];
-  if (g && g.unreplied) tips.push(`有 ${g.unreplied} 則 Google 評論還沒回，回了會讓更多人信任你。`);
+  if (g && g.unreplied) tips.push(['⭐', `Google 有 ${g.unreplied} 則評論沒回`]);
   const live = ads.filter((a) => a.clicks >= 10 && a.cpc_twd);
-  if (live.length >= 2) { const s = live.slice().sort((a, b) => a.cpc_twd - b.cpc_twd); const x = s[s.length - 1].cpc_twd / s[0].cpc_twd; if (x >= 1.5) tips.push(`廣告「${s[0].name}」每次點擊 NT$${s[0].cpc_twd}，比「${s[s.length - 1].name}」便宜 ${x.toFixed(1)} 倍。`); }
-  if (ct && ct.by && ct.by.kind && ct.by.kind.IG) { const k = ct.by.kind.IG.filter((r) => r[2] >= 3).sort((a, b) => b[1] - a[1]); if (k.length >= 2 && k[0][1] >= k[k.length - 1][1] * 1.5) tips.push(`IG 上「${k[0][0]}」一般一篇 ${n(k[0][1])} 次，是「${k[k.length - 1][0]}」的 ${(k[0][1] / Math.max(1, k[k.length - 1][1])).toFixed(1)} 倍，可以多排。`); }
-  const tipBox = tips.length ? `<div class="card" style="padding:12px 16px;margin-bottom:12px;background:var(--soft);border-color:transparent"><div style="font-size:13px;font-weight:700;color:var(--sub);margin-bottom:4px">💡 這週建議</div>${tips.slice(0, 2).map((t) => `<div style="font-size:15px;line-height:1.55;margin:2px 0">・${esc(t)}</div>`).join('')}</div>` : '';
-  const line = (l, v, s) => `<div class="tp"><span>${l}</span><span class="v" style="white-space:nowrap">${v}${s ? ` <span style="color:var(--sub);font-size:12px;font-weight:400">${s}</span>` : ''}</span></div>`;
-  const vmax = Math.max(1, ...Object.values(v30s));
-  const visitCard = `<div class="card" style="padding:14px 16px;margin-bottom:10px">
-    <div style="display:flex;align-items:center;justify-content:space-between;gap:8px"><div style="font-size:15px;font-weight:700">🏃 來店訊號</div></div>
-    <div style="font-size:34px;font-weight:800;line-height:1.15;margin-top:6px">${n(curM.dirs)}<span style="font-size:15px;font-weight:600;color:var(--sub);margin-left:6px">次在 Google 地圖查路線</span></div>
-    <div style="font-size:13px;color:var(--sub);margin:2px 0 6px">${curM.m ? +curM.m.slice(5) + ' 月整月' : '上個月'}${curM.m && preM.m && curM.dirs != null && preM.dirs != null ? `・比上個月 ${curM.dirs >= preM.dirs ? '多' : '少'} ${n(Math.abs(curM.dirs - preM.dirs))}` : ''}（Google 只給到上個月）</div>
-    ${line('Google 商家打電話', n(curM.calls), curM.m ? +curM.m.slice(5) + ' 月整月' : '')}
-    ${line('官網按電話／LINE', want == null ? '—' : n(want), '近 7 天')}</div>`;
-  const adCard = ads.length ? `<div class="card" style="padding:14px 16px;margin-bottom:10px">
-    <div style="display:flex;align-items:center;justify-content:space-between;gap:8px"><div style="font-size:15px;font-weight:700">📣 廣告</div><span style="font-size:12.5px;color:var(--sub)">${esc(st.ads.range)}</span></div>
-    <div style="font-size:34px;font-weight:800;line-height:1.15;margin-top:6px">NT$${n(st.ads.twd)}<span style="font-size:15px;font-weight:600;color:var(--sub);margin-left:6px">換到 ${n(st.ads.clicks)} 次點擊</span></div>
-    ${ads.map((a) => `<div class="tp" style="align-items:flex-start"><div style="flex:1;min-width:0;line-height:1.4"><b style="font-weight:600">${esc(a.name)}</b><div style="font-size:12.5px;color:var(--sub)">${a.on ? `播到 ${esc(a.end)}` : '已停'}・看到 ${n(a.reach)} 人・NT$${n(a.twd)}</div></div><span class="v" style="text-align:right;white-space:nowrap">${n(a.clicks)} 次點擊<div style="font-size:12px;color:var(--sub);font-weight:400">每次 NT$${a.cpc_twd == null ? '—' : a.cpc_twd}</div></span></div>`).join('')}
-    <div class="note2">美金約 ×${st.ads.rate} 換算・更新 ${esc(st.ads.asOf)}・每 2 小時</div></div>` : '';
-  const simple = tipBox + visitCard + adCard
-    + big('🌐', '逛官網的人', wb.asOf ? n(wb.users) : '—', '人', '最近 7 天・chiu189.com.tw', wb.asOf ? (wb.usersPrev ? vs(wb.users, wb.usersPrev, '上週') : '<span class="dlt flat" style="font-size:12.5px;white-space:nowrap">11/4 才開始記錄</span>') : '', `其中 ${want == null ? '—' : n(want)} 人按了電話或 LINE`)
-    + `<div style="height:4px"></div>`
-    + big('👀', 'Threads 一般一篇', med == null ? '—' : n(med), '次觀看', `最近 7 天 ${views.length} 篇・粉絲 ${n(thr.followers)} 人（中位數，不會被爆紅那篇拉高）`, '', topP && share >= 40 ? `🔥 爆紅 1 篇占了 ${share}%：${esc(String(topP.t).slice(0, 18))}…` : '')
-    + (tops.length ? `<div class="card" style="padding:14px 16px;margin:14px 0 10px"><div style="font-size:15px;font-weight:700;margin-bottom:4px">🔥 最近最紅的 ${tops.length} 篇</div><div style="font-size:12.5px;color:var(--sub);margin-bottom:4px">Threads・最近 7 天・點標題打開</div>${tops.map((p, k) => `<div class="tp"><div style="flex:1;min-width:0;line-height:1.45"><a href="${esc(p.url)}" target="_blank" rel="noopener">${k + 1}. ${esc(p.t)}</a></div><span class="v" style="white-space:nowrap">${n(p.views)}</span></div>`).join('')}</div>` : '');
+  if (live.length >= 2) { const s = live.slice().sort((a, b) => a.cpc_twd - b.cpc_twd); const x = s[s.length - 1].cpc_twd / s[0].cpc_twd; if (x >= 1.5) tips.push(['📣', `廣告「${s[0].name.replace('（Google 地圖）', '')}」每次點擊比「${s[s.length - 1].name.replace('（Google 地圖）', '')}」便宜 ${x.toFixed(1)} 倍`]); }
+  if (ct && ct.by && ct.by.kind && ct.by.kind.IG) { const k = ct.by.kind.IG.filter((r) => r[2] >= 3).sort((a, b) => b[1] - a[1]); if (k.length >= 2 && k[0][1] >= k[k.length - 1][1] * 1.5) tips.push(['📝', `IG 上「${k[0][0]}」的觀看是「${k[k.length - 1][0]}」的 ${(k[0][1] / Math.max(1, k[k.length - 1][1])).toFixed(1)} 倍`]); }
+  const tipBox = tips.length ? `<div class="sc tips"><div class="sc-hd"><span>💡 這週建議</span></div>${tips.slice(0, 3).map(([i, t]) => `<div class="tip"><span class="ti">${i}</span><span>${esc(t)}</span></div>`).join('')}</div>` : '';
+  const chip = (t) => t ? `<span class="chip">${t}</span>` : '';
+  const delta = (a, b) => { if (a == null || b == null) return ''; const d = a - b; return d > 0 ? `<span class="dl up">↑ ${n(d)}</span>` : d < 0 ? `<span class="dl down">↓ ${n(-d)}</span>` : '<span class="dl">持平</span>'; };
+  const row = (l, ls, v, vs2) => `<div class="sr"><div class="sl">${l}${ls ? `<small>${ls}</small>` : ''}</div><div class="sv">${v}${vs2 ? `<small>${vs2}</small>` : ''}</div></div>`;
+  const card = (emo, title, ch, num, unit, dl, desc, body, foot) => `<div class="sc"><div class="sc-hd"><span>${emo} ${title}</span>${chip(ch)}</div>
+    <div class="sc-big"><b>${num}</b>${unit ? `<i>${unit}</i>` : ''}${dl || ''}</div>${desc ? `<div class="sc-desc">${desc}</div>` : ''}${body || ''}${foot ? `<div class="sc-foot">${foot}</div>` : ''}</div>`;
+  const mon = curM.m ? +curM.m.slice(5) + ' 月' : '上個月';
+  const visitCard = card('🏃', 'Google 地圖查路線', mon, n(curM.dirs), '次', curM.m && preM.m ? delta(curM.dirs, preM.dirs) : '', '想來店的人按「路線」的次數・跟上個月比',
+    row('Google 商家打電話', mon, n(curM.calls), '') + row('官網按電話／LINE', '近 7 天', want == null ? '—' : n(want), ''));
+  const adCard = ads.length ? card('📣', '廣告花費', '近 30 天', 'NT$' + n(st.ads.twd), '', '', `換到 ${n(st.ads.clicks)} 次點擊`,
+    ads.map((a) => row(esc(a.name.replace('（Google 地圖）', '')), `${a.on ? '播到 ' + esc(a.end) : '已停'}・花 NT$${n(a.twd)}`, `${n(a.clicks)} 次`, `每次 NT$${a.cpc_twd == null ? '—' : a.cpc_twd}`)).join(''),
+    `更新 ${esc(String(st.ads.asOf).slice(11))}`) : '';
+  const webCard = card('🌐', '逛官網的人', '近 7 天', wb.asOf ? n(wb.users) : '—', '人', wb.asOf && wb.usersPrev ? delta(wb.users, wb.usersPrev) : '', wb.asOf && !wb.usersPrev ? '11/4 才開始記錄，下週起可以跟上週比' : '跟上週比',
+    row('按電話或 LINE', '', want == null ? '—' : n(want) + ' 人', ''));
+  const thrCard = card('👀', 'Threads 一般一篇', '近 7 天', med == null ? '—' : n(med), '次觀看', '', `${views.length} 篇的中位數・粉絲 ${n(thr.followers)} 人`,
+    tops.map((p, k) => `<a class="sr link" href="${esc(p.url)}" target="_blank" rel="noopener"><div class="sl"><span class="rk">${k + 1}</span>${esc(p.t)}</div><div class="sv">${n(p.views)}</div></a>`).join(''),
+    topP && share >= 40 ? `第 1 篇占了全部觀看的 ${share}%` : '');
+  const simple = tipBox + visitCard + adCard + webCard + thrCard;
   const more = `<details class="card fold" data-k="__more"${open.__more ? ' open' : ''}><summary><h2>看詳細數據</h2></summary><div class="note2" style="margin-bottom:8px">比較複雜，平常不用看；要問什麼直接到「交代」問就好。</div>${sum}${all}</details>`;
   $('#stats').innerHTML = simple + more;
   $('#stats').querySelectorAll('details.fold').forEach((d) => d.addEventListener('toggle', () => { try { const o = JSON.parse(localStorage.getItem('chiu189_open') || '{}'); o[d.dataset.k] = d.open; localStorage.setItem('chiu189_open', JSON.stringify(o)); } catch (e) {} }));
