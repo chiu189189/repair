@@ -61,6 +61,8 @@ body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.55 -app
 .todo.act a, .todo.act button.ti { font-weight: 600; }
 .todo.act .go { background: var(--accent); color: var(--accent-ink); font-weight: 700; padding: 6px 12px; border-radius: 999px; font-size: 13.5px; }
 .mini3 .it { align-items: center; }
+#sched .it { align-items: center; }
+#sched .it.done .mth { opacity: .6; }
 .mth { width: 60px; height: 60px; flex: none; border-radius: 10px; overflow: hidden; background: var(--soft); display: grid; place-items: center; font-size: 24px; }
 .mth img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .mtm { font-size: 12.5px; font-weight: 700; color: var(--sub); font-variant-numeric: tabular-nums; }
@@ -490,7 +492,7 @@ function renderSched() {
       const plats = x.p.filter((v) => v !== 'Threads').join('・');
       const t = x.k === 'img' && x.th ? th[x.th] || ['Threads', ''] : null;
       const ck = x.ck === 'ok' ? '<span class="ck-ok">✅ 確認有發</span>' : x.ck === 'fail' ? `<span class="ck-bad">❌ 沒發出去：${esc(x.ckn || '')}</span>` : (x.done ? '<span>已過・等確認</span>' : '');
-      return `<div class="it${x.done && x.ck !== 'fail' ? ' done' : ''}"><span class="tm">${esc(x.at.slice(11, 16))}</span><div class="bd"><div class="tt"><span class="dot ${x.k}"></span>${esc(clean(x.t))}</div><div class="pl"><span>${esc(plats)}</span>${t ? `<span class="${t[1]}">${t[0]}</span>` : ''}${ck}</div></div></div>`;
+      return `<div class="it${x.done && x.ck !== 'fail' ? ' done' : ''}"><div class="mth">${x.img ? `<img src="${esc(x.img)}" alt="" loading="lazy">` : `<span>${x.k === 'vid' ? '🎬' : '📝'}</span>`}</div><div class="bd"><div class="mtm">${esc(x.at.slice(11, 16))}・${x.k === 'vid' ? '影片' : '圖文'}</div><div class="tt mtt">${esc(clean(x.t))}</div><div class="pl"><span>${esc(plats)}</span>${t ? `<span class="${t[1]}">${t[0]}</span>` : ''}${ck}</div></div></div>`;
     }).join('')}</div>`;
   }).join('') + (hiddenN ? `<button class="more" type="button" id="more">再看後面 ${hiddenN} 天</button>` : '');
 }
