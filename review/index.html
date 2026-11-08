@@ -119,6 +119,8 @@ body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.55 -app
 .remind { display: flex; gap: 10px; align-items: center; width: 100%; text-align: left; background: var(--soft); border: 0; border-radius: 12px; padding: 10px 14px; margin: 0 0 8px; color: var(--sub); font: inherit; font-size: 14px; cursor: pointer; }
 .remind .tx { flex: 1; min-width: 0; }
 .remind .go { font-size: 13px; flex: none; }
+.remind .tx b { display: block; color: var(--ink); font-weight: 700; margin-bottom: 2px; }
+.remind .tx small, .todo .tx small { display: block; font-size: 12.5px; color: var(--sub); font-weight: 400; line-height: 1.5; }
 .funnel .f small { display: block; font-size: 11.5px; color: var(--sub); margin-top: 1px; }
 .foot .warn { color: var(--fix); font-weight: 700; }
 main.wrap { padding-bottom: calc(96px + env(safe-area-inset-bottom)); }
@@ -372,7 +374,7 @@ function renderTodo() {
   const waiting = rv.filter((x) => !(data.decisions || {})[x.id]).length;
   todoN = out.length;
   const g = st.gbp;
-  if (g && g.unreplied) out.push(['r', `${g.unreplied} 則 Google 評論還沒回（${String(g.reviewsAsOf || g.asOf || '').slice(5, 16).replace('-', '/')} 的資料，每週一更新）`, 'https://business.google.com/reviews', '去回覆']);
+  if (g && g.unreplied) out.push(['r', `${g.unreplied} 則 Google 評論還沒回｜${String(g.reviewsAsOf || g.asOf || '').slice(5, 16).replace('-', '/')} 的資料・每週一更新`, 'https://business.google.com/reviews', '去回覆']);
   const ago = new Date(now.getTime() - 3 * 864e5);
   items.filter((x) => x.ck === 'fail' && new Date(x.at.replace(' ', 'T')) > ago).forEach((x) => out.push(['r', `${md(x.at.slice(0, 10))}「${clean(x.t).slice(0, 16)}」沒發出去`, 'sched', '看行程']));
   // 接下來 7 天：中午沒圖文、晚上沒影片（已審待排的也算有）
@@ -387,13 +389,15 @@ function renderTodo() {
   const gap = [noImg.length ? `圖文缺 ${noImg.length} 天` : '', noVid.length ? `影片缺 ${noVid.length} 天` : ''].filter(Boolean).join('、');
   const first = [...noImg, ...noVid].sort()[0];
   const gapTx = [noImg.length ? `圖文缺 ${noImg.length} 天（最近 ${md(noImg[0])}）` : '', noVid.length ? `影片缺 ${noVid.length} 天（最近 ${md(noVid[0])}）` : ''].filter(Boolean).join('、');
-  const remind = gap ? `<button type="button" class="remind" data-go="sched"><span class="tx">📅 排程缺口：${gapTx}${noVid.length ? '・影片丟進「待發」' : ''}</span><span class="go">看行程 ›</span></button>` : '';
+  const sub2 = (t) => { const [a, b] = String(t).split('｜'); return esc(a) + (b ? `<small>${esc(b)}</small>` : ''); };
+  const gapLines = [noImg.length ? `圖文缺 ${noImg.length} 天・最近 ${md(noImg[0])}` : '', noVid.length ? `影片缺 ${noVid.length} 天・最近 ${md(noVid[0])}・丟進「待發」` : ''].filter(Boolean);
+  const remind = gap ? `<button type="button" class="remind" data-go="sched"><span class="tx"><b>📅 排程缺口</b>${gapLines.map((x) => `<small>${x}</small>`).join('')}</span><span class="go">看行程 ›</span></button>` : '';
   todoN = out.length;
   const fixes = rv.filter((x) => ((data.decisions || {})[x.id] || {}).decision === 'fix' && !(x.id || '').startsWith('hot-')).length;
   const nowait = !rv.some((x) => !(data.decisions || {})[x.id]);
   $('#todo').innerHTML = (out.length ? `<div class="sec">要你處理</div><div class="todo act">` + out.map(([c, t, go, gl]) => /^https?:/.test(go)
-      ? `<a href="${esc(go)}" target="_blank" rel="noopener"><span class="ic ${c}"></span><span class="tx">${esc(t)}</span><span class="go">${gl} ↗</span></a>`
-      : `<button type="button" class="ti" data-go="${go}"><span class="ic ${c}"></span><span class="tx">${esc(t)}</span><span class="go">${gl} ›</span></button>`).join('') + '</div>' : '') + (remind ? `<div class="sec">提醒</div>${remind}` : '');
+      ? `<a href="${esc(go)}" target="_blank" rel="noopener"><span class="ic ${c}"></span><span class="tx">${sub2(t)}</span><span class="go">${gl} ↗</span></a>`
+      : `<button type="button" class="ti" data-go="${go}"><span class="ic ${c}"></span><span class="tx">${sub2(t)}</span><span class="go">${gl} ›</span></button>`).join('') + '</div>' : '') + (remind ? `<div class="sec">提醒</div>${remind}` : '');
   // 招呼語＋總件數
   const hr = now.getHours(), hi = hr < 11 ? '早安' : hr < 18 ? '午安' : '晚安';
   const waitN = rv.filter((x) => !(data.decisions || {})[x.id]).length, total = waitN + out.length;
@@ -673,7 +677,7 @@ function renderStats() {
   let qr = '7'; try { qr = localStorage.getItem('chiu189_qr') || '7'; } catch (e) {}
   const Q = ((st.site || {}).q || {})[qr];
   const qCard = Q ? (() => {
-    const f = Q.funnel || [0, 0, 0, 0], lab = ['打開報價頁', '點機型', '加入項目', '按 LINE 預約'];
+    const f = Q.funnel || [0, 0, 0, 0], lab = ['打開報價頁', '點機型', '加入項目', 'LINE 預約'];
     const pc = (a, b) => (b ? Math.round(a / b * 100) + '%' : '');
     const steps = `<div class="qsteps">${f.map((v, i) => `<div class="qs"><b>${n(v)}</b><span>${lab[i]}</span>${i ? `<small>${pc(v, f[i - 1])}</small>` : '<small>&nbsp;</small>'}</div>`).join('<i class="qa">›</i>')}</div>`;
     const bars = (arr, unit) => { const mx = Math.max(1, ...arr.map((x) => x[1])); return arr.map(([k, v]) => `<div class="qb"><span class="qk">${esc(k)}</span><span class="qbar"><i style="width:${Math.round(v / mx * 100)}%"></i></span><span class="qv">${n(v)}${unit}</span></div>`).join(''); };
@@ -687,7 +691,7 @@ function renderStats() {
       ${steps}
       ${(Q.cats || []).length ? sub('想修什麼', '客人加進報價的項目') + bars(Q.cats, ' 次') : ''}
       ${(Q.models || []).length ? sub('查最多的機型', brands) + bars(Q.models.slice(0, 6), ' 次') : ''}
-      ${(Q.items || []).length ? sub('客人想修的（機型＋項目）', '可以拿來備料或做貼文') + Q.items.slice(0, 6).map(([k, v]) => `<div class="sr"><div class="sl">${esc(k.replace('｜', ' ・ '))}</div><div class="sv">${n(v)} 次<button type="button" class="mini" data-topic="${esc(k)}">做成貼文</button></div></div>`).join('') : ''}
+      ${(Q.items || []).length ? sub('客人想修的（機型＋項目）', '可以拿來備料或做貼文') + Q.items.slice(0, 6).map(([k, v]) => `<div class="sr"><div class="sl">${esc(k.split('｜')[0])}<small>${esc(k.split('｜')[1] || '')}</small></div><div class="sv">${n(v)} 次<button type="button" class="mini" data-topic="${esc(k)}">做成貼文</button></div></div>`).join('') : ''}
       ${(Q.miss || []).length ? sub('搜尋找不到的', '價目表可以補這些') + `<div class="qmiss">${Q.miss.map(([k, v]) => `<span>${esc(k)}${v > 1 ? ` ×${v}` : ''}</span>`).join('')}</div>` : ''}
       <div class="sc-foot">${((st.site || {}).q || {}).first ? `${esc(String(st.site.q.first).slice(5).replace('-', '/'))} 開始記錄・` : ''}不記錄個人資料・自己測試也會算進去</div></div>`;
   })() : '';
