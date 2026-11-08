@@ -6,9 +6,17 @@ const SITE = {
   EMAIL: "service@chiu189.com.tw", // 公司 email：網域開通後填，例如 "service@chiu189.com.tw"；空白就不顯示
   ADDRESS: "臺中市龍井區東海里遠東街189號",
   PHONE: "0905-584-846",
-  V: 28,                        // 改版時加一，避免手機看到舊頁面
+  V: 29,                        // 改版時加一，避免手機看到舊頁面
   GA_ID: "G-KX7S54506Z",                  // Google Analytics 4 評估 ID（G-XXXXXXX）；空白就不載入
 };
+// 2026-11-08 全站排版：標題不留單一個字在第二行、段落最後一行不要只剩一兩個字；麵包屑「首頁」好按一點
+(function(){
+  const st = document.createElement("style");
+  st.textContent = `h1,h2,h3{text-wrap:balance}
+  p,li,dd,.lead,.sub{text-wrap:pretty}
+  .crumb a{display:inline-block;padding:6px 4px 6px 0}`;
+  document.head.appendChild(st);
+})();
 (function(){
   const el = document.getElementById("sitefoot");
   if(!el) return;
