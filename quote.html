@@ -101,7 +101,10 @@
   .bar.show{display:flex}
   .bar.show.away{display:none}  /* 捲到預約單時藏起來，不擋表單 */
   .bar span{flex:1;font-size:14px}
-  .bar button{border:0;background:var(--accent);color:var(--accent-ink);border-radius:10px;padding:9px 14px;font-weight:700;cursor:pointer}
+  .bar button{border:0;background:var(--accent);color:var(--accent-ink);border-radius:10px;padding:9px 14px;font-weight:700;cursor:pointer;white-space:nowrap}
+  .bar #barLine{background:var(--ok);color:#fff}
+  .bar button.ghost{background:none;color:var(--bg);border:1px solid color-mix(in srgb,var(--bg) 45%,transparent);font-weight:600;padding:9px 10px}
+  #models .ask-line{width:100%;border:0;background:var(--ok);color:#fff;font-weight:700;border-radius:12px;padding:13px 14px;font-size:15px;cursor:pointer;justify-content:center}
   footer{margin-top:24px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:6px 16px;font-size:14px}
   footer .f-name{font-weight:700;font-size:15px;padding:12px 0 10px;border-bottom:1px solid var(--line);color:var(--accent)}
   footer .f-row{display:flex;gap:12px;align-items:flex-start;padding:11px 0;border-bottom:1px solid var(--line);color:var(--ink);text-decoration:none}
@@ -160,10 +163,10 @@
 
   <section class="book" id="book">
     <h2>預約維修</h2>
-    <p>填好後按「LINE 傳送預約」，我們會在營業時間回覆您。</p>
-    <label for="name">姓名</label>
+    <p>按「LINE 傳送預約」就會把選的項目帶進 LINE，姓名電話不填也可以，在 LINE 上聊就好。</p>
+    <label for="name">姓名（選填）</label>
     <input id="name" autocomplete="name">
-    <label for="phone">聯絡電話</label>
+    <label for="phone">聯絡電話（選填）</label>
     <input id="phone" type="tel" autocomplete="tel">
     <label for="when">希望到店時間</label>
     <input id="when" placeholder="例如：週六下午 3 點">
@@ -196,7 +199,7 @@
   <div class="sitefoot" id="sitefoot"></div>
 </div>
 
-<div class="bar" id="bar"><span id="barText"></span><button id="barGo">去預約</button></div>
+<div class="bar" id="bar"><span id="barText"></span><button id="barLine">LINE 預約</button><button id="barGo" class="ghost">填資料</button></div>
 
 <script>
 // ===== 設定區：之後只要改這裡 =====
@@ -300,17 +303,30 @@ function renderTabs(){
   });
 }
 
+// 11/8：搜尋認得簡寫（i11、ip13、15pm、三星s24、全形字、S24+／S24plus）
+const norm=s=>String(s).normalize("NFKC").toLowerCase().replace(/\s/g,"").replace(/\+/g,"plus").replace(/[()（）]/g,"");
+function normQ(raw){
+  let q=norm(raw).replace(/^(galaxy|samsung|三星|蘋果|apple)/,"");
+  q=q.replace(/^(iphone|iphon|iphne|ipone|ip|i|愛瘋|哀鳳)(?=\d|x|se)/,"iphone");
+  return q.replace(/pm$/,"promax").replace(/pro\s*max/,"promax");
+}
 function renderModels(){
-  const q=$("#q").value.replace(/\s/g,"").toLowerCase();
+  const q=normQ($("#q").value);
   // 搜尋時跨品牌找
   const pool = q ? Object.entries(data).flatMap(([b,ms])=>Object.keys(ms).map(m=>[b,m]))
                  : Object.keys(data[brand]||{}).map(m=>[brand,m]);
-  const list = pool.filter(([,m])=>m.replace(/\s/g,"").toLowerCase().includes(q));
-  $("#count").textContent = q ? (list.length ? "搜尋結果" : "找不到這個型號，直接 LINE 問我們") : "選擇你的機型";
+  const list = pool.filter(([b,m])=>norm(m).includes(q)||norm(b+m).includes(q));
+  $("#count").textContent = q ? (list.length ? "搜尋結果" : "價目表沒有這支，直接 LINE 問我們") : "選擇你的機型";
   // 搜尋找不到：停手 1.5 秒才記，避免打字到一半也算（只記搜尋字，不記個資）
   clearTimeout(window._missT);
   if(q && q.length>=2 && !list.length){ const raw=$("#q").value.trim().slice(0,30); window._missT=setTimeout(()=>hit("miss", raw), 1500); }
   $("#models").innerHTML="";
+  if(q && !list.length){   // 11/8：找不到時給一顆 LINE 直接問（舊機型、沒列的型號）
+    const li=document.createElement("li"), bt=document.createElement("button");
+    bt.className="ask-line"; bt.textContent=`💬 LINE 問「${$("#q").value.trim().slice(0,20)}」怎麼修`;
+    bt.onclick=()=>{ hit("book"); hit("s_ask"); goLine(`您好，想問「${$("#q").value.trim().slice(0,30)}」維修，價目表上找不到`); };
+    li.append(bt); $("#models").append(li);
+  }
   list.forEach(([b,m])=>{
     const li=document.createElement("li"), bt=document.createElement("button");
     bt.className=m===model?"on":"";
@@ -386,13 +402,16 @@ function syncPicked(){
 
 function sendLine(){
   const name=$("#name").value.trim(), phone=$("#phone").value.trim(), memo=$("#items").value.trim();
-  if(!name||!phone||(!picked.size&&!memo)){ alert("請填寫姓名、電話，並選擇維修項目或寫下說明"); return; }
+  if(!picked.size&&!memo){ $("#items").focus(); $("#items").placeholder="先在上方按「＋加入」選項目，或在這裡寫一下哪裡壞了"; return; }
   const {sum,tbd,masked}=pickedSum();
   const items=[...picked.values()].map(x=>`${x.model}｜${x.item}｜${fmt(x.price)}`).join("\n");
   const total=masked?"\n合計：到店確認報價":sum?`\n合計：約 ${fmt(String(sum))}`+(tbd?"（另有檢測後報價項目）":""):"";
-  const text=`【預約維修】\n姓名：${name}\n電話：${phone}\n時間：${$("#when").value.trim()||"未指定"}`+
+  const text=`【預約維修】`+(name?`\n姓名：${name}`:"")+(phone?`\n電話：${phone}`:"")+`\n時間：${$("#when").value.trim()||"未指定"}`+
     (items?`\n項目：\n${items}${total}`:"")+(memo?`\n說明：${memo}`:"");
   hit("book");
+  goLine(text);
+}
+function goLine(text){
   // 用按鈕跳轉、不放 line.me 連結在頁面上，避免被手機的廣告阻擋隱藏
   location.href = CONFIG.LINE_OA_ID
     ? `https://line.me/R/oaMessage/${encodeURIComponent(CONFIG.LINE_OA_ID)}/?${encodeURIComponent(text)}`
@@ -402,6 +421,7 @@ function sendLine(){
 $("#q").oninput=renderModels;
 $("#sendLine").onclick=sendLine;
 $("#barGo").onclick=()=>$("#book").scrollIntoView({behavior:"smooth"});
+$("#barLine").onclick=()=>{ hit("s_bar"); sendLine(); };   // 11/8：不用捲到表單，直接帶項目進 LINE
 new IntersectionObserver(([e])=>$("#bar").classList.toggle("away",e.isIntersecting)).observe($("#book"));
 if(CONFIG.PHONE){ $("#tel").href="tel:"+CONFIG.PHONE.replace(/[^\d+]/g,""); } else { $("#tel").hidden=true; }
 $("#map").href=CONFIG.MAP_URL;
