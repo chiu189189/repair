@@ -121,7 +121,31 @@
     .item .name{flex:1 1 100%}
     .item .price{flex:1;font-size:17px}
     .item .add{padding:7px 14px}
+    /* 11/8 排版：機型改兩欄小卡，一次看得到兩倍 */
+    .models{display:grid;grid-template-columns:1fr 1fr;gap:6px;background:none;border:0;border-radius:0;max-height:52vh;padding:1px}
+    .models li button{flex-direction:column;align-items:flex-start;gap:2px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--card);font-size:14.5px;line-height:1.3;height:100%}
+    .models li:last-child button{border-bottom:1px solid var(--line)}
+    .models li button.on{border-color:var(--accent)}
+    .models small{font-size:12px}
+    .models li:has(.ask-line){grid-column:1 / -1}
+    /* 項目：工時、保固改成名稱下面一行灰字，不再一顆顆膠囊排得高低不齊 */
+    .item .head{display:block}
+    .item .ttl{display:block;font-weight:700;font-size:16px;margin-bottom:3px}
+    .tags{gap:0;font-size:12.5px;align-items:center}
+    .tag{border:0;background:none;padding:0;font-size:12.5px}
+    .tag.ok,.tag.no{background:none}
+    .tag+.tag::before{content:"・";color:var(--muted)}
+    .tag.star{border:1px solid var(--accent);background:var(--accent-soft);padding:1px 7px;margin-right:6px}
+    .tag.star+.tag::before{content:""}
+    .item .note{margin-top:3px;font-size:12.5px}
   }
+  .wrap{padding-bottom:84px}  /* 底部提示列不要蓋到頁尾 */
+  .book .more{margin-top:14px;border-top:1px solid var(--line);padding-top:4px}
+  .book .more summary{cursor:pointer;padding:10px 0;font-size:14px;color:var(--muted);list-style:none}
+  .book .more summary::-webkit-details-marker{display:none}
+  .book .more summary::after{content:" ＋";color:var(--accent)}
+  .book .more[open] summary::after{content:" －"}
+  .book .actions.first{margin-top:12px}
 </style>
 </head>
 <body>
@@ -163,22 +187,25 @@
 
   <section class="book" id="book">
     <h2>預約維修</h2>
-    <p>按「LINE 傳送預約」就會把選的項目帶進 LINE，姓名電話不填也可以，在 LINE 上聊就好。</p>
-    <label for="name">姓名（選填）</label>
-    <input id="name" autocomplete="name">
-    <label for="phone">聯絡電話（選填）</label>
-    <input id="phone" type="tel" autocomplete="tel">
-    <label for="when">希望到店時間</label>
-    <input id="when" placeholder="例如：週六下午 3 點">
+    <p>按「LINE 傳送預約」就會把選的項目帶進 LINE，其他資料不填也可以，在 LINE 上聊就好。</p>
     <label>要維修的項目</label>
     <div class="picked" id="picked"></div>
-    <label for="items">其他說明（選填）</label>
-    <textarea id="items" placeholder="例如：摔到後螢幕有綠線、上週開始充不了電"></textarea>
-    <div class="actions">
+    <div class="actions first">
       <button class="btn-line" id="sendLine">LINE 傳送預約</button>
       <a class="btn-tel" id="tel" href="#">撥打電話</a>
       <a class="btn-tel" id="map" href="#" target="_blank" rel="noopener">地圖導航</a>
     </div>
+    <details class="more" id="more">
+      <summary>補充姓名、電話、到店時間（選填）</summary>
+      <label for="name">姓名</label>
+      <input id="name" autocomplete="name">
+      <label for="phone">聯絡電話</label>
+      <input id="phone" type="tel" autocomplete="tel">
+      <label for="when">希望到店時間</label>
+      <input id="when" placeholder="例如：週六下午 3 點">
+      <label for="items">哪裡壞了</label>
+      <textarea id="items" placeholder="例如：摔到後螢幕有綠線、上週開始充不了電"></textarea>
+    </details>
   </section>
 
   <!-- 關於我們：用設備、流程、零件說明實力（不寫年資） -->
@@ -402,7 +429,7 @@ function syncPicked(){
 
 function sendLine(){
   const name=$("#name").value.trim(), phone=$("#phone").value.trim(), memo=$("#items").value.trim();
-  if(!picked.size&&!memo){ $("#items").focus(); $("#items").placeholder="先在上方按「＋加入」選項目，或在這裡寫一下哪裡壞了"; return; }
+  if(!picked.size&&!memo){ $("#more").open=true; $("#items").focus(); $("#items").placeholder="先在上方按「＋加入」選項目，或在這裡寫一下哪裡壞了"; return; }
   const {sum,tbd,masked}=pickedSum();
   const items=[...picked.values()].map(x=>`${x.model}｜${x.item}｜${fmt(x.price)}`).join("\n");
   const total=masked?"\n合計：到店確認報價":sum?`\n合計：約 ${fmt(String(sum))}`+(tbd?"（另有檢測後報價項目）":""):"";
@@ -420,7 +447,7 @@ function goLine(text){
 
 $("#q").oninput=renderModels;
 $("#sendLine").onclick=sendLine;
-$("#barGo").onclick=()=>$("#book").scrollIntoView({behavior:"smooth"});
+$("#barGo").onclick=()=>{ $("#more").open=true; $("#book").scrollIntoView({behavior:"smooth"}); };
 $("#barLine").onclick=()=>{ hit("s_bar"); sendLine(); };   // 11/8：不用捲到表單，直接帶項目進 LINE
 new IntersectionObserver(([e])=>$("#bar").classList.toggle("away",e.isIntersecting)).observe($("#book"));
 if(CONFIG.PHONE){ $("#tel").href="tel:"+CONFIG.PHONE.replace(/[^\d+]/g,""); } else { $("#tel").hidden=true; }
