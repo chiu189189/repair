@@ -372,7 +372,7 @@ function renderTodo() {
   const waiting = rv.filter((x) => !(data.decisions || {})[x.id]).length;
   todoN = out.length;
   const g = st.gbp;
-  if (g && g.unreplied) out.push(['r', `${g.unreplied} 則 Google 評論還沒回（${String(g.reviewsAsOf || g.asOf || '').slice(5, 16).replace('-', '/')} 的資料，每晚更新）`, 'https://business.google.com/reviews', '去回覆']);
+  if (g && g.unreplied) out.push(['r', `${g.unreplied} 則 Google 評論還沒回（${String(g.reviewsAsOf || g.asOf || '').slice(5, 16).replace('-', '/')} 的資料，每週一更新）`, 'https://business.google.com/reviews', '去回覆']);
   const ago = new Date(now.getTime() - 3 * 864e5);
   items.filter((x) => x.ck === 'fail' && new Date(x.at.replace(' ', 'T')) > ago).forEach((x) => out.push(['r', `${md(x.at.slice(0, 10))}「${clean(x.t).slice(0, 16)}」沒發出去`, 'sched', '看行程']));
   // 接下來 7 天：中午沒圖文、晚上沒影片（已審待排的也算有）
@@ -386,7 +386,8 @@ function renderTodo() {
   // 排程缺口只是提醒（合併成一行）；「搜尋找不到」放成效分頁
   const gap = [noImg.length ? `圖文缺 ${noImg.length} 天` : '', noVid.length ? `影片缺 ${noVid.length} 天` : ''].filter(Boolean).join('、');
   const first = [...noImg, ...noVid].sort()[0];
-  const remind = gap ? `<button type="button" class="remind" data-go="sched"><span class="tx">📅 排程缺口：${gap}（最近 ${md(first)}）${noVid.length ? '・影片丟進「待發」' : ''}</span><span class="go">看行程 ›</span></button>` : '';
+  const gapTx = [noImg.length ? `圖文缺 ${noImg.length} 天（最近 ${md(noImg[0])}）` : '', noVid.length ? `影片缺 ${noVid.length} 天（最近 ${md(noVid[0])}）` : ''].filter(Boolean).join('、');
+  const remind = gap ? `<button type="button" class="remind" data-go="sched"><span class="tx">📅 排程缺口：${gapTx}${noVid.length ? '・影片丟進「待發」' : ''}</span><span class="go">看行程 ›</span></button>` : '';
   todoN = out.length;
   const fixes = rv.filter((x) => ((data.decisions || {})[x.id] || {}).decision === 'fix' && !(x.id || '').startsWith('hot-')).length;
   const nowait = !rv.some((x) => !(data.decisions || {})[x.id]);
@@ -645,8 +646,10 @@ function renderStats() {
   // 2026-11-07 排版整理：每張卡同一套格式＝標題列（左標題、右期間小標籤）→ 大數字（右邊變化）→ 一句說明 → 明細列（左名稱＋小字、右數字＋小字）
   const tips = [];
   if (g && g.unreplied) tips.push(['⭐', `Google 有 ${g.unreplied} 則評論沒回`]);
-  const live = ads.filter((a) => a.clicks >= 10 && a.cpc_twd);
-  if (live.length >= 2) { const s = live.slice().sort((a, b) => a.cpc_twd - b.cpc_twd); const x = s[s.length - 1].cpc_twd / s[0].cpc_twd; if (x >= 1.5) tips.push(['📣', `廣告「${s[0].name.replace('（Google 地圖）', '')}」每次點擊比「${s[s.length - 1].name.replace('（Google 地圖）', '')}」便宜 ${x.toFixed(1)} 倍`]); }
+  // 11/8：不再比每次點擊（會誤導），改看加 LINE 廣告每個好友多少錢（好友數用戶告訴 Claude，review_sync.py friends N）
+  const lf = st.lineFriends, lineAd = ads.find((a) => a.name === '加 LINE');
+  const perFriend = lf && lf.n && lineAd ? Math.round(lineAd.twd / lf.n) : null;
+  if (perFriend) tips.push(['📣', `加 LINE 廣告：LINE 好友 ${lf.n} 人，每個約 NT$${perFriend}`]);
   if (ct && ct.by && ct.by.kind && ct.by.kind.IG) { const k = ct.by.kind.IG.filter((r) => r[2] >= 3).sort((a, b) => b[1] - a[1]); if (k.length >= 2 && k[0][1] >= k[k.length - 1][1] * 1.5) tips.push(['📝', `IG 上「${k[0][0]}」的觀看是「${k[k.length - 1][0]}」的 ${(k[0][1] / Math.max(1, k[k.length - 1][1])).toFixed(1)} 倍`]); }
   const tipBox = tips.length ? `<div class="sc tips"><div class="sc-hd"><span>💡 這週建議</span></div>${tips.slice(0, 3).map(([i, t]) => `<div class="tip"><span class="ti">${i}</span><span>${esc(t)}</span></div>`).join('')}</div>` : '';
   const chip = (t) => t ? `<span class="chip">${t}</span>` : '';
@@ -658,7 +661,8 @@ function renderStats() {
   const visitCard = card('🏃', 'Google 地圖查路線', mon, n(curM.dirs), '次', curM.m && preM.m ? delta(curM.dirs, preM.dirs) : '', '想來店的人按「路線」的次數・跟上個月比',
     row('Google 商家打電話', mon, n(curM.calls), '') + row('官網按電話／LINE', '近 7 天', want == null ? '—' : n(want), ''));
   const adCard = ads.length ? card('📣', '廣告花費', '近 30 天', 'NT$' + n(st.ads.twd), '', '', `換到 ${n(st.ads.clicks)} 次點擊`,
-    ads.map((a) => row(esc(a.name.replace('（Google 地圖）', '')), `${a.on ? '播到 ' + esc(a.end) : '已停'}・花 NT$${n(a.twd)}`, `${n(a.clicks)} 次`, `每次 NT$${a.cpc_twd == null ? '—' : a.cpc_twd}`)).join(''),
+    ads.map((a) => row(esc(a.name.replace('（Google 地圖）', '')), `${a.on ? '播到 ' + esc(a.end) : '已停'}・花 NT$${n(a.twd)}`, `${n(a.clicks)} 次點擊`, `每次 NT$${a.cpc_twd == null ? '—' : a.cpc_twd}`)).join('')
+    + (lf && lf.n ? row('LINE 好友', `${esc(String(lf.asOf || '').slice(5, 16).replace('-', '/'))} 的數字`, `${n(lf.n)} 人`, perFriend ? `每個約 NT$${perFriend}` : '') : ''),
     `更新 ${esc(String(st.ads.asOf).slice(11))}`) : '';
   const webCard = card('🌐', '逛官網的人', '近 7 天', wb.asOf ? n(wb.users) : '—', '人', wb.asOf && wb.usersPrev ? delta(wb.users, wb.usersPrev) : '', wb.asOf && !wb.usersPrev ? '11/4 才開始記錄，下週起可以跟上週比' : '跟上週比',
     row('按電話或 LINE', '', want == null ? '—' : n(want) + ' 人', ''));
