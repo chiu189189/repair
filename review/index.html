@@ -691,7 +691,25 @@ function renderStats() {
       ${(Q.miss || []).length ? sub('搜尋找不到的', '價目表可以補這些') + `<div class="qmiss">${Q.miss.map(([k, v]) => `<span>${esc(k)}${v > 1 ? ` ×${v}` : ''}</span>`).join('')}</div>` : ''}
       <div class="sc-foot">${((st.site || {}).q || {}).first ? `${esc(String(st.site.q.first).slice(5).replace('-', '/'))} 開始記錄・` : ''}不記錄個人資料・自己測試也會算進去</div></div>`;
   })() : '';
-  const simple = tipBox + qCard + visitCard + adCard + webCard + thrCard;
+  // 11/8 用戶「內容缺了些什麼」→ 最上面放實際來店（收銀數字，不顯示金額）＋ FB／IG 粉絲（shop_stats.py）
+  const sh = st.shop, so = st.social;
+  const shopCard = sh && sh.cur ? card('🔧', '實際來店', '近 7 天', n(sh.cur.orders), '筆結帳', sh.pre ? delta(sh.cur.orders, sh.pre.orders) : '', `收銀系統的數字（${esc(sh.range || '')}）・跟前 7 天比`,
+    row('新客人', '第一次來結帳', `${n(sh.cur.newc)} 位`, sh.pre ? `前 7 天 ${n(sh.pre.newc)}` : '')
+    + row('收件維修', '開工單的台數', `${n(sh.cur.tickets)} 台`, sh.pre ? `前 7 天 ${n(sh.pre.tickets)}` : '')
+    + row('其中有修東西', '結帳裡含維修', `${n(sh.cur.repair)} 筆`, ''),
+    '作廢的單和回收不算・測試單記得作廢') : '';
+  let fanCard = '';
+  if (so && so.fb != null) {
+    const hs = so.hist || [], wk = dayKey(new Date(Date.now() - 7 * 864e5));
+    const old = hs.filter((x) => x[0] <= wk).slice(-1)[0];
+    const th7 = (thr.followerHist || []).length > 1 ? thr.followers - thr.followerHist[Math.max(0, thr.followerHist.length - 8)][1] : null;
+    const g7 = (now, i) => old && old[i] != null && now != null ? (now - old[i] >= 0 ? '+' : '') + n(now - old[i]) + ' 這週' : '';
+    fanCard = card('📈', '粉絲', '現在', n((so.fb || 0) + (so.ig || 0) + (thr.followers || 0)), '人', '', old ? 'FB＋IG＋Threads 加起來・右邊是這 7 天多幾個' : 'FB＋IG＋Threads 加起來・FB／IG 11/8 才開始記，下週起看得到這週多幾個',
+      row('IG', '', `${n(so.ig)} 人`, g7(so.ig, 2)) + row('FB 粉專', '', `${n(so.fb)} 人`, g7(so.fb, 1))
+      + row('Threads', '', `${n(thr.followers)} 人`, th7 == null ? '' : (th7 >= 0 ? '+' : '') + n(th7) + ' 這週'),
+      `更新 ${esc(String(so.asOf || '').slice(5).replace('-', '/'))}`);
+  }
+  const simple = tipBox + shopCard + qCard + visitCard + adCard + webCard + fanCard + thrCard;
   const more = `<details class="card fold" data-k="__more"${open.__more ? ' open' : ''}><summary><h2>看詳細數據</h2></summary><div class="note2" style="margin-bottom:8px">比較複雜，平常不用看；要問什麼直接到「交代」問就好。</div>${sum}${all}</details>`;
   $('#stats').innerHTML = simple + more;
   $('#stats').querySelectorAll('details.fold').forEach((d) => d.addEventListener('toggle', () => { try { const o = JSON.parse(localStorage.getItem('chiu189_open') || '{}'); o[d.dataset.k] = d.open; localStorage.setItem('chiu189_open', JSON.stringify(o)); } catch (e) {} }));
