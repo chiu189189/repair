@@ -339,8 +339,18 @@ async function load(quiet) {
   const btn = $('#reload'); btn.textContent = '更新中…'; btn.disabled = true;
   try {
     let r;
-    try { r = await fetch(API + '?t=' + Date.now()); } catch (e1) { await new Promise((ok) => setTimeout(ok, 1500)); r = await fetch(API + '?t=' + Date.now()); }
-    data = await r.json();
+    // 2026-11-10：讀稿也要密碼（PIN 存在這支手機，只輸入一次）
+    let pin = getPin() || askPin();
+    if (!pin) { $('#greet').innerHTML = '<div class="none">要輸入審稿密碼才看得到內容。<button onclick="load()">輸入密碼</button></div>'; throw new Error('nopin'); }
+    const post = () => fetch(API, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ a: 'list', pin }) });
+    try { r = await post(); } catch (e1) { await new Promise((ok) => setTimeout(ok, 1500)); r = await post(); }
+    const j = await r.json();
+    if (!j.ok) {
+      if (j.error === 'pin') { setPin(''); $('#greet').innerHTML = '<div class="none">密碼不對，請重新輸入。<button onclick="load()">輸入密碼</button></div>'; throw new Error('pin'); }
+      if (j.error === 'locked') { $('#greet').innerHTML = '<div class="none">密碼錯太多次，鎖定 1 小時，請稍後再試。</div>'; throw new Error('locked'); }
+      throw new Error(j.error);
+    }
+    data = j;
     render();
     const s = sched();
     const age = s.updated ? (Date.now() - new Date(s.updated).getTime()) / 6e4 : 0;   // 行程資料多久沒更新（分鐘）
@@ -353,7 +363,7 @@ async function load(quiet) {
     if (location.hash.length > 1 && !load._jumped) { load._jumped = true; setTab('review'); const el = document.getElementById('c-' + decodeURIComponent(location.hash.slice(1))); if (el) { el.scrollIntoView({ block: 'center' }); el.classList.add('flash'); setTimeout(() => el.classList.remove('flash'), 2500); } }
     btn.textContent = '✓ 已更新';
     setTimeout(() => { btn.textContent = '↻ 重新整理'; }, 1500);
-  } catch (e) { if (!quiet) $('#today').innerHTML = '<div class="none">讀不到資料，請稍後按右上角「重新整理」。</div>'; btn.textContent = '↻ 重新整理'; }
+  } catch (e) { if (!quiet && !['nopin', 'pin', 'locked'].includes(e.message)) $('#today').innerHTML = '<div class="none">讀不到資料，請稍後按右上角「重新整理」。</div>'; btn.textContent = '↻ 重新整理'; }
   btn.disabled = false; loading = false;
 }
 
