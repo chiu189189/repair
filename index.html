@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>台中龍井手機維修｜CHIU189手機維修中心・東海商圈 iPhone／Android</title>
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 64 64%27%3E%3Crect width=%2764%27 height=%2764%27 rx=%2714%27 fill=%27%2317171A%27/%3E%3Ctext x=%2732%27 y=%2743%27 font-size=%2730%27 font-family=%27Arial%27 font-weight=%27700%27 text-anchor=%27middle%27 fill=%27%23C8A96A%27%3EC%3C/text%3E%3C/svg%3E">
+<link rel="icon" href="/favicon.ico" sizes="48x48"><link rel="icon" type="image/png" href="/icon-192.png" sizes="192x192"><link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <meta name="description" content="CHIU189手機維修中心位於台中龍井東海商圈（遠東街189號），iPhone、iPad、Android 手機螢幕、電池、充電孔、進水與主機板維修。先檢測再報價，維修過程現場透明，電池約 30 分鐘完成。">
 <link rel="canonical" href="https://chiu189.com.tw/">
 <meta property="og:title" content="台中龍井手機維修｜CHIU189手機維修中心">
@@ -69,6 +69,7 @@
   .muted{color:var(--muted);font-size:13px}
   .visit .row a{color:var(--ink)}
   .map{display:block;width:100%;height:100%;min-height:220px;border:0;border-radius:12px;background:var(--bg)}
+  .mapph{cursor:pointer;color:var(--ink);font:inherit;font-size:16px;font-weight:700;border:1px dashed var(--line);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px}.mapph small{font-weight:400;color:var(--muted);font-size:13px}
   @media (max-width:640px){.visit{grid-template-columns:1fr}}
   /* 手機底部固定按鈕 */
   .bar{position:fixed;left:0;right:0;bottom:0;z-index:9;display:flex;gap:8px;padding:10px 12px calc(10px + env(safe-area-inset-bottom));
@@ -91,6 +92,7 @@
   "email": "service@chiu189.com.tw",
   "priceRange": "$$",
   "description": "台中龍井東海商圈手機維修：iPhone、iPad、Android 螢幕、電池、充電孔、進水與主機板晶片級維修，先檢測再報價。",
+  "geo": {"@type": "GeoCoordinates", "latitude": 24.18943, "longitude": 120.59506},
   "hasMap": "https://maps.app.goo.gl/GdYtfryHyToNYyn66",
   "areaServed": ["台中市龍井區","台中市西屯區","台中市沙鹿區","台中市大肚區","東海大學"],
   "knowsAbout": ["iPhone 螢幕維修","手機電池更換","主機板晶片級維修","手機進水處理","充電孔維修"],
@@ -126,7 +128,7 @@
       <p>台中龍井・東海商圈｜iPhone、Android 手機與平板維修，先報價、您同意才修，維修過程現場看得到。</p>
       <span class="open" id="open"><i></i><span>營業時間 12:00–22:00（週一公休）</span></span>
     </div>
-    <img src="shop-bench.jpg" alt="CHIU189 手機維修中心店內維修工作台" width="1000" height="750" fetchpriority="high">
+    <picture><source type="image/webp" srcset="shop-bench-600.webp 600w, shop-bench.webp 1000w" sizes="(max-width:700px) 100vw, 600px"><img src="shop-bench.jpg" alt="CHIU189 手機維修中心店內維修工作台" width="1000" height="750" fetchpriority="high"></picture>
   </section>
 
   <h2 class="sec">你的手機怎麼了？<small>點一下看說明，時間是大約參考</small></h2>
@@ -176,8 +178,7 @@
         <a href="#" id="lineAdd">💬 加 LINE 好友</a>
       </div>
     </div>
-    <iframe class="map" loading="lazy" title="CHIU189 手機維修中心地圖" referrerpolicy="no-referrer-when-downgrade"
-      src="https://www.google.com/maps?q=%E8%87%BA%E4%B8%AD%E5%B8%82%E9%BE%8D%E4%BA%95%E5%8D%80%E9%81%A0%E6%9D%B1%E8%A1%97189%E8%99%9F&output=embed"></iframe>
+    <button type="button" class="map mapph" data-src="https://www.google.com/maps?q=%E8%87%BA%E4%B8%AD%E5%B8%82%E9%BE%8D%E4%BA%95%E5%8D%80%E9%81%A0%E6%9D%B1%E8%A1%97189%E8%99%9F&output=embed" aria-label="載入 CHIU189 手機維修中心地圖">🗺️ 點這裡顯示地圖<small>臺中市龍井區遠東街189號</small></button>
   </section>
 
   <footer class="sitefoot" id="sitefoot"></footer>
@@ -191,7 +192,7 @@
 
 <!-- 頁尾簡短版判斷要看到店家資訊（table.biz），這頁用 .visit，所以加一個隱藏的 table.biz 讓頁尾不重複地址 -->
 <table class="biz" hidden></table>
-<script src="site.js?v=29"></script>
+<script src="site.js?v=30"></script>
 <script>
 const OA = "@891llnje";
 document.getElementById("lineBtn").onclick = e => { e.preventDefault(); location.href = "https://line.me/R/oaMessage/" + encodeURIComponent(OA) + "/?" + encodeURIComponent("我想預約維修\n型號：\n問題：\n想來的時間："); };

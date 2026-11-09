@@ -71,8 +71,13 @@ const SITE = {
 // Google Analytics 4：統計瀏覽，並記錄客人點「打電話」「LINE」的次數
 (function(){
   if(!SITE.GA_ID) return;
-  const s = document.createElement("script"); s.async = true;
-  s.src = "https://www.googletagmanager.com/gtag/js?id=" + SITE.GA_ID; document.head.appendChild(s);
+  // 2026-11-10 速度優化：網頁顯示完、客人開始滑或點（最晚 4 秒）才載入 GA，不跟網頁搶速度；之前的事件會排隊補送
+  let gaOn = false;
+  function loadGA(){ if(gaOn) return; gaOn = true;
+    const s = document.createElement("script"); s.async = true;
+    s.src = "https://www.googletagmanager.com/gtag/js?id=" + SITE.GA_ID; document.head.appendChild(s); }
+  ["scroll","touchstart","pointerdown","keydown"].forEach(ev => addEventListener(ev, loadGA, {once:true, passive:true}));
+  addEventListener("load", () => setTimeout(loadGA, 4000));
   window.dataLayer = window.dataLayer || [];
   window.gtag = function(){ dataLayer.push(arguments); };
   gtag("js", new Date()); gtag("config", SITE.GA_ID);
@@ -86,3 +91,11 @@ const SITE = {
     else if(/maps\.app\.goo\.gl|google\.[^/]+\/maps/.test(h)) gtag("event", "click_map", { link_url: h, page: location.pathname });
   }, true);
 })();
+
+// 2026-11-10：首頁地圖點了才載入（Google 地圖很肥，會拖慢首頁）
+document.addEventListener("click", function(e){
+  const b = e.target.closest && e.target.closest(".mapph"); if(!b) return;
+  const f = document.createElement("iframe");
+  f.className = "map"; f.title = "CHIU189 手機維修中心地圖"; f.referrerPolicy = "no-referrer-when-downgrade";
+  f.src = b.dataset.src; b.replaceWith(f);
+});
