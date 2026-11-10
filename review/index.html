@@ -16,281 +16,341 @@
 <link rel="icon" href="icon.png">
 <title>CHIU189 秘書</title>
 <style>
+/* 2026-11-10 排版整理：顏色、字級、間距、圓角都從這裡的設定拿，下面的元件不再各寫各的 */
 :root {
-  --bg: #f4f1ea; --card: #ffffff; --soft: #f1ece2; --ink: #1e1b14; --sub: #6b6458; --line: #e6dfd2;
-  --accent: #A6843F; --accent-ink: #1E1B14; --ok: #1f8a4c; --fix: #c2410c; --img: #A6843F; --vid: #3b6fd8;
+  --bg: #f4f1ea; --card: #ffffff; --soft: #f1ece2; --ink: #1e1b14; --sub: #6b6458; --mute: #a39b8c; --line: #e6dfd2;
+  --accent: #A6843F; --accent-ink: #1E1B14; --gold: #7f6226;
+  --ok: #1f8a4c; --fix: #c2410c; --hot: #d4501c; --vid: #3b6fd8;
+  --shadow: 0 1px 2px rgba(64, 50, 20, .04), 0 6px 18px rgba(64, 50, 20, .05);
+  --r-lg: 16px; --r-md: 12px; --r-sm: 8px;
+  --t-ok: color-mix(in srgb, var(--ok) 13%, transparent);
+  --t-fix: color-mix(in srgb, var(--fix) 12%, transparent);
+  --t-hot: color-mix(in srgb, var(--hot) 13%, transparent);
+  --t-vid: color-mix(in srgb, var(--vid) 13%, transparent);
+  --t-gold: color-mix(in srgb, var(--accent) 16%, transparent);
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg: #14130f; --card: #1d1b16; --soft: #26231d; --ink: #f3efe6; --sub: #a69e8f; --line: #312d25;
-    --accent: #C8A96A; --accent-ink: #1E1B14; --ok: #3fc47f; --fix: #fb923c; --img: #C8A96A; --vid: #7aa2ff;
+    --bg: #14130f; --card: #1d1b16; --soft: #26231d; --ink: #f3efe6; --sub: #a69e8f; --mute: #6f695e; --line: #312d25;
+    --accent: #C8A96A; --accent-ink: #1E1B14; --gold: #C8A96A;
+    --ok: #3fc47f; --fix: #fb923c; --hot: #ff8552; --vid: #7aa2ff;
+    --shadow: 0 1px 2px rgba(0, 0, 0, .25);
+    color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
-  --bg: #14130f; --card: #1d1b16; --soft: #26231d; --ink: #f3efe6; --sub: #a69e8f; --line: #312d25;
-  --accent: #C8A96A; --accent-ink: #1E1B14; --ok: #3fc47f; --fix: #fb923c; --img: #C8A96A; --vid: #7aa2ff;
+  --bg: #14130f; --card: #1d1b16; --soft: #26231d; --ink: #f3efe6; --sub: #a69e8f; --mute: #6f695e; --line: #312d25;
+  --accent: #C8A96A; --accent-ink: #1E1B14; --gold: #C8A96A;
+  --ok: #3fc47f; --fix: #fb923c; --hot: #ff8552; --vid: #7aa2ff;
+  --shadow: 0 1px 2px rgba(0, 0, 0, .25);
+  color-scheme: dark;
 }
+
+/* 基礎 */
 * { box-sizing: border-box; }
 html { -webkit-text-size-adjust: 100%; }
-body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.55 -apple-system, BlinkMacSystemFont, "PingFang TC", "Noto Sans TC", sans-serif; }
-.wrap { max-width: 640px; margin: 0 auto; padding: 0 16px; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.55 -apple-system, BlinkMacSystemFont, "PingFang TC", "Noto Sans TC", "Microsoft JhengHei", sans-serif; -webkit-font-smoothing: antialiased; -webkit-tap-highlight-color: transparent; }
+button { font: inherit; color: inherit; touch-action: manipulation; }
+button:disabled { opacity: .5; cursor: default; }
+[hidden] { display: none !important; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.wrap { max-width: 640px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left)); padding-right: max(16px, env(safe-area-inset-right)); }
+.i { width: 1em; height: 1em; flex: none; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+b, strong { font-weight: 700; }
 
-/* 頂部：標題＋分頁（捲動時固定） */
-.top { position: sticky; top: 0; z-index: 5; background: color-mix(in srgb, var(--bg) 92%, transparent); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-bottom: 1px solid var(--line); padding-top: env(safe-area-inset-top); }
-.brand { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; padding: 14px 0 10px; }
-.brand h1 { font-size: 20px; margin: 0; letter-spacing: .02em; }
-.brand h1 span { color: var(--accent); }
-.brand .tools { display: flex; align-items: center; gap: 4px; }
-#bell { font-size: 17px !important; padding: 4px 8px !important; border-radius: 999px; opacity: .45; filter: grayscale(1); }
-#bell.on { opacity: 1; filter: none; }
-.brand button { background: none; border: 0; color: var(--sub); font: inherit; font-size: 13px; padding: 6px 0 6px 8px; cursor: pointer; }
-.tabs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; background: var(--soft); border-radius: 12px; padding: 4px; margin-bottom: 10px; }
-.tabs button { border: 0; background: none; color: var(--sub); font: inherit; font-weight: 700; font-size: 15px; min-height: 40px; border-radius: 9px; cursor: pointer; position: relative; }
-.tabs button[aria-selected="true"] { background: var(--card); color: var(--ink); box-shadow: 0 1px 3px rgba(0,0,0,.12); }
-/* 2026-11-07 分頁列移到畫面最下面（單手拇指按得到） */
-.tabs { position: fixed; left: 0; right: 0; bottom: 0; z-index: 6; margin: 0; border-radius: 0; gap: 0; padding: 6px max(8px, env(safe-area-inset-left)) calc(6px + env(safe-area-inset-bottom)) max(8px, env(safe-area-inset-right)); background: color-mix(in srgb, var(--card) 94%, transparent); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-top: 1px solid var(--line); }
-.tabs button { min-height: 52px; font-size: 12.5px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; }
-.tabs button .ti-ic { font-size: 20px; line-height: 1; filter: grayscale(1); opacity: .6; }
-.tabs button[aria-selected="true"] { background: none; box-shadow: none; color: var(--accent); }
-.tabs button[aria-selected="true"] .ti-ic { filter: none; opacity: 1; }
-.tabs .badge { position: absolute; top: 4px; left: calc(50% + 6px); margin: 0; }
-/* 圖文／影片改用圖示，不再用顏色點 */
-.dot { width: auto !important; height: auto !important; background: none !important; border-radius: 0 !important; font-size: 13px; vertical-align: 0 !important; }
-.dot.img::before { content: '📝'; } .dot.vid::before { content: '🎬'; }
-/* 要你處理 vs 提醒 */
-.todo.act a, .todo.act button.ti { font-weight: 600; }
-.todo.act .go { background: var(--accent); color: var(--accent-ink); font-weight: 700; padding: 6px 12px; border-radius: 999px; font-size: 13.5px; }
-.mini3 .it { align-items: center; }
-#sched .it { align-items: center; }
-#sched .it.done .mth { opacity: .6; }
-.mth { width: 60px; height: 60px; flex: none; border-radius: 10px; overflow: hidden; background: var(--soft); display: grid; place-items: center; font-size: 24px; }
+/* 頂部 */
+.top { position: sticky; top: 0; z-index: 5; background: color-mix(in srgb, var(--bg) 88%, transparent); backdrop-filter: saturate(1.4) blur(14px); -webkit-backdrop-filter: saturate(1.4) blur(14px); border-bottom: 1px solid var(--line); padding-top: env(safe-area-inset-top); }
+.brand { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 60px; }
+.bname { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.bname img { width: 36px; height: 36px; border-radius: 10px; flex: none; display: block; }
+.brand h1 { font-size: 17px; line-height: 1.25; margin: 0; font-weight: 800; letter-spacing: .02em; }
+.brand h1 span { color: var(--gold); }
+.bdate { font-size: 12.5px; line-height: 1.3; color: var(--sub); font-variant-numeric: tabular-nums; }
+.tools { display: flex; gap: 8px; flex: none; }
+.icb { width: 42px; height: 42px; padding: 0; border-radius: 50%; border: 1px solid var(--line); background: var(--card); color: var(--sub); display: grid; place-items: center; font-size: 19px; cursor: pointer; transition: transform .15s; }
+.icb:active { transform: scale(.93); }
+.icb:disabled { opacity: 1; }
+#bell .i-on, #bell.on .i-off { display: none; }
+#bell.on { color: var(--gold); background: var(--t-gold); border-color: color-mix(in srgb, var(--accent) 40%, var(--line)); }
+#bell.on .i-on { display: block; }
+#reload .i-ok { display: none; }
+#reload[data-s="load"] .i-re { animation: spin .9s linear infinite; }
+#reload[data-s="ok"] { color: var(--ok); border-color: color-mix(in srgb, var(--ok) 40%, var(--line)); }
+#reload[data-s="ok"] .i-re { display: none; }
+#reload[data-s="ok"] .i-ok { display: block; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* 底部分頁（單手拇指按得到） */
+.tabs { position: fixed; left: 0; right: 0; bottom: 0; z-index: 6; display: grid; grid-template-columns: repeat(4, minmax(0, 150px)); justify-content: center; padding: 6px max(8px, env(safe-area-inset-left)) calc(6px + env(safe-area-inset-bottom)) max(8px, env(safe-area-inset-right)); background: var(--card); border-top: 1px solid var(--line); }
+.tabs button { position: relative; border: 0; background: none; color: var(--sub); font-size: 11.5px; font-weight: 600; letter-spacing: .04em; min-height: 52px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; cursor: pointer; }
+.tabs .ti-ic { display: grid; place-items: center; width: 56px; height: 30px; border-radius: 999px; font-size: 21px; transition: background-color .2s; }
+.tabs button[aria-selected="true"] { color: var(--ink); font-weight: 800; }
+.tabs button[aria-selected="true"] .ti-ic { background: var(--t-gold); color: var(--gold); }
+.badge { position: absolute; top: 1px; left: calc(50% + 8px); min-width: 19px; height: 19px; line-height: 19px; padding: 0 5px; border-radius: 10px; background: var(--fix); color: #fff; font-size: 11.5px; font-weight: 700; letter-spacing: 0; text-align: center; font-variant-numeric: tabular-nums; }
+:root[data-theme="dark"] .badge { color: #1e1b14; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .badge { color: #1e1b14; } }
+
+/* 版面 */
+main { padding-top: 16px; padding-bottom: calc(100px + env(safe-area-inset-bottom)); }
+.sec { display: flex; align-items: baseline; gap: 8px; font-size: 13px; font-weight: 700; letter-spacing: .06em; color: var(--sub); margin: 24px 2px 8px; }
+.sec i { font-style: normal; font-weight: 600; letter-spacing: 0; color: var(--mute); font-variant-numeric: tabular-nums; }
+.card { background: var(--card); border: 1px solid var(--line); border-radius: var(--r-lg); padding: 16px; margin: 0 0 12px; box-shadow: var(--shadow); }
+.card h2 { font-size: 17px; font-weight: 800; line-height: 1.4; margin: 0 0 4px; }
+.card.flash { box-shadow: 0 0 0 3px var(--accent); transition: box-shadow .3s; }
+.meta { color: var(--sub); font-size: 13.5px; line-height: 1.6; }
+.meta b { color: var(--gold); }
+.note2 { font-size: 13px; line-height: 1.6; color: var(--sub); margin-top: 8px; }
+.msg { font-size: 13.5px; color: var(--sub); margin-top: 8px; }
+.msg:empty { display: none; }
+.empty { text-align: center; color: var(--sub); padding: 32px 16px; font-size: 14.5px; border: 1px dashed var(--line); border-radius: var(--r-lg); }
+
+/* 小標籤 */
+.pill, .tag, .chip, .dl { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; font-weight: 700; line-height: 1.2; padding: 4px 9px; border-radius: 999px; white-space: nowrap; background: var(--soft); color: var(--sub); }
+.pill.img { background: var(--t-gold); color: var(--gold); }
+.pill.vid { background: var(--t-vid); color: var(--vid); }
+.pill.hot { background: var(--t-hot); color: var(--hot); }
+.pill.ok, .tag.ok, .dl.up { background: var(--t-ok); color: var(--ok); }
+.pill.bad, .tag.wait, .tag.fix, .dl.down { background: var(--t-fix); color: var(--fix); }
+.tag { margin-top: 10px; white-space: normal; line-height: 1.45; border-radius: var(--r-md); }
+.chip { font-weight: 600; }
+
+/* 按鈕 */
+.btns { display: flex; gap: 8px; margin-top: 12px; }
+.btns button { flex: 1; min-width: 0; min-height: 48px; padding: 0 10px; border-radius: var(--r-md); border: 1px solid transparent; background: var(--soft); color: var(--ink); font-weight: 700; font-size: 16px; cursor: pointer; transition: transform .12s; }
+.btns button:active:not(:disabled) { transform: scale(.97); }
+.btns .okb { flex: 1.5; background: var(--accent); color: var(--accent-ink); }
+.btns .ghost { min-height: 42px; background: none; border: 1px dashed var(--line); color: var(--sub); font-size: 14px; font-weight: 600; }
+textarea, .datebox input { display: block; width: 100%; border-radius: var(--r-md); border: 1px solid var(--line); background: var(--bg); color: var(--ink); font: inherit; padding: 12px; margin-top: 12px; }
+textarea { min-height: 96px; resize: vertical; }
+textarea::placeholder { color: var(--mute); }
+textarea:focus, .datebox input:focus { outline: 2px solid var(--accent); outline-offset: 0; border-color: transparent; }
+.datebox input { min-height: 48px; }
+
+/* 載入中、提示、警告 */
+.state { display: grid; gap: 12px; margin-bottom: 16px; }
+.sk { border-radius: var(--r-lg); background: linear-gradient(90deg, var(--soft) 20%, color-mix(in srgb, var(--soft) 50%, var(--card)) 50%, var(--soft) 80%); background-size: 220% 100%; animation: sk 1.3s ease-in-out infinite; }
+.sk-h { height: 30px; width: 72%; border-radius: var(--r-sm); margin-top: 4px; }
+.sk-s { height: 16px; width: 44%; border-radius: var(--r-sm); margin-bottom: 6px; }
+.sk-c { height: 208px; }
+.sk-c2 { height: 76px; }
+@keyframes sk { from { background-position: 100% 0; } to { background-position: -120% 0; } }
+.statebox { background: var(--card); border: 1px solid var(--line); border-radius: var(--r-lg); padding: 24px 16px; text-align: center; font-size: 15px; color: var(--sub); box-shadow: var(--shadow); }
+.statebox button { display: block; margin: 14px auto 0; min-height: 46px; padding: 0 24px; border: 0; border-radius: var(--r-md); background: var(--accent); color: var(--accent-ink); font-weight: 700; cursor: pointer; }
+.alert, .stale { display: flex; gap: 10px; align-items: flex-start; background: color-mix(in srgb, var(--fix) 9%, var(--card)); border: 1px solid color-mix(in srgb, var(--fix) 32%, var(--line)); border-radius: var(--r-md); padding: 12px 14px; margin-bottom: 14px; font-size: 14px; line-height: 1.55; }
+.alert .i, .stale .i { color: var(--fix); font-size: 18px; margin-top: 2px; }
+.alert b { display: block; }
+.alert small { display: block; font-size: 13px; color: var(--sub); margin-top: 2px; }
+.stale:empty, #today:empty { display: none; }
+.toast { position: fixed; left: 50%; bottom: calc(86px + env(safe-area-inset-bottom)); transform: translateX(-50%); z-index: 20; width: max-content; max-width: calc(100% - 32px); background: var(--ink); color: var(--bg); padding: 11px 16px; border-radius: var(--r-md); font-size: 14.5px; line-height: 1.45; box-shadow: 0 8px 24px rgba(0, 0, 0, .22); }
+.toast button { background: none; border: 0; color: var(--accent); font-weight: 800; margin-left: 12px; padding: 4px; cursor: pointer; }
+
+/* 首頁：招呼語 */
+.greet { margin: 4px 2px 18px; }
+.greet b { display: block; font-size: 24px; font-weight: 800; line-height: 1.3; letter-spacing: -.005em; }
+.greet b em { font-style: normal; color: var(--gold); font-variant-numeric: tabular-nums; }
+.greet span { display: block; font-size: 14px; color: var(--sub); margin-top: 4px; }
+#list > .sec:first-child { margin-top: 0; }
+
+/* 首頁：等你審的稿 */
+.act { padding: 14px; }
+.act.hot { border-color: color-mix(in srgb, var(--hot) 42%, var(--line)); background: linear-gradient(color-mix(in srgb, var(--hot) 7%, var(--card)), var(--card) 96px); }
+.row1 { display: flex; gap: 12px; }
+.th { flex: none; width: 84px; height: 105px; border-radius: 10px; overflow: hidden; background: var(--soft); border: 1px solid var(--line); }
+.th img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.row1 .bd { flex: 1; min-width: 0; }
+.kd { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; font-size: 12.5px; color: var(--sub); font-variant-numeric: tabular-nums; }
+.kd .due { color: var(--hot); font-weight: 700; }
+.act .tt { font-size: 17px; font-weight: 800; line-height: 1.38; margin: 6px 0 4px; overflow-wrap: anywhere; }
+.pv { font-size: 13.5px; color: var(--sub); line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: anywhere; }
+.ckl { display: flex; flex-wrap: wrap; gap: 2px 12px; font-size: 12.5px; margin-top: 8px; }
+.ckl span { display: inline-flex; align-items: center; gap: 4px; }
+.ckl .g { color: var(--ok); font-weight: 600; }
+.ckl .w { color: var(--fix); font-weight: 700; }
+.linkb { display: block; width: 100%; min-height: 40px; margin-top: 4px; padding: 6px 0 0; border: 0; background: none; color: var(--sub); font-size: 13.5px; cursor: pointer; }
+.full { margin-top: 10px; border-top: 1px solid var(--line); padding-top: 12px; }
+.full h2 { display: none; }  /* 標題上面已經有了 */
+.act:has(.full:not([hidden])) :is(.th, .pv, .ckl) { display: none; }   /* 展開全文時藏縮圖、摘要、查證小結，下面全文都有，不重複 */
+.act:has(.full:not([hidden])) > .btns { display: none; }   /* 展開後按鈕在全文最下面，不重複放兩排 */
+.imgs { display: flex; gap: 8px; overflow-x: auto; scroll-snap-type: x mandatory; margin: 12px -14px 0; padding: 0 14px 4px; scrollbar-width: none; }
+.imgs::-webkit-scrollbar { display: none; }
+.imgs:empty { display: none; }
+.imgs img { width: 78%; max-width: 300px; flex: none; border-radius: var(--r-md); scroll-snap-align: center; border: 1px solid var(--line); }
+.hint { font-size: 12.5px; color: var(--sub); text-align: right; margin-top: 4px; }
+.check { list-style: none; margin: 12px 0 0; padding: 2px 12px; font-size: 14px; line-height: 1.55; background: var(--soft); border-radius: var(--r-md); }
+.check:empty { display: none; }
+.check li { padding: 8px 0; border-top: 1px solid var(--line); overflow-wrap: anywhere; }
+.check li:first-child { border-top: 0; }
+.seg { display: flex; gap: 4px; background: var(--soft); border-radius: var(--r-md); padding: 3px; margin-top: 12px; }
+.seg button { flex: 1; min-height: 38px; border: 0; background: none; border-radius: 9px; font-size: 14px; font-weight: 700; color: var(--sub); cursor: pointer; }
+.seg button[aria-pressed="true"] { background: var(--card); color: var(--ink); box-shadow: 0 1px 2px rgba(0, 0, 0, .12); }
+.capbox { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 15px; line-height: 1.65; background: var(--soft); border-radius: var(--r-md); padding: 12px 14px; margin-top: 8px; max-height: 320px; overflow: auto; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 14px; }
+.chips button { min-height: 38px; padding: 6px 13px; border: 1px solid var(--line); border-radius: 999px; background: var(--card); color: var(--ink); font-size: 14px; cursor: pointer; }
+.chips button[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); font-weight: 700; }
+
+/* 首頁：已處理 */
+.card.done { padding: 10px 12px 10px 14px; margin-bottom: 8px; box-shadow: none; }
+.dn { display: flex; align-items: center; gap: 12px; }
+.dn-ic { flex: none; width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; font-size: 16px; background: var(--t-ok); color: var(--ok); }
+.dn-ic.fix { background: var(--t-fix); color: var(--fix); }
+.dn-bd { flex: 1; min-width: 0; }
+.dn-t { font-size: 15px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.dn-s { font-size: 12.5px; color: var(--sub); }
+.undo { flex: none; min-height: 38px; padding: 0 12px; border: 1px solid var(--line); border-radius: 999px; background: none; color: var(--sub); font-size: 13px; font-weight: 600; cursor: pointer; }
+
+/* 首頁：要你處理、提醒 */
+.todo { background: var(--card); border: 1px solid var(--line); border-radius: var(--r-lg); padding: 2px 14px; box-shadow: var(--shadow); }
+.todo a, .todo button.ti { display: flex; gap: 12px; align-items: center; width: 100%; min-height: 56px; padding: 10px 0; text-align: left; border: 0; border-top: 1px solid var(--line); background: none; color: var(--ink); font-size: 15px; line-height: 1.45; text-decoration: none; cursor: pointer; }
+.todo > :first-child { border-top: 0; }
+.todo .ic { flex: none; width: 9px; height: 9px; border-radius: 50%; margin: 0 2px; }
+.todo .ic.r { background: var(--fix); } .todo .ic.o { background: #e8a33d; } .todo .ic.y { background: var(--accent); }
+.tx { flex: 1; min-width: 0; overflow-wrap: anywhere; font-weight: 600; }
+.tx small { display: block; font-size: 12.5px; line-height: 1.5; color: var(--sub); font-weight: 400; }
+.go { flex: none; display: inline-flex; align-items: center; gap: 2px; font-size: 13px; color: var(--sub); white-space: nowrap; }
+.todo .go { background: var(--accent); color: var(--accent-ink); font-weight: 700; padding: 7px 12px; border-radius: 999px; }
+.remind { display: flex; gap: 12px; align-items: center; width: 100%; text-align: left; background: var(--soft); border: 0; border-radius: var(--r-lg); padding: 12px 14px; color: var(--ink); cursor: pointer; }
+.remind .rm-ic { flex: none; width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center; font-size: 18px; background: var(--card); color: var(--gold); }
+.remind .tx b { display: block; font-size: 15px; }
+
+/* 行程 */
+.dayhd { display: flex; align-items: center; gap: 8px; margin: 24px 2px 8px; font-size: 16px; font-weight: 800; font-variant-numeric: tabular-nums; }
+.dayhd:first-child { margin-top: 2px; }
+.dayhd small { font-size: 13px; font-weight: 600; color: var(--sub); }
+.list { background: var(--card); border: 1px solid var(--line); border-radius: var(--r-lg); overflow: hidden; box-shadow: var(--shadow); }
+.it { display: flex; gap: 12px; align-items: center; padding: 12px 14px; border-top: 1px solid var(--line); }
+.it:first-child { border-top: 0; }
+.it .bd { flex: 1; min-width: 0; }
+.it.done .mth, .it.done .tt { opacity: .55; }
+.mth { flex: none; width: 56px; height: 70px; border-radius: 10px; overflow: hidden; background: var(--soft); border: 1px solid var(--line); display: grid; place-items: center; font-size: 22px; color: var(--mute); }
 .mth img { width: 100%; height: 100%; object-fit: cover; display: block; }
-.mtm { font-size: 12.5px; font-weight: 700; color: var(--sub); font-variant-numeric: tabular-nums; }
-.mtt { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; margin-top: 2px; }
-/* 🔍 客人在查什麼 */
+.mtm { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 800; font-variant-numeric: tabular-nums; }
+.mtt { font-size: 15px; line-height: 1.45; margin-top: 3px; overflow-wrap: anywhere; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.pl { display: flex; flex-wrap: wrap; align-items: center; gap: 2px 10px; font-size: 12.5px; color: var(--sub); margin-top: 5px; }
+.pl span { display: inline-flex; align-items: center; gap: 3px; }
+.pl .good, .ck-ok { color: var(--ok); font-weight: 600; }
+.pl .bad, .ck-bad { color: var(--fix); font-weight: 700; }
+.more { width: 100%; min-height: 46px; margin-top: 14px; border: 1px dashed var(--line); border-radius: var(--r-md); background: none; color: var(--sub); font-size: 14px; cursor: pointer; }
+
+/* 成效：每張卡同一套格式＝標題列 → 大數字 → 一句說明 → 明細列 */
+.sc { background: var(--card); border: 1px solid var(--line); border-radius: var(--r-lg); padding: 14px 16px 4px; margin-bottom: 12px; box-shadow: var(--shadow); }
+.sc-hd { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 30px; }
+.sc-t { display: flex; align-items: center; gap: 10px; min-width: 0; font-size: 15px; font-weight: 700; }
+.sc-ic { flex: none; width: 30px; height: 30px; border-radius: 9px; display: grid; place-items: center; font-size: 16px; background: var(--t-gold); color: var(--gold); }
+.sc-big { display: flex; align-items: baseline; gap: 6px; flex-wrap: wrap; margin-top: 10px; }
+.sc-big b { font-size: 34px; font-weight: 800; line-height: 1.15; letter-spacing: -.015em; font-variant-numeric: tabular-nums; }
+.sc-big i { font-style: normal; font-size: 15px; font-weight: 600; color: var(--sub); }
+.sc-big .dl { align-self: center; margin-left: 4px; font-size: 12.5px; }
+.sc-desc { font-size: 13px; color: var(--sub); margin: 2px 0 10px; }
+.sr { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 11px 0; border-top: 1px solid var(--line); color: var(--ink); text-decoration: none; }
+.sl { flex: 1; min-width: 0; font-size: 15px; line-height: 1.4; overflow-wrap: anywhere; }
+.sl small, .sv small { display: block; font-size: 12.5px; color: var(--sub); font-weight: 400; margin-top: 1px; }
+.sv { text-align: right; font-size: 15px; font-weight: 700; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.sr.link .sl { display: flex; gap: 8px; }
+.sr.link .sl span:last-child { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.rk { flex: none; width: 20px; height: 20px; margin-top: 1px; border-radius: 6px; background: var(--soft); color: var(--gold); font-size: 12px; font-weight: 800; display: grid; place-items: center; }
+.sc-foot { font-size: 12px; color: var(--sub); padding: 9px 0 8px; border-top: 1px solid var(--line); }
+.sc.tips { background: color-mix(in srgb, var(--accent) 9%, var(--card)); border-color: color-mix(in srgb, var(--accent) 30%, var(--line)); padding-bottom: 12px; box-shadow: none; }
+.tip { display: flex; gap: 10px; align-items: flex-start; font-size: 14.5px; line-height: 1.5; margin-top: 8px; }
+.tip .i { color: var(--gold); font-size: 16px; margin: 3px 7px 0; }
+.mini { margin-left: 8px; padding: 4px 9px; border: 1px solid color-mix(in srgb, var(--accent) 55%, var(--line)); border-radius: var(--r-sm); background: none; color: var(--gold); font-size: 12.5px; font-weight: 600; white-space: nowrap; cursor: pointer; }
+/* 客人在查什麼 */
 .seg2 { display: inline-flex; background: var(--soft); border-radius: 999px; padding: 2px; }
-.seg2 button { border: 0; background: none; font: inherit; font-size: 12.5px; font-weight: 700; color: var(--sub); padding: 3px 10px; border-radius: 999px; cursor: pointer; }
-.seg2 button[aria-pressed="true"] { background: var(--card); color: var(--ink); box-shadow: 0 1px 2px rgba(0,0,0,.1); }
-.qsteps { display: flex; align-items: stretch; gap: 2px; margin: 8px 0 4px; }
-.qs { flex: 1; min-width: 0; background: var(--soft); border-radius: 10px; padding: 8px 4px; text-align: center; }
-.qs b { display: block; font-size: 20px; font-weight: 800; font-variant-numeric: tabular-nums; }
+.seg2 button { min-height: 28px; padding: 3px 11px; border: 0; border-radius: 999px; background: none; font-size: 12.5px; font-weight: 700; color: var(--sub); cursor: pointer; }
+.seg2 button[aria-pressed="true"] { background: var(--card); color: var(--ink); box-shadow: 0 1px 2px rgba(0, 0, 0, .1); }
+.qdays, .wdays { display: flex; align-items: flex-end; gap: 3px; height: 76px; margin: 12px 0 6px; }
+.qdays div, .wdays div { flex: 1; min-width: 0; height: 100%; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; }
+.qdays i, .wdays i { display: block; flex: none; min-height: 2px; width: 100%; background: color-mix(in srgb, var(--accent) 78%, transparent); border-radius: 3px 3px 0 0; }
+.qdays span, .wdays span { font-size: 10.5px; color: var(--sub); margin-top: 4px; white-space: nowrap; height: 14px; font-variant-numeric: tabular-nums; }
+.wdays { gap: 6px; }
+.qsteps { display: flex; align-items: stretch; gap: 2px; margin: 8px 0 6px; }
+.qs { flex: 1; min-width: 0; background: var(--soft); border-radius: 10px; padding: 9px 4px; text-align: center; }
+.qs b { display: block; font-size: 20px; font-weight: 800; line-height: 1.3; font-variant-numeric: tabular-nums; }
 .qs span { display: block; font-size: 11.5px; color: var(--sub); line-height: 1.3; }
-.qs small { display: block; font-size: 11.5px; color: var(--accent); font-weight: 700; }
-.qa { font-style: normal; color: var(--sub); align-self: center; font-size: 14px; }
-.qh { font-size: 13.5px; font-weight: 700; margin: 14px 0 6px; padding-top: 10px; border-top: 1px solid var(--line); }
-.qh small { display: block; font-weight: 400; font-size: 12px; color: var(--sub); }
-.qb { display: flex; align-items: center; gap: 8px; padding: 4px 0; font-size: 14px; }
+.qs small { display: block; font-size: 11.5px; color: var(--gold); font-weight: 700; }
+.qa { font-style: normal; color: var(--mute); align-self: center; font-size: 14px; }
+.qh { font-size: 14px; font-weight: 700; margin: 14px 0 6px; padding-top: 12px; border-top: 1px solid var(--line); }
+.qh small { display: block; font-weight: 400; font-size: 12.5px; color: var(--sub); }
+.qb { display: flex; align-items: center; gap: 8px; padding: 5px 0; font-size: 14px; }
 .qk { width: 38%; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .qbar { flex: 1; height: 8px; background: var(--soft); border-radius: 4px; overflow: hidden; }
 .qbar i { display: block; height: 100%; background: var(--accent); border-radius: 4px; }
-.qv { width: 44px; text-align: right; font-weight: 700; font-variant-numeric: tabular-nums; font-size: 13.5px; }
-.qdays { display: flex; align-items: flex-end; gap: 3px; height: 74px; margin: 10px 0 4px; }
-.qdays div { flex: 1; min-width: 0; height: 100%; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; }
-.qdays i { display: block; width: 100%; background: color-mix(in srgb, var(--accent) 75%, transparent); border-radius: 3px 3px 0 0; }
-.qdays span { font-size: 10.5px; color: var(--sub); margin-top: 3px; white-space: nowrap; height: 14px; }
-.qmiss { display: flex; flex-wrap: wrap; gap: 6px; padding-bottom: 6px; }
-.qmiss span { background: color-mix(in srgb, var(--fix) 10%, transparent); color: var(--fix); border-radius: 999px; padding: 3px 10px; font-size: 13.5px; font-weight: 600; }
-.sv .mini { margin-left: 8px; }
-/* 成效卡（2026-11-07 排版整理） */
-.sc { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 14px 16px 6px; margin-bottom: 10px; }
-.sc-hd { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 14.5px; font-weight: 700; color: var(--sub); }
-.chip { font-size: 12px; font-weight: 600; color: var(--sub); background: var(--soft); border-radius: 999px; padding: 2px 9px; white-space: nowrap; }
-.sc-big { display: flex; align-items: baseline; gap: 6px; flex-wrap: wrap; margin-top: 4px; }
-.sc-big b { font-size: 34px; font-weight: 800; line-height: 1.15; font-variant-numeric: tabular-nums; letter-spacing: -.01em; }
-.sc-big i { font-style: normal; font-size: 15px; font-weight: 600; color: var(--sub); }
-.dl { font-size: 13px; font-weight: 700; padding: 2px 8px; border-radius: 999px; background: var(--soft); color: var(--sub); margin-left: 2px; white-space: nowrap; }
-.dl.up { color: var(--ok); background: color-mix(in srgb, var(--ok) 12%, transparent); }
-.dl.down { color: var(--fix); background: color-mix(in srgb, var(--fix) 12%, transparent); }
-.sc-desc { font-size: 13px; color: var(--sub); margin: 2px 0 6px; }
-.sr { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 10px 0; border-top: 1px solid var(--line); color: var(--ink); text-decoration: none; }
-.sl { flex: 1; min-width: 0; font-size: 15px; line-height: 1.4; }
-.sl small, .sv small { display: block; font-size: 12.5px; color: var(--sub); font-weight: 400; margin-top: 1px; }
-.sv { text-align: right; font-size: 15px; font-weight: 700; white-space: nowrap; font-variant-numeric: tabular-nums; }
-.sr.link .sl { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-.rk { display: inline-block; width: 20px; color: var(--accent); font-weight: 800; }
-.sc-foot { font-size: 12px; color: var(--sub); padding: 8px 0 6px; border-top: 1px solid var(--line); }
-.sc.tips { background: var(--soft); border-color: transparent; padding-bottom: 10px; }
-.tip { display: flex; gap: 8px; align-items: baseline; font-size: 15px; line-height: 1.5; margin-top: 6px; }
-.tip .ti { flex: none; width: 20px; text-align: center; }
-.vchips { display: flex; flex-wrap: wrap; gap: 8px; }
-.vchips button { border: 1px solid var(--line); background: var(--soft); color: var(--ink); font: inherit; font-size: 14.5px; padding: 8px 12px; border-radius: 999px; cursor: pointer; min-height: 40px; }
-.vchips button b { color: var(--accent); margin-left: 2px; }
-.vchips button:active { transform: scale(.96); }
-.remind { display: flex; gap: 10px; align-items: center; width: 100%; text-align: left; background: var(--soft); border: 0; border-radius: 12px; padding: 10px 14px; margin: 0 0 8px; color: var(--sub); font: inherit; font-size: 14px; cursor: pointer; }
-.remind .tx { flex: 1; min-width: 0; }
-.remind .go { font-size: 13px; flex: none; }
-.remind .tx b { display: block; color: var(--ink); font-weight: 700; margin-bottom: 2px; }
-.remind .tx small, .todo .tx small { display: block; font-size: 12.5px; color: var(--sub); font-weight: 400; line-height: 1.5; }
-.funnel .f small { display: block; font-size: 11.5px; color: var(--sub); margin-top: 1px; }
-.foot .warn { color: var(--fix); font-weight: 700; }
-main.wrap { padding-bottom: calc(96px + env(safe-area-inset-bottom)); }
-.todo > a:first-child, .todo > button.ti:first-child { border-top: 0; }
-.badge { display: inline-block; min-width: 20px; height: 20px; line-height: 20px; border-radius: 10px; background: var(--fix); color: #fff; font-size: 12px; padding: 0 6px; margin-left: 4px; vertical-align: 1px; }
-
-main { padding: 14px 0 calc(96px + env(safe-area-inset-bottom)); }
-.pane[hidden] { display: none; }
-
-/* 今日摘要 */
-.today { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 14px 16px; margin-bottom: 14px; }
-.today .hd { font-size: 13px; color: var(--sub); margin-bottom: 6px; }
-.today .row { display: flex; gap: 10px; align-items: baseline; padding: 4px 0; font-size: 15px; }
-.today .row .tm { font-weight: 700; font-variant-numeric: tabular-nums; min-width: 44px; }
-.today .row .t { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.today .none { color: var(--sub); font-size: 15px; }
-.dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; vertical-align: 1px; flex: none; }
-.dot.img { background: var(--img); } .dot.vid { background: var(--vid); }
-
-/* 卡片 */
-.card { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 16px; margin: 0 0 14px; }
-.card h2 { font-size: 18px; margin: 0 0 4px; line-height: 1.45; }
-.meta { color: var(--sub); font-size: 14px; }
-.meta b { color: var(--accent); }
-.tag { display: inline-block; font-size: 13px; font-weight: 700; border-radius: 999px; padding: 2px 10px; margin: 8px 0 2px; }
-.tag.wait { background: color-mix(in srgb, var(--fix) 15%, transparent); color: var(--fix); }
-.tag.ok { background: color-mix(in srgb, var(--ok) 15%, transparent); color: var(--ok); }
-.tag.fix { background: color-mix(in srgb, var(--fix) 15%, transparent); color: var(--fix); }
-.imgs { display: flex; gap: 8px; overflow-x: auto; scroll-snap-type: x mandatory; margin: 12px -16px; padding: 0 16px 4px; scrollbar-width: none; }
-.imgs::-webkit-scrollbar { display: none; }
-.imgs img { width: 80%; max-width: 320px; flex: none; border-radius: 10px; scroll-snap-align: center; border: 1px solid var(--line); }
-.hint { font-size: 12.5px; color: var(--sub); text-align: right; margin-top: -6px; }
-.check { margin: 10px 0; padding: 0; list-style: none; font-size: 14.5px; }
-.check li { padding: 4px 0; border-top: 1px dashed var(--line); }
-.check li:first-child { border-top: 0; }
-details { border: 1px solid var(--line); border-radius: 10px; margin: 8px 0; background: var(--soft); }
-summary { cursor: pointer; padding: 10px 12px; font-weight: 700; min-height: 44px; display: flex; align-items: center; list-style: none; }
-summary::-webkit-details-marker { display: none; }
-summary::after { content: "展開"; margin-left: auto; font-size: 13px; font-weight: 400; color: var(--sub); }
-details[open] summary::after { content: "收起"; }
-details pre { white-space: pre-wrap; word-break: break-word; margin: 0; padding: 0 12px 12px; font: inherit; font-size: 15px; }
-.btns { display: flex; gap: 10px; margin-top: 12px; }
-.btns button { flex: 1; min-height: 50px; border-radius: 12px; font: inherit; font-weight: 700; font-size: 17px; cursor: pointer; border: 1px solid var(--line); background: var(--soft); color: var(--ink); }
-.btns .okb { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
-.btns .ghost { background: none; font-size: 14px; min-height: 40px; color: var(--sub); border-style: dashed; }
-.btns button:disabled { opacity: .5; }
-textarea { width: 100%; min-height: 90px; border-radius: 10px; border: 1px solid var(--line); background: var(--bg); color: var(--ink); font: inherit; padding: 10px; margin-top: 10px; }
-.msg { font-size: 14px; color: var(--sub); margin-top: 8px; }
-.msg:empty { display: none; }
-.empty { text-align: center; color: var(--sub); padding: 28px 12px; font-size: 15px; background: var(--card); border: 1px dashed var(--line); border-radius: 16px; }
-
-/* 行程 */
-.dayhd { font-size: 14px; font-weight: 700; color: var(--sub); margin: 16px 2px 6px; display: flex; gap: 8px; align-items: center; }
-.dayhd.is-today { color: var(--accent); }
-.dayhd:first-child { margin-top: 0; }
-.list { background: var(--card); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; }
-.it { display: flex; gap: 12px; padding: 11px 14px; border-top: 1px solid var(--line); align-items: flex-start; }
-.it:first-child { border-top: 0; }
-.it .tm { font-weight: 700; min-width: 44px; font-variant-numeric: tabular-nums; padding-top: 1px; }
-.it .bd { flex: 1; min-width: 0; }
-.it .tt { font-size: 15px; line-height: 1.45; overflow-wrap: anywhere; }
-.it .pl { font-size: 12.5px; color: var(--sub); margin-top: 3px; display: flex; flex-wrap: wrap; gap: 4px 8px; }
-.it .pl .bad { color: var(--fix); font-weight: 700; }
-.it .pl .good { color: var(--ok); }
-.it.done { opacity: .5; }
-.legend { display: flex; gap: 14px; font-size: 13px; color: var(--sub); margin: 0 2px 10px; }
-.more { width: 100%; margin-top: 12px; min-height: 44px; border-radius: 12px; border: 1px dashed var(--line); background: none; color: var(--sub); font: inherit; cursor: pointer; }
-
-/* 成效 */
-.kpis { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin: 10px 0 6px; }
-.kpi { background: var(--soft); border-radius: 12px; padding: 10px; }
-.kpi b { display: block; font-size: 24px; line-height: 1.2; font-variant-numeric: tabular-nums; }
-.kpi span { font-size: 12.5px; color: var(--sub); }
-.note2 { font-size: 13.5px; color: var(--sub); margin-top: 6px; }
+.qv { width: 46px; text-align: right; font-weight: 700; font-variant-numeric: tabular-nums; font-size: 13.5px; }
+.qmiss { display: flex; flex-wrap: wrap; gap: 6px; padding-bottom: 10px; }
+.qmiss span { background: var(--t-fix); color: var(--fix); border-radius: 999px; padding: 3px 10px; font-size: 13px; font-weight: 600; }
+/* 看詳細數據（收合） */
+details.fold { padding: 0 16px; }
+details.fold > summary { display: flex; align-items: center; min-height: 54px; cursor: pointer; list-style: none; }
+details.fold > summary::-webkit-details-marker { display: none; }
+details.fold > summary h2 { margin: 0; font-size: 16px; }
+details.fold > summary::after { content: "展開"; margin-left: auto; font-size: 13px; color: var(--sub); }
+details.fold[open] > summary::after { content: "收起"; }
+details.fold[open] { padding-bottom: 14px; }
+details.fold details.fold { background: var(--soft); border-color: transparent; box-shadow: none; margin: 8px 0 0; padding: 0 14px; }
+details.fold details.fold[open] { padding-bottom: 12px; }
+details.fold details.fold .kpi { background: var(--card); }
+details.fold details.fold .bar { background: var(--card); }
+.sum { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin: 10px 0 0; }
+.sum-n { margin: 8px 2px 14px; }
+.kpis { display: grid; grid-template-columns: repeat(3, minmax(min-content, 1fr)); gap: 8px; margin: 12px 0 6px; }
+.kpi { background: var(--soft); border-radius: var(--r-md); padding: 10px 11px; min-width: 0; }
+.kpi b { display: block; font-size: clamp(18px, 5.4vw, 22px); font-weight: 800; line-height: 1.25; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.kpi small { display: block; font-size: 11.5px; }
+.kpi .st { font-style: normal; font-size: .72em; color: var(--gold); margin-left: 2px; vertical-align: 2px; }
+.kpi span { font-size: 12.5px; line-height: 1.4; color: var(--sub); }
+.kpi .w { color: var(--fix); font-weight: 700; }
+.dlt { font-size: 12.5px; font-weight: 700; margin-left: 5px; }
+.dlt.up { color: var(--ok); } .dlt.down { color: var(--fix); } .dlt.flat { color: var(--sub); font-weight: 400; }
+.meta .live { color: var(--ok); }
+.sub-h { font-size: 13px; font-weight: 700; color: var(--sub); margin: 16px 0 4px; }
 .tp { display: flex; justify-content: space-between; gap: 12px; padding: 9px 0; border-top: 1px solid var(--line); font-size: 14.5px; }
-.tp:first-of-type { border-top: 0; }
+.sub-h + .tp { border-top: 0; }
+.tp > div { flex: 1; min-width: 0; }
 .tp a { color: var(--ink); text-decoration: none; overflow-wrap: anywhere; }
-.tp .v { font-weight: 700; white-space: nowrap; font-variant-numeric: tabular-nums; }
-.bar { height: 4px; background: var(--soft); border-radius: 2px; margin-top: 4px; overflow: hidden; }
+.tp small { display: block; font-size: 12px; color: var(--sub); }
+.tp .v { min-width: 4.6em; text-align: right; font-weight: 700; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.bar { height: 4px; background: var(--soft); border-radius: 2px; margin-top: 5px; overflow: hidden; }
 .bar i { display: block; height: 100%; background: var(--accent); border-radius: 2px; }
-.sub-h { font-size: 13px; color: var(--sub); margin: 12px 0 2px; }
-.ck-ok { color: var(--ok); } .ck-bad { color: var(--fix); font-weight: 700; }
-.alert { background: color-mix(in srgb, var(--fix) 14%, var(--card)); border: 1px solid color-mix(in srgb, var(--fix) 40%, transparent); color: var(--ink); border-radius: 12px; padding: 10px 12px; margin-top: 10px; font-size: 14.5px; }
-.req { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px; margin-bottom: 10px; }
-.req .q { font-weight: 700; overflow-wrap: anywhere; }
-.req .a { margin-top: 6px; font-size: 14.5px; white-space: pre-wrap; overflow-wrap: anywhere; }
-.req .s { font-size: 12.5px; color: var(--sub); margin-top: 4px; }
+.tbl { width: 100%; border-collapse: collapse; font-size: 14.5px; font-variant-numeric: tabular-nums; }
+.tbl th { font-size: 12px; font-weight: 600; color: var(--sub); text-align: right; padding: 2px 0 5px 8px; }
+.tbl td { padding: 7px 0 7px 8px; border-top: 1px solid var(--line); text-align: right; white-space: nowrap; line-height: 1.25; font-weight: 600; }
+.tbl td:first-child { width: 36%; padding-left: 0; text-align: left; white-space: normal; font-size: 13.5px; font-weight: 400; line-height: 1.35; }
+.tbl td small { display: block; font-size: 11px; font-weight: 400; color: var(--sub); }
+.tbl .few { color: var(--mute); font-weight: 400; }
+.tbl .best { color: var(--gold); font-weight: 800; }
+.best .i { font-size: 12px; margin-right: 3px; vertical-align: -1px; fill: currentColor; }
+.note2 .best { color: var(--gold); }
 
-/* 2026-11-04 改版：待辦、成效總覽、可收合卡片、文案分頁、快選 */
-.badge[hidden] { display: none; }
-.todo { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 6px 16px; margin-bottom: 14px; }
-.todo .hd { font-size: 13px; color: var(--sub); padding: 8px 0 2px; }
-.todo a, .todo button.ti { display: flex; gap: 10px; align-items: center; width: 100%; text-align: left; padding: 11px 0; border: 0; border-top: 1px solid var(--line); background: none; color: var(--ink); font: inherit; font-size: 15px; text-decoration: none; cursor: pointer; }
-.todo .hd + a, .todo .hd + button.ti { border-top: 0; }
-.todo .ic { flex: none; width: 10px; height: 10px; border-radius: 50%; }
-.todo .ic.r { background: var(--fix); } .todo .ic.o { background: #e8a33d; } .todo .ic.y { background: color-mix(in srgb, var(--accent) 70%, transparent); }
-.todo .tx { flex: 1; min-width: 0; overflow-wrap: anywhere; }
-.todo .go { color: var(--sub); font-size: 13px; flex: none; }
-.todo .calm { padding: 14px 0; color: var(--sub); font-size: 15px; }
-.sum { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin-bottom: 14px; }
-.sum .kpi { background: var(--card); border: 1px solid var(--line); }
-.sum .kpi b { font-size: 26px; }
-.sum .dlt { font-size: 12.5px; font-weight: 700; margin-left: 4px; }
-.sum .up { color: var(--ok); } .sum .down { color: var(--fix); } .sum .flat { color: var(--sub); font-weight: 400; }
-.card.fold { padding: 0 16px; }
-.card.fold > summary { padding: 14px 0; min-height: 52px; }
-.card.fold > summary h2 { margin: 0; }
-.card.fold > summary::after { font-size: 13px; }
-.card.fold[open] { padding-bottom: 14px; }
-.seg { display: flex; gap: 4px; background: var(--soft); border-radius: 10px; padding: 3px; margin-top: 10px; }
-.seg button { flex: 1; border: 0; background: none; font: inherit; font-size: 14px; font-weight: 700; color: var(--sub); min-height: 36px; border-radius: 8px; cursor: pointer; }
-.seg button[aria-pressed="true"] { background: var(--card); color: var(--ink); box-shadow: 0 1px 2px rgba(0,0,0,.12); }
-.capbox { white-space: pre-wrap; word-break: break-word; font-size: 15px; background: var(--soft); border-radius: 10px; padding: 12px; margin-top: 6px; max-height: 320px; overflow: auto; }
-.chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
-.chips button { border: 1px solid var(--line); background: var(--soft); color: var(--ink); font: inherit; font-size: 14px; border-radius: 999px; padding: 6px 12px; cursor: pointer; min-height: 36px; }
-.chips button[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
-.datebox input { width: 100%; min-height: 46px; border-radius: 10px; border: 1px solid var(--line); background: var(--bg); color: var(--ink); font: inherit; padding: 8px 10px; margin-top: 10px; }
-.mini { border: 1px solid var(--accent); color: var(--accent); background: none; font: inherit; font-size: 12.5px; border-radius: 8px; padding: 3px 8px; margin-left: 8px; cursor: pointer; white-space: nowrap; }
-.mini:disabled { opacity: .5; }
-.toast { position: fixed; left: 50%; bottom: calc(84px + env(safe-area-inset-bottom)); transform: translateX(-50%); background: var(--ink); color: var(--bg); padding: 10px 16px; border-radius: 12px; font-size: 14.5px; z-index: 20; max-width: calc(100% - 32px); box-shadow: 0 4px 14px rgba(0,0,0,.2); }
-.toast[hidden] { display: none; }
-/* 2026-11-04 首頁改版 */
-.greet { margin: 2px 2px 12px; }
-.greet b { display: block; font-size: 22px; line-height: 1.3; }
-.greet span { font-size: 14px; color: var(--sub); }
-.sec { font-size: 13px; font-weight: 700; color: var(--sub); margin: 18px 2px 8px; display: flex; justify-content: space-between; align-items: baseline; }
-.sec button { background: none; border: 0; color: var(--sub); font: inherit; font-weight: 400; cursor: pointer; padding: 4px 0 4px 8px; }
-.act { padding: 14px; }
-.act.hot { border: 2px solid #ff6a3d; }
-.act .row1 { display: flex; gap: 12px; }
-.act .th { flex: none; width: 84px; height: 105px; border-radius: 10px; overflow: hidden; background: var(--soft); border: 1px solid var(--line); }
-.act .th img { width: 100%; height: 100%; object-fit: cover; display: block; }
-.act .bd { flex: 1; min-width: 0; }
-.act .kd { font-size: 12.5px; font-weight: 700; color: var(--accent); }
-.act.hot .kd { color: #e8562a; }
-.act .tt { font-size: 16.5px; font-weight: 800; line-height: 1.35; margin: 2px 0 4px; }
-.act .pv { font-size: 13.5px; color: var(--sub); line-height: 1.45; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; white-space: pre-line; }
-.act .ckl { font-size: 12.5px; margin-top: 4px; color: var(--sub); }
-.act .ckl .w { color: var(--fix); font-weight: 700; }
-.act .btns { margin-top: 12px; }
-.act .btns button { min-height: 48px; font-size: 16px; }
-.act .full { margin-top: 12px; border-top: 1px dashed var(--line); padding-top: 6px; }
-.act .full[hidden] { display: none; }
-.act:has(.full:not([hidden])) .row1 .th { display: none; }  /* 展開全文時藏縮圖，照片不重複 */
-.linkb { background: none; border: 0; color: var(--sub); font: inherit; font-size: 13.5px; padding: 8px 0 0; cursor: pointer; }
-.mini3 .it { padding: 9px 14px; }
-.mini3 .st { font-size: 12.5px; white-space: nowrap; color: var(--sub); padding-top: 2px; }
-.mini3 .st.w { color: var(--fix); font-weight: 700; }
-.mini3 .st.g { color: var(--ok); }
-.funnel { display: flex; align-items: center; justify-content: space-between; gap: 6px; width: 100%; text-align: left; font: inherit; color: var(--ink); cursor: pointer; }
-.funnel .f { text-align: center; flex: 1; }
-.funnel .f b { display: block; font-size: 20px; font-variant-numeric: tabular-nums; }
-.funnel .f span { font-size: 12px; color: var(--sub); }
-.funnel .ar { color: var(--sub); }
-.card.flash { box-shadow: 0 0 0 3px var(--accent); transition: box-shadow .3s; }
-.toast button { background: none; border: 0; color: var(--accent); font: inherit; font-weight: 800; margin-left: 12px; cursor: pointer; padding: 4px; }
-.foot { text-align: center; color: var(--sub); font-size: 13px; padding: 0 16px; margin: -80px 0 0; position: relative; }
-.foot:empty { display: none; }
+/* 問我 */
+.req { background: var(--card); border: 1px solid var(--line); border-radius: var(--r-lg); padding: 14px 16px; margin-bottom: 10px; box-shadow: var(--shadow); }
+.req .q { font-weight: 700; overflow-wrap: anywhere; }
+.req .a { margin-top: 10px; padding: 10px 12px; background: var(--soft); border-radius: var(--r-md); font-size: 14.5px; line-height: 1.6; white-space: pre-wrap; overflow-wrap: anywhere; }
+.req .s { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 12.5px; color: var(--sub); margin-top: 10px; font-variant-numeric: tabular-nums; }
+
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; } }
 </style>
 </head>
 <body>
-<div class="top">
-  <div class="wrap">
-    <div class="brand"><h1><span>CHIU189</span> 秘書</h1><span class="tools"><button id="bell" type="button" aria-label="手機通知">🔔</button><button id="reload" type="button">↻ 重新整理</button></span></div>
+<header class="top">
+  <div class="wrap brand">
+    <div class="bname"><img src="icon.png" alt="" width="36" height="36"><div><h1><span>CHIU189</span> 秘書</h1><div class="bdate" id="hdate"></div></div></div>
+    <div class="tools">
+      <button id="bell" class="icb" type="button" aria-label="手機通知">
+        <svg class="i i-off" viewBox="0 0 24 24" aria-hidden="true"><path d="M8.7 3A6 6 0 0 1 18 8a21.3 21.3 0 0 0 .6 5"/><path d="M17 17H3s3-2 3-9a4.67 4.67 0 0 1 .3-1.7"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/><path d="m2 2 20 20"/></svg>
+        <svg class="i i-on" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+      </button>
+      <button id="reload" class="icb" type="button" aria-label="重新整理">
+        <svg class="i i-re" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg>
+        <svg class="i i-ok" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>
+      </button>
+    </div>
   </div>
-</div>
+</header>
 
 <main class="wrap">
-  <div id="today" class="today"><div class="hd">載入中…</div></div>
-  <section class="pane" id="pane-review"><div id="greet" class="greet"></div><div id="list"></div><div id="todo"></div><div id="mini"></div><div id="done"></div></section>
+  <div id="upd" class="stale"></div>
+  <div id="state" class="state" aria-label="載入中"><div class="sk sk-h"></div><div class="sk sk-s"></div><div class="sk sk-c"></div><div class="sk sk-c2"></div></div>
+  <div id="today"></div>
+  <section class="pane" id="pane-review"><div id="greet" class="greet"></div><div id="list"></div><div id="todo"></div><div id="done"></div></section>
   <section class="pane" id="pane-sched" hidden><div id="sched"></div></section>
   <section class="pane" id="pane-stats" hidden><div id="stats"></div></section>
   <section class="pane" id="pane-ask" hidden>
@@ -300,24 +360,49 @@ textarea { width: 100%; min-height: 90px; border-radius: 10px; border: 1px solid
     <div id="askList"></div>
   </section>
 </main>
-<div class="foot" id="upd"></div>
-<div class="toast" id="toast" hidden></div>
+<div class="toast" id="toast" role="status" hidden></div>
 <nav class="tabs" role="tablist" aria-label="分頁">
-  <button type="button" role="tab" data-tab="review" aria-selected="true"><span class="ti-ic" aria-hidden="true">🏠</span>首頁<span class="badge" id="badge" hidden></span></button>
-  <button type="button" role="tab" data-tab="sched" aria-selected="false"><span class="ti-ic" aria-hidden="true">📅</span>行程</button>
-  <button type="button" role="tab" data-tab="stats" aria-selected="false"><span class="ti-ic" aria-hidden="true">📈</span>成效</button>
-  <button type="button" role="tab" data-tab="ask" aria-selected="false"><span class="ti-ic" aria-hidden="true">💬</span>問我</button>
+  <button type="button" role="tab" data-tab="review" aria-selected="true"><span class="ti-ic" aria-hidden="true"><svg class="i" viewBox="0 0 24 24"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg></span>首頁<span class="badge" id="badge" hidden></span></button>
+  <button type="button" role="tab" data-tab="sched" aria-selected="false"><span class="ti-ic" aria-hidden="true"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg></span>行程</button>
+  <button type="button" role="tab" data-tab="stats" aria-selected="false"><span class="ti-ic" aria-hidden="true"><svg class="i" viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M8 17v-5M13 17V7M18 17v-8"/></svg></span>成效</button>
+  <button type="button" role="tab" data-tab="ask" aria-selected="false"><span class="ti-ic" aria-hidden="true"><svg class="i" viewBox="0 0 24 24"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></svg></span>問我</button>
 </nav>
 
 <script>
 const API = 'https://script.google.com/macros/s/AKfycbwcStF05qkS0cKT8l6PoTTzj21ijwnnyyJkoSDqPYZjDxFVG6EadZCwCp2GrKpV7wNSow/exec';
 const $ = (s) => document.querySelector(s);
+// 線條圖示（取代原本的表情符號，深淺色都跟著文字顏色走）
+const ICON = {
+  check: '<path d="M20 6 9 17l-5-5"/>',
+  alert: '<path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/>',
+  flame: '<path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.07-2.14-.22-4.05 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.15.43-2.29 1-3a2.5 2.5 0 0 0 2.5 2.5z"/>',
+  doc: '<path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7z"/><path d="M14 2v5h6M8 13h8M8 17h5"/>',
+  video: '<rect x="2" y="6" width="14" height="12" rx="2"/><path d="m16 10 6-3v10l-6-3z"/>',
+  chev: '<path d="m9 18 6-6-6-6"/>',
+  ext: '<path d="M7 17 17 7M8 7h9v9"/>',
+  cal: '<rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>',
+  undo: '<path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/>',
+  wrench: '<path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94z"/>',
+  search: '<circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/>',
+  pin: '<path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z"/><circle cx="12" cy="10" r="3"/>',
+  mega: '<path d="m3 11 18-5v12L3 14z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/>',
+  globe: '<circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 0 20 15.3 15.3 0 0 1 0-20z"/>',
+  users: '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>',
+  eye: '<path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',
+  bulb: '<path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/><path d="M9 18h6M10 22h4"/>',
+  star: '<path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8-6.2-3.2L5.8 21 7 14.2 2 9.3l6.9-1z"/>',
+};
+const ic = (k) => `<svg class="i" viewBox="0 0 24 24" aria-hidden="true">${ICON[k] || ''}</svg>`;
 const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const WD = '日一二三四五六';
 const clean = (t) => String(t || '').replace(/[【】]/g, ' ').replace(/\s+/g, ' ').trim();
 const pad = (n) => String(n).padStart(2, '0');
 const dayKey = (d) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 let data = { reviews: [], decisions: {} }, showAll = false;
+const setDate = () => { const d = new Date(); $('#hdate').textContent = `${d.getMonth() + 1}月${d.getDate()}日 週${WD[d.getDay()]}`; };
+setDate();
+// 最上面的狀態區：第一次載入的骨架、要輸入密碼、讀不到資料
+function stateMsg(t, btn) { const s = $('#state'); s.hidden = false; s.removeAttribute('aria-label'); s.innerHTML = `<div class="statebox">${esc(t)}${btn ? `<button type="button" onclick="load()">${btn}</button>` : ''}</div>`; }
 
 function getPin() { try { return localStorage.getItem('chiu189_pin') || ''; } catch (e) { return ''; } }
 function setPin(v) { try { localStorage.setItem('chiu189_pin', v); } catch (e) {} }
@@ -336,38 +421,42 @@ function setTab(t) {
 let firstLoad = true, loading = false, lastLoad = 0;
 async function load(quiet) {
   if (loading) return; loading = true;
-  const btn = $('#reload'); btn.textContent = '更新中…'; btn.disabled = true;
+  const btn = $('#reload'); btn.dataset.s = 'load'; btn.disabled = true; setDate();
   try {
     let r;
     // 2026-11-10：讀稿也要密碼（PIN 存在這支手機，只輸入一次）
     let pin = getPin() || askPin();
-    if (!pin) { $('#greet').innerHTML = '<div class="none">要輸入審稿密碼才看得到內容。<button onclick="load()">輸入密碼</button></div>'; throw new Error('nopin'); }
+    if (!pin) { stateMsg('要輸入審稿密碼才看得到內容。', '輸入密碼'); throw new Error('nopin'); }
     const post = () => fetch(API, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ a: 'list', pin }) });
     try { r = await post(); } catch (e1) { await new Promise((ok) => setTimeout(ok, 1500)); r = await post(); }
     const j = await r.json();
     if (!j.ok) {
-      if (j.error === 'pin') { setPin(''); $('#greet').innerHTML = '<div class="none">密碼不對，請重新輸入。<button onclick="load()">輸入密碼</button></div>'; throw new Error('pin'); }
-      if (j.error === 'locked') { $('#greet').innerHTML = '<div class="none">密碼錯太多次，鎖定 1 小時，請稍後再試。</div>'; throw new Error('locked'); }
+      if (j.error === 'pin') { setPin(''); stateMsg('密碼不對，請重新輸入。', '輸入密碼'); throw new Error('pin'); }
+      if (j.error === 'locked') { stateMsg('密碼錯太多次，鎖定 1 小時，請稍後再試。'); throw new Error('locked'); }
       throw new Error(j.error);
     }
     data = j;
+    $('#state').hidden = true; $('#state').innerHTML = '';
     render();
     const s = sched();
     const age = s.updated ? (Date.now() - new Date(s.updated).getTime()) / 6e4 : 0;   // 行程資料多久沒更新（分鐘）
-    $('#upd').innerHTML = age > 60 ? `<span class="warn">⚠️ 行程資料 ${age > 180 ? Math.round(age / 60) + ' 小時' : Math.round(age) + ' 分鐘'}沒更新了，店裡的電腦可能關機或睡眠</span>` : '';
+    $('#upd').innerHTML = age > 60 ? `${ic('alert')}<span>行程資料 ${age > 180 ? Math.round(age / 60) + ' 小時' : Math.round(age) + ' 分鐘'}沒更新了，店裡的電腦可能關機或睡眠</span>` : '';
     let saved = ''; try { saved = sessionStorage.getItem('chiu189_tab') || ''; } catch (e) {}
     const waiting = reviews().filter((x) => !(data.decisions || {})[x.id]).length;
     if (firstLoad) { setTab(saved || 'review'); firstLoad = false; }
     else { const cur = document.querySelector('.tabs button[aria-selected="true"]'); setTab(cur ? cur.dataset.tab : 'review'); if (cur && cur.dataset.tab === 'ask') loadAsk(); }
     lastLoad = Date.now();
     if (location.hash.length > 1 && !load._jumped) { load._jumped = true; setTab('review'); const el = document.getElementById('c-' + decodeURIComponent(location.hash.slice(1))); if (el) { el.scrollIntoView({ block: 'center' }); el.classList.add('flash'); setTimeout(() => el.classList.remove('flash'), 2500); } }
-    btn.textContent = '✓ 已更新';
-    setTimeout(() => { btn.textContent = '↻ 重新整理'; }, 1500);
-  } catch (e) { if (!quiet && !['nopin', 'pin', 'locked'].includes(e.message)) $('#today').innerHTML = '<div class="none">讀不到資料，請稍後按右上角「重新整理」。</div>'; btn.textContent = '↻ 重新整理'; }
+    btn.dataset.s = 'ok';
+    setTimeout(() => { if (btn.dataset.s === 'ok') btn.dataset.s = ''; }, 1500);
+  } catch (e) {
+    btn.dataset.s = '';
+    if (!['nopin', 'pin', 'locked'].includes(e.message)) { if (firstLoad) stateMsg('讀不到資料，可能是網路不穩。', '再試一次'); else if (!quiet) toast('讀不到最新資料，請稍後再按右上角的重新整理'); }
+  }
   btn.disabled = false; loading = false;
 }
 
-function render() { renderToday(); renderReview(); renderTodo(); renderMini(); renderSched(); renderStats(); }
+function render() { renderToday(); renderReview(); renderTodo(); renderSched(); renderStats(); }
 
 
 function toast(t, undo) {
@@ -386,7 +475,7 @@ function renderTodo() {
   const g = st.gbp;
   if (g && g.unreplied) out.push(['r', `${g.unreplied} 則 Google 評論還沒回｜${String(g.reviewsAsOf || g.asOf || '').slice(5, 16).replace('-', '/')} 的資料・每週一更新`, 'https://business.google.com/reviews', '去回覆']);
   const ago = new Date(now.getTime() - 3 * 864e5);
-  items.filter((x) => x.ck === 'fail' && new Date(x.at.replace(' ', 'T')) > ago).forEach((x) => out.push(['r', `${md(x.at.slice(0, 10))}「${clean(x.t).slice(0, 16)}」沒發出去`, 'sched', '看行程']));
+  items.filter((x) => x.ck === 'fail' && new Date(x.at.replace(' ', 'T')) > ago).forEach((x) => out.push(['r', `${md(x.at.slice(0, 10))}「${clean(x.t).split('｜')[0].slice(0, 18)}」沒發出去`, 'sched', '看行程']));
   // 接下來 7 天：中午沒圖文、晚上沒影片（已審待排的也算有）
   const noImg = [], noVid = [];
   for (let i = 1; i <= 7; i++) {
@@ -401,19 +490,19 @@ function renderTodo() {
   const gapTx = [noImg.length ? `圖文缺 ${noImg.length} 天（最近 ${md(noImg[0])}）` : '', noVid.length ? `影片缺 ${noVid.length} 天（最近 ${md(noVid[0])}）` : ''].filter(Boolean).join('、');
   const sub2 = (t) => { const [a, b] = String(t).split('｜'); return esc(a) + (b ? `<small>${esc(b)}</small>` : ''); };
   const gapLines = [noImg.length ? `圖文缺 ${noImg.length} 天・最近 ${md(noImg[0])}` : '', noVid.length ? `影片缺 ${noVid.length} 天・最近 ${md(noVid[0])}・丟進「待發」` : ''].filter(Boolean);
-  const remind = gap ? `<button type="button" class="remind" data-go="sched"><span class="tx"><b>📅 排程缺口</b>${gapLines.map((x) => `<small>${x}</small>`).join('')}</span><span class="go">看行程 ›</span></button>` : '';
+  const remind = gap ? `<button type="button" class="remind" data-go="sched"><span class="rm-ic">${ic('cal')}</span><span class="tx"><b>排程缺口</b>${gapLines.map((x) => `<small>${x}</small>`).join('')}</span><span class="go">看行程${ic('chev')}</span></button>` : '';
   todoN = out.length;
   const fixes = rv.filter((x) => ((data.decisions || {})[x.id] || {}).decision === 'fix' && !(x.id || '').startsWith('hot-')).length;
   const nowait = !rv.some((x) => !(data.decisions || {})[x.id]);
-  $('#todo').innerHTML = (out.length ? `<div class="sec">要你處理</div><div class="todo act">` + out.map(([c, t, go, gl]) => /^https?:/.test(go)
-      ? `<a href="${esc(go)}" target="_blank" rel="noopener"><span class="ic ${c}"></span><span class="tx">${sub2(t)}</span><span class="go">${gl} ↗</span></a>`
-      : `<button type="button" class="ti" data-go="${go}"><span class="ic ${c}"></span><span class="tx">${sub2(t)}</span><span class="go">${gl} ›</span></button>`).join('') + '</div>' : '') + (remind ? `<div class="sec">提醒</div>${remind}` : '');
+  $('#todo').innerHTML = (out.length ? `<div class="sec">要你處理</div><div class="todo">` + out.map(([c, t, go, gl]) => /^https?:/.test(go)
+      ? `<a href="${esc(go)}" target="_blank" rel="noopener"><span class="ic ${c}"></span><span class="tx">${sub2(t)}</span><span class="go">${gl}${ic('ext')}</span></a>`
+      : `<button type="button" class="ti" data-go="${go}"><span class="ic ${c}"></span><span class="tx">${sub2(t)}</span><span class="go">${gl}${ic('chev')}</span></button>`).join('') + '</div>' : '') + (remind ? `<div class="sec">提醒</div>${remind}` : '');
   // 招呼語＋總件數
   const hr = now.getHours(), hi = hr < 11 ? '早安' : hr < 18 ? '午安' : '晚安';
   const waitN = rv.filter((x) => !(data.decisions || {})[x.id]).length, total = waitN + out.length;
   $('#greet').innerHTML = total
-    ? `<b>${hi}右丞，還有 ${total} 件事要你處理</b><span>${waitN ? `${waitN} 篇等你審` : ''}${waitN && out.length ? '・' : ''}${out.length ? `${out.length} 件要處理` : ''}${fixes ? `・${fixes} 篇 Claude 改稿中` : ''}</span>`
-    : `<b>${hi}右丞，今天沒事了 ✅</b><span>${nowait ? '新稿做好會傳 LINE 給你' : ''}</span>`;
+    ? `<b>${hi}右丞，還有 <em>${total}</em> 件事要你處理</b><span>${waitN ? `${waitN} 篇等你審` : ''}${waitN && out.length ? '・' : ''}${out.length ? `${out.length} 件要處理` : ''}${fixes ? `・${fixes} 篇 Claude 改稿中` : ''}</span>`
+    : `<b>${hi}右丞，今天沒事了</b><span>${nowait ? '新稿做好會傳 LINE 給你' : ''}</span>`;
 }
 let todoN = 0;
 $('#todo').addEventListener('click', (e) => {
@@ -423,17 +512,12 @@ $('#todo').addEventListener('click', (e) => {
 });
 
 function renderToday() {
-  const now = new Date(), tk = dayKey(now);
-  const tm = new Date(now.getTime() + 864e5), mk = dayKey(tm);
   const items = sched().schedule || [];
-  const line = (x) => `<div class="row"><span class="tm">${esc(x.at.slice(11, 16))}</span><span class="dot ${x.k}"></span><span class="t">${esc(clean(x.t))}</span></div>`;
-  const td = items.filter((x) => x.at.slice(0, 10) === tk), tmr = items.filter((x) => x.at.slice(0, 10) === mk);
   const waiting = reviews().filter((x) => !(data.decisions || {})[x.id]).length;
   // 2026-11-04 用戶：行程重複看兩次 → 不再列今天／明天，下面的行程表就有；只留沒發出去的警告
-  $('#today').innerHTML = '';
   const fails = items.filter((x) => x.ck === 'fail');
   $('#today').dataset.has = fails.length ? '1' : '';
-  if (fails.length) $('#today').innerHTML += `<div class="alert">⚠️ ${fails.length} 篇沒發出去：${fails.map((x) => esc(x.at.slice(5, 10).replace('-', '/') + ' ' + clean(x.t).slice(0, 14))).join('、')}<br>到「交代」打「補發」，或叫 Claude 處理。</div>`;
+  $('#today').innerHTML = fails.length ? `<div class="alert">${ic('alert')}<div><b>${fails.length} 篇沒發出去</b>${fails.map((x) => esc(x.at.slice(5, 10).replace('-', '/') + ' ' + clean(x.t).split('｜')[0].slice(0, 18))).join('、')}<small>到「問我」打「補發」，或叫 Claude 處理。</small></div></div>` : '';
   const b = $('#badge'); b.hidden = !waiting; b.textContent = waiting;
 }
 
@@ -455,7 +539,7 @@ function fullCard(r, i) {
     if (hot) { const th = (r.caps || {}).Threads || '';
       const htag = st === 'ok' ? '<span class="tag ok">已通過・5 分鐘內發 Threads</span>' : st === 'fix' ? `<span class="tag fix">${hotFixLab(d)}</span>` : '<span class="tag wait">等你審・沒按會自動作廢（晚上做的留到早上 10 點）</span>';
       return `<div>
-      <h2>🔥 ${esc(clean(r.title))}</h2>
+      <h2>${esc(clean(r.title))}</h2>
       <div class="meta"><b>熱議快訊・只發 Threads</b>・按通過 5 分鐘內發</div>
       ${htag}
       <div class="imgs">${(r.imgs || []).map((src, k) => `<img src="${esc(src)}" alt="第 ${k + 1} 張圖" loading="lazy">`).join('')}</div>
@@ -464,7 +548,7 @@ function fullCard(r, i) {
       ${st === 'wait' ? `<div class="btns"><button type="button" class="okb" data-act="ok">通過，馬上發</button><button type="button" data-act="fix">要改</button><button type="button" data-act="hotno">不發</button></div>
       <div class="fixbox" hidden><div class="chips">${['文案再短一點', '口氣再好笑一點', '換一張圖', '圖上的字改一下', '傳聞要寫清楚'].map((c) => `<button type="button" data-chip="${esc(c)}" aria-pressed="false">${esc(c)}</button>`).join('')}</div><textarea placeholder="點上面的選項，或自己寫：例如文案改成「…」、圖換成背面"></textarea><div class="note2">Claude 改好會放回這裡、傳 LINE 給你，再按通過才發。熱議有時效，大約 10～20 分鐘改好。</div><div class="btns"><button type="button" class="okb" data-act="sendfix">送出意見</button><button type="button" data-act="cancel">取消</button></div></div>` : '<div class="btns"><button type="button" class="ghost" data-act="clear">按錯了，撤回決定</button></div>'}
     </div>`; }
-    const tag = st === 'ok' ? '<span class="tag ok">已通過・等自動排程</span>' : st === 'fix' ? '<span class="tag fix">已退回・等 Claude 改</span>' : '<span class="tag wait">等你審</span>';
+    const tag = st === 'ok' ? '<span class="tag ok">已通過・等自動排程</span>' : st === 'fix' ? '<span class="tag fix">已退回・等 Claude 改</span>' : '';
     const caps = r.caps || {}, n = (r.imgs || []).length;
     return `<div>
       <h2>${esc(clean(r.title))}</h2>
@@ -487,19 +571,22 @@ function renderReview() {
   const rv = reviews(), dec = data.decisions || {};
   const wait = rv.map((r, i) => [r, i]).filter(([r]) => !dec[r.id]).sort((a, b) => ((b[0].id || '').startsWith('hot-') - (a[0].id || '').startsWith('hot-')));
   const done = rv.map((r, i) => [r, i]).filter(([r]) => dec[r.id]);
-  $('#list').innerHTML = wait.map(([r, i]) => {
-    const hot = (r.id || '').startsWith('hot-'), vid = r.kind === 'vid', caps = r.caps || {};
+  $('#list').innerHTML = (wait.length ? '<div class="sec">等你審</div>' : '') + wait.map(([r, i]) => {
+    const hot = (r.id || '').startsWith('hot-'), vid = r.kind === 'vid', caps = r.caps || {}, nImg = (r.imgs || []).length;
     const ex = hot ? hotExpire(r.id) : null;
     const left = ex ? Math.max(0, Math.round((ex - Date.now()) / 36e5 * 10) / 10) : null;
-    const kd = hot ? `🔥 熱議・只發 Threads${left != null ? `・${left < 1 ? '快過期了' : `還有 ${Math.round(left)} 小時`}` : ''}` : vid ? `🎬 影片・${esc(r.when)}` : `📝 教學文・${esc(r.when)}`;
+    const kd = hot
+      ? `<span class="pill hot">${ic('flame')}熱議</span><span>只發 Threads</span>${left != null ? `<span${left < 2 ? ' class="due"' : ''}>${left < 1 ? '快過期了' : `還有 ${Math.round(left)} 小時`}</span>` : ''}`
+      : `<span class="pill ${vid ? 'vid' : 'img'}">${ic(vid ? 'video' : 'doc')}${vid ? '影片' : '教學文'}</span><span>預計 ${esc(r.when)}</span>`;
     const pv = hot ? (caps.Threads || '') : (caps.FB || caps.Threads || '');
     const ck = r.check || [], okN = ck.filter((c) => c.startsWith('✅')).length, wN = ck.length - okN;
-    const ckl = ck.length ? (wN ? `查證 ✅ ${okN} 項・<span class="w">⚠️ ${wN} 項要注意</span>` : `查證 ✅ ${okN} 項全部通過`) : '';
+    const ckl = ck.length ? `<span class="g">${ic('check')}查證 ${okN} 項${wN ? '通過' : '全部通過'}</span>${wN ? `<span class="w">${ic('alert')}${wN} 項要注意</span>` : ''}` : '';
+    const lab = `看全文${nImg > 1 ? `（${nImg} 張圖）` : ''}`;
     return `<article class="card act${hot ? ' hot' : ''}" data-i="${i}" id="c-${esc(r.id)}">
-      <div class="row1">${(r.imgs || [])[0] ? `<div class="th"><img src="${esc(r.imgs[0])}" alt="封面"></div>` : ''}
+      <div class="row1">${nImg ? `<div class="th"><img src="${esc(r.imgs[0])}" alt="封面" loading="lazy"></div>` : ''}
         <div class="bd"><div class="kd">${kd}</div><div class="tt">${esc(clean(String(r.title || '').split('｜')[0]))}</div><div class="pv">${esc(pv)}</div>${ckl ? `<div class="ckl">${ckl}</div>` : ''}</div></div>
       <div class="btns">${hot ? '<button type="button" class="okb" data-act="ok">通過，馬上發</button><button type="button" data-act="fixopen">要改</button><button type="button" data-act="hotno">不發</button>' : '<button type="button" class="okb" data-act="ok">通過</button><button type="button" data-act="fixopen">要改</button>'}</div>
-      <button type="button" class="linkb" data-act="toggle">看全文${(r.imgs || []).length > 1 ? `（${r.imgs.length} 張圖）` : ''} ›</button>
+      <button type="button" class="linkb" data-act="toggle" data-l="${lab}">${lab} ›</button>
       <div class="full" hidden>${fullCard(r, i)}</div>
       <div class="msg"></div>
     </article>`;
@@ -507,35 +594,12 @@ function renderReview() {
   $('#done').innerHTML = done.length ? `<div class="sec">已處理</div>` + done.map(([r, i]) => {
     const st = dec[r.id].decision, hot = (r.id || '').startsWith('hot-');
     const lab = hot ? (st === 'ok' ? '已通過・5 分鐘內發 Threads' : hotFixLab(dec[r.id])) : (st === 'ok' ? '已通過・等自動排程' : '已退回・等 Claude 改');
-    return `<article class="card done" data-i="${i}" style="padding:12px 16px;opacity:.75">
-      <div style="display:flex;align-items:center;gap:10px"><div style="flex:1;min-width:0"><div style="font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${hot ? '🔥 ' : ''}${esc(clean(String(r.title || '').split('｜')[0]))}</div>
-      <div class="meta" style="margin:2px 0 0">${st === 'ok' ? '✅' : '↩️'} ${lab}${hot ? '' : `・${esc(r.when)}`}</div></div>
-      <button type="button" class="ghost" data-act="clear" style="flex:none;padding:6px 10px;font-size:13px;border:1px dashed var(--line);border-radius:10px;background:none;color:var(--sub)">撤回</button></div>
+    return `<article class="card done" data-i="${i}"><div class="dn"><span class="dn-ic${st === 'ok' ? '' : ' fix'}">${ic(st === 'ok' ? 'check' : 'undo')}</span>
+      <div class="dn-bd"><div class="dn-t">${esc(clean(String(r.title || '').split('｜')[0]))}</div><div class="dn-s">${lab}${hot ? '' : `・${esc(r.when)}`}</div></div>
+      <button type="button" class="undo" data-act="clear">撤回</button></div>
       <div class="msg"></div></article>`;
   }).join('') : '';
 }
-function renderMini() {
-  // 2026-11-07 用戶：「接下來 3 天」跟行程分頁、「最近成效」跟成效分頁重複 → 首頁只留要你處理的事
-  $('#mini').innerHTML = ''; return;
-  // 接下來 3 天（含今天還沒到的）＋這週一行成效
-  const items = sched().schedule || [], now = new Date(), end = dayKey(new Date(now.getTime() + 2 * 864e5)), tk = dayKey(now);
-  const up = items.filter((x) => x.at.slice(0, 10) >= tk && x.at.slice(0, 10) <= end && !x.done);
-  const rv = reviews(), dec = data.decisions || {};
-  const mdk = (w) => { const m = /(\d{1,2})\/(\d{1,2})/.exec(w || ''); return m ? pad(+m[1]) + pad(+m[2]) : '9999'; };
-  const pend = rv.filter((r) => !(r.id || '').startsWith('hot-') && (!dec[r.id] || dec[r.id].decision === 'ok')).map((r) => ({ at: r.when, t: String(r.title || '').split('｜')[0], k: r.kind === 'vid' ? 'vid' : 'img', p: !dec[r.id] ? 'wait' : 'ok' })).sort((a, b) => mdk(a.at).localeCompare(mdk(b.at)));
-  const md = (k) => { const d = new Date(k + 'T00:00:00'); return `${d.getMonth() + 1}/${d.getDate()}`; };
-  const rows = up.map((x) => `<div class="it"><div class="mth">${x.img ? `<img src="${esc(x.img)}" alt="" loading="lazy">` : `<span>${x.k === 'vid' ? '🎬' : '📝'}</span>`}</div><div class="bd"><div class="mtm">${md(x.at.slice(0, 10))}（${WD[new Date(x.at.slice(0, 10) + 'T00:00:00').getDay()]}）${esc(x.at.slice(11, 16))}・${x.k === 'vid' ? '影片' : '圖文'}</div><div class="tt mtt">${esc(clean(x.t))}</div></div>${x.ck === 'fail' ? '<span class="st w">❌ 沒發出去</span>' : ''}</div>`)
-    .concat(pend.map((x) => `<div class="it"><span class="tm" style="font-size:13px">${esc(String(x.at || '').replace(/（.）/, ' '))}</span><div class="bd"><div class="tt"><span class="dot ${x.k}"></span>${esc(clean(x.t))}</div></div><span class="st ${x.p === 'wait' ? 'w' : ''}">${x.p === 'wait' ? '⏳ 等你審' : '🕒 等排程'}</span></div>`));
-  const st = sched().stats || {}, wb = st.web || {}, thr = st.threads || {}, gm = (st.gbp || {}).months || [];
-  const thisM = `${now.getFullYear()}-${pad(now.getMonth() + 1)}`, full = gm.filter((x) => x.m < thisM), curM = full[full.length - 1] || {};
-  const n = (x) => (x == null ? '—' : Number(x).toLocaleString('zh-TW'));
-  const tv = (thr.posts || []).reduce((a, p) => a + (p.views || 0), 0);
-  $('#mini').innerHTML = `<div class="sec">接下來 3 天<button type="button" data-go="sched">看全部 ›</button></div>`
-    + (rows.length ? `<div class="list mini3">${rows.join('')}</div>` : '<div class="empty" style="padding:16px">這 3 天還沒有排</div>')
-    + `<div class="sec">最近成效<button type="button" data-go="stats">看細節 ›</button></div>
-    <button type="button" class="card funnel" data-go="stats"><div class="f"><b>${n(tv)}</b><span>👀 Threads 觀看</span><small>近 7 天</small></div><div class="f"><b>${wb.asOf ? n(wb.users) : '—'}</b><span>🌐 逛官網的人</span><small>近 7 天</small></div><div class="f"><b>${n(curM.dirs)}</b><span>🏃 地圖查路線</span><small>${curM.m ? +curM.m.slice(5) + ' 月整月' : '上個月'}</small></div></button>`;
-}
-$('#mini').addEventListener('click', (e) => { const b = e.target.closest('[data-go]'); if (b) { setTab(b.dataset.go); window.scrollTo({ top: 0 }); } });
 $('#done').addEventListener('click', (e) => { const b = e.target.closest('button[data-act="clear"]'); if (b) decide(b.closest('.card'), 'clear'); });
 
 function renderSched() {
@@ -548,13 +612,14 @@ function renderSched() {
   const hiddenN = keys.length > 7 && !showAll ? keys.length - 7 : 0;
   if (hiddenN) keys = keys.slice(0, 7);
   const th = { queued: ['Threads 已排', ''], posted: ['Threads 已發', 'good'], missed: ['Threads 沒發到', 'bad'], failed: ['Threads 失敗', 'bad'] };
-  $('#sched').innerHTML = '<div class="legend"><span><span class="dot img"></span>圖文</span><span><span class="dot vid"></span>影片</span></div>' + keys.map((k) => {
+  $('#sched').innerHTML = keys.map((k) => {
     const d = new Date(k + 'T00:00:00'), isT = k === tk;
-    return `<div class="dayhd${isT ? ' is-today' : ''}">${d.getMonth() + 1}/${d.getDate()}（${WD[d.getDay()]}）${isT ? '・今天' : ''}</div><div class="list">${days[k].map((x) => {
+    return `<div class="dayhd">${d.getMonth() + 1}/${d.getDate()}<small>週${WD[d.getDay()]}</small>${isT ? '<span class="pill img">今天</span>' : ''}</div><div class="list">${days[k].map((x) => {
       const plats = x.p.filter((v) => v !== 'Threads').join('・');
       const t = x.k === 'img' && x.th ? th[x.th] || ['Threads', ''] : null;
-      const ck = x.ck === 'ok' ? '<span class="ck-ok">✅ 確認有發</span>' : x.ck === 'fail' ? `<span class="ck-bad">❌ 沒發出去：${esc(x.ckn || '')}</span>` : (x.done ? '<span>已過・等確認</span>' : '');
-      return `<div class="it${x.done && x.ck !== 'fail' ? ' done' : ''}"><div class="mth">${x.img ? `<img src="${esc(x.img)}" alt="" loading="lazy">` : `<span>${x.k === 'vid' ? '🎬' : '📝'}</span>`}</div><div class="bd"><div class="mtm">${esc(x.at.slice(11, 16))}・${x.k === 'vid' ? '影片' : '圖文'}</div><div class="tt mtt">${esc(clean(x.t))}</div><div class="pl"><span>${esc(plats)}</span>${t ? `<span class="${t[1]}">${t[0]}</span>` : ''}${ck}</div></div></div>`;
+      const ck = x.ck === 'ok' ? `<span class="ck-ok">${ic('check')}確認有發</span>` : x.ck === 'fail' ? `<span class="ck-bad">${ic('alert')}沒發出去${x.ckn ? '：' + esc(x.ckn) : ''}</span>` : (x.done ? '<span>已過・等確認</span>' : '');
+      const vid = x.k === 'vid';
+      return `<div class="it${x.done && x.ck !== 'fail' ? ' done' : ''}"><div class="mth">${x.img ? `<img src="${esc(x.img)}" alt="" loading="lazy">` : ic(vid ? 'video' : 'doc')}</div><div class="bd"><div class="mtm">${esc(x.at.slice(11, 16))}<span class="pill ${vid ? 'vid' : 'img'}">${vid ? '影片' : '圖文'}</span></div><div class="mtt">${esc(clean(x.t))}</div><div class="pl">${plats ? `<span>${esc(plats)}</span>` : ''}${t ? `<span class="${t[1]}">${t[0]}</span>` : ''}${ck}</div></div></div>`;
     }).join('')}</div>`;
   }).join('') + (hiddenN ? `<button class="more" type="button" id="more">再看後面 ${hiddenN} 天</button>` : '');
 }
@@ -567,7 +632,7 @@ function renderStats() {
     const m = (g.months || []).slice(-1)[0] || {}, mm = m.m ? +m.m.slice(5) : '';
     const top = (g.platform || [])[0];
     h += `<section class="card"><h2>Google 商家</h2><div class="meta">客人怎麼找到店</div>
-      <div class="kpis"><div class="kpi"><b>${g.rating ? g.rating.toFixed(1) + '★' : '—'}</b><span>${n(g.reviews)} 則評論${g.unreplied ? `・<b style="color:var(--fix);display:inline;font-size:inherit">${g.unreplied} 未回</b>` : ''}</span></div>
+      <div class="kpis"><div class="kpi"><b>${g.rating ? g.rating.toFixed(1) + '<i class="st">★</i>' : '—'}</b><span>${n(g.reviews)} 則評論${g.unreplied ? `<small class="w">${g.unreplied} 未回</small>` : ''}</span></div>
       <div class="kpi"><b>${n(m.dirs)}</b><span>${mm} 月查路線</span></div>
       <div class="kpi"><b>${n(m.calls)}</b><span>${mm} 月打電話</span></div></div>
       <div class="note2">${n(g.views)} 人看過商家檔案（${esc(g.viewsRange || '')}）${top ? `，${top[1]}% 來自${esc(top[0])}` : ''}</div>
@@ -583,17 +648,17 @@ function renderStats() {
       <div class="kpi"><b>${n(ps.length)}</b><span>則貼文</span></div>
       <div class="kpi"><b>${n(tot)}</b><span>總觀看</span></div></div>
       <div class="sub-h">每則觀看（高到低，點標題打開）</div>
-      ${ps.map((p) => `<div class="tp"><div style="flex:1;min-width:0"><a href="${esc(p.url)}" target="_blank" rel="noopener">${esc(p.t)}</a><div class="bar"><i style="width:${Math.round((p.views || 0) / mx * 100)}%"></i></div></div><span class="v">${n(p.views)}</span></div>`).join('')}
+      ${ps.map((p) => `<div class="tp"><div><a href="${esc(p.url)}" target="_blank" rel="noopener">${esc(p.t)}</a><div class="bar"><i style="width:${Math.round((p.views || 0) / mx * 100)}%"></i></div></div><span class="v">${n(p.views)}</span></div>`).join('')}
       <div class="note2">更新 ${esc(t.asOf || '')}・每 30 分鐘更新</div></section>`;
   }
   // 2026-11-07：舊「報價網站」卡和最上面「🔍 客人在查什麼」重複，拿掉
   const wb = st.web || {}, sc = wb.search || {};
   const wmx = Math.max(1, ...(wb.daily || []).map((d) => d[1]));
-  const gcard = `<section class="card"><h2>官網搜尋與流量</h2><div class="meta">chiu189.com.tw・最近 7 天${wb.now ? `・<b style="color:var(--ok,#06c755);display:inline">現在 ${n(wb.now)} 人在看</b>` : ''}</div>
+  const gcard = `<section class="card"><h2>官網搜尋與流量</h2><div class="meta">chiu189.com.tw・最近 7 天${wb.now ? `・<b class="live">現在 ${n(wb.now)} 人在看</b>` : ''}</div>
       ${wb.asOf ? `<div class="kpis"><div class="kpi"><b>${n(wb.users)}</b><span>人逛網站</span></div>
       <div class="kpi"><b>${n(wb.phone)}</b><span>按打電話</span></div>
       <div class="kpi"><b>${n(wb.line)}</b><span>按 LINE</span></div></div>
-      ${(wb.daily || []).length ? `<div style="display:flex;gap:6px;align-items:flex-end;height:64px;margin:10px 0 4px">${wb.daily.map((d) => `<div style="flex:1;text-align:center;font-size:11px;color:var(--sub)"><div style="background:var(--accent);border-radius:4px 4px 0 0;height:${Math.max(2, Math.round(d[1] / wmx * 44))}px;margin-bottom:3px"></div>${esc(d[0])}</div>`).join('')}</div>` : ''}
+      ${(wb.daily || []).length ? `<div class="wdays">${wb.daily.map((d) => `<div><i style="height:calc((100% - 18px) * ${(d[1] / wmx).toFixed(3)})"></i><span>${esc(d[0])}</span></div>`).join('')}</div>` : ''}
       ${(wb.sources || []).length ? `<div class="sub-h">從哪裡來</div>` + wb.sources.map((x) => `<div class="tp"><span>${esc(x[0])}</span><span class="v">${n(x[1])} 次</span></div>`).join('') : ''}
       <div class="sub-h">Google 搜尋${sc.range ? `（${esc(sc.range)}）` : ''}</div>
       ${sc.error ? `<div class="note2">Search Console 暫時讀不到</div>` : `<div class="tp"><span>出現在搜尋結果</span><span class="v">${n(sc.impressions)} 次</span></div><div class="tp"><span>點進網站</span><span class="v">${n(sc.clicks)} 次</span></div>
@@ -613,7 +678,7 @@ function renderStats() {
     [n(curM.dirs), `Google 地圖查路線（${curM.m ? +curM.m.slice(5) + ' 月' : '本月'}）`, curM.m && preM.m ? dlt(curM.dirs, preM.dirs) : ''],
     [n(tv), 'Threads 觀看（7 天）', ''],
   ];
-  const sum = `<div class="sum">${kp.map(([v, l, d]) => `<div class="kpi"><b>${v}${d}</b><span>${l}</span></div>`).join('')}</div><div class="note2" style="margin:-6px 2px 10px">↑↓ 跟上週比（查路線跟上個月比）・點卡片看細節</div>`;
+  const sum = `<div class="sum">${kp.map(([v, l, d]) => `<div class="kpi"><b>${v}${d}</b><span>${l.replace(/（(.+)）$/, '<small>$1</small>')}</span></div>`).join('')}</div><div class="note2 sum-n">↑↓ 跟上週比（查路線跟上個月比）・點卡片看細節</div>`;
   // 什麼文章比較多人看（post_stats.py：FB／IG／Threads 最近 60 天、中位數）
   const ct = st.content;
   let ccard = '';
@@ -624,16 +689,16 @@ function renderStats() {
       pfs.forEach((pf) => ((ct.by[dim] || {})[pf] || []).forEach(([k, v, c]) => { (rows[k] = rows[k] || {})[pf] = [v, c]; }));
       const best = {}; pfs.forEach((pf) => { let b = null; Object.entries(rows).forEach(([k, r]) => { if (r[pf] && r[pf][1] >= 3 && (!b || r[pf][0] > rows[b][pf][0])) b = k; }); best[pf] = b; });
       const keys = Object.keys(rows).sort((a, b) => ((rows[b].Threads || [0])[0] + (rows[b].IG || [0])[0]) - ((rows[a].Threads || [0])[0] + (rows[a].IG || [0])[0]));
-      const cell = (k, pf) => { const r = rows[k][pf]; if (!r) return '<td style="color:var(--sub)">—</td>'; const few = r[1] < 3; return `<td style="text-align:right;white-space:nowrap${few ? ';color:var(--sub)' : ''}">${best[pf] === k ? '⭐' : ''}${n(r[0])}<span style="font-size:11px;color:var(--sub)">・${r[1]}篇</span></td>`; };
-      return `<div class="sub-h">${title}</div><table style="width:100%;border-collapse:collapse;font-size:14px">
-        <tr style="color:var(--sub);font-size:12px"><td></td>${pfs.map((p) => `<td style="text-align:right">${p}</td>`).join('')}</tr>
-        ${keys.map((k) => `<tr style="border-top:1px solid var(--line)"><td style="padding:7px 0">${esc(k)}</td>${pfs.map((pf) => cell(k, pf)).join('')}</tr>`).join('')}</table>`;
+      const cell = (k, pf) => { const r = rows[k][pf]; if (!r) return '<td class="few">—</td>'; const top = best[pf] === k; return `<td class="${r[1] < 3 ? 'few' : top ? 'best' : ''}">${top ? ic('star') : ''}${n(r[0])}<small>${r[1]} 篇</small></td>`; };
+      return `<div class="sub-h">${title}</div><table class="tbl">
+        <tr><th></th>${pfs.map((p) => `<th>${p}</th>`).join('')}</tr>
+        ${keys.map((k) => `<tr><td>${esc(k)}</td>${pfs.map((pf) => cell(k, pf)).join('')}</tr>`).join('')}</table>`;
     };
     ccard = `<section class="card"><h2>什麼文章比較多人看</h2><div class="meta">最近 ${ct.days} 天・共 ${n(ct.total)} 篇・每篇觀看的中位數（一篇爆紅不會拉高）</div>
-      <div class="kpis">${pfs.filter((p) => ct.median && ct.median[p] != null).map((p) => `<div class="kpi"><b>${n(ct.median[p])}</b><span>${p} 一般一篇</span></div>`).join('')}</div>
+      <div class="kpis">${pfs.filter((p) => ct.median && ct.median[p] != null).map((p) => `<div class="kpi"><b>${n(ct.median[p])}</b><span>${p}<small>一般一篇</small></span></div>`).join('')}</div>
       ${tbl('kind', '題目類型')}${tbl('hook', '開頭寫法')}${tbl('slot', '發文時段')}
-      <div class="note2">⭐＝該平台最高（至少 3 篇才比）；灰色＝不到 3 篇，還不準</div>
-      ${(ct.top || []).length ? `<div class="sub-h">最多人看的 ${ct.top.length} 篇</div>` + ct.top.map((p) => `<div class="tp"><div style="flex:1;min-width:0"><a href="${esc(p.url)}" target="_blank" rel="noopener">${esc(p.t)}</a><div style="font-size:12px;color:var(--sub)">${esc(p.pf)}・${esc(p.d)}・${esc(p.kind)}・${esc(p.hook)}</div></div><span class="v">${n(p.views)}</span></div>`).join('') : ''}
+      <div class="note2"><span class="best">${ic('star')}</span>該平台最高（至少 3 篇才比）；灰色＝不到 3 篇，還不準</div>
+      ${(ct.top || []).length ? `<div class="sub-h">最多人看的 ${ct.top.length} 篇</div>` + ct.top.map((p) => `<div class="tp"><div><a href="${esc(p.url)}" target="_blank" rel="noopener">${esc(p.t)}</a><small>${esc(p.pf)}・${esc(p.d)}・${esc(p.kind)}・${esc(p.hook)}</small></div><span class="v">${n(p.views)}</span></div>`).join('') : ''}
       <div class="note2">更新 ${esc(ct.asOf)}・每 2 小時${(ct.errors || []).length ? '・部分平台暫時讀不到' : ''}・文章越多越準（建議 30 篇以上再下結論）</div></section>`;
   }
   let all = ccard + gcard + h;
@@ -642,13 +707,7 @@ function renderStats() {
   // 2026-11-04 用戶：成效看不懂 → 上面只放 3 件事＋最紅 3 篇，白話；原本的細節收進最下面
   const want = wb.asOf ? (wb.phone || 0) + (wb.line || 0) : null;
   const tops = (thr.posts || []).slice().sort((a, b) => (b.views || 0) - (a.views || 0)).slice(0, 3);
-  const vs = (a, b, unit) => { if (a == null || b == null) return ''; const d = a - b; const [c, t] = d > 0 ? ['up', `↑ 比${unit}多 ${n(d)}`] : d < 0 ? ['down', `↓ 比${unit}少 ${n(-d)}`] : ['flat', `跟${unit}一樣`]; return `<span class="dlt ${c}" style="font-size:12.5px;white-space:nowrap">${t}</span>`; };
   // 2026-11-04 用戶：順序＋文字排版 → 照客人路徑「看到 → 逛官網 → 來店」由上往下；比較放右上、說明一行
-  const big = (emo, title, num, unit, desc, cmp, sub) => `<div class="card" style="padding:14px 16px;margin-bottom:6px">
-    <div style="display:flex;align-items:center;justify-content:space-between;gap:8px"><div style="font-size:15px;font-weight:700">${emo} ${title}</div>${cmp}</div>
-    <div style="font-size:34px;font-weight:800;line-height:1.15;margin-top:6px">${num}<span style="font-size:15px;font-weight:600;color:var(--sub);margin-left:6px">${unit}</span></div>
-    <div style="font-size:13px;color:var(--sub);margin-top:4px">${desc}</div>${sub ? `<div style="font-size:13px;color:var(--sub);margin-top:2px">${sub}</div>` : ''}</div>`;
-  const arrow = '';
   // 2026-11-07 成效改版：結果（來店）放最上面 → 廣告 → 官網 → 社群曝光；最上面一兩句建議
   const V = data.visits || {};
   const vSum = (days) => { const out = {}; let tot = 0; for (let i = 0; i < days; i++) { const k = dayKey(new Date(Date.now() - i * 864e5)); Object.entries(V[k] || {}).forEach(([s, c]) => { out[s] = (out[s] || 0) + c; tot += c; }); } return [tot, out]; };
@@ -659,29 +718,29 @@ function renderStats() {
   const topP = tops[0], share = topP && tv ? Math.round((topP.views || 0) / tv * 100) : 0;
   // 2026-11-07 排版整理：每張卡同一套格式＝標題列（左標題、右期間小標籤）→ 大數字（右邊變化）→ 一句說明 → 明細列（左名稱＋小字、右數字＋小字）
   const tips = [];
-  if (g && g.unreplied) tips.push(['⭐', `Google 有 ${g.unreplied} 則評論沒回`]);
+  if (g && g.unreplied) tips.push(['star', `Google 有 ${g.unreplied} 則評論沒回`]);
   // 11/8：不再比每次點擊（會誤導），改看加 LINE 廣告每個好友多少錢（好友數用戶告訴 Claude，review_sync.py friends N）
   const lf = st.lineFriends, lineAd = ads.find((a) => a.name === '加 LINE');
   const perFriend = lf && lf.n && lineAd ? Math.round(lineAd.twd / lf.n) : null;
-  if (perFriend) tips.push(['📣', `加 LINE 廣告：LINE 好友 ${lf.n} 人，每個約 NT$${perFriend}`]);
-  if (ct && ct.by && ct.by.kind && ct.by.kind.IG) { const k = ct.by.kind.IG.filter((r) => r[2] >= 3).sort((a, b) => b[1] - a[1]); if (k.length >= 2 && k[0][1] >= k[k.length - 1][1] * 1.5) tips.push(['📝', `IG 上「${k[0][0]}」的觀看是「${k[k.length - 1][0]}」的 ${(k[0][1] / Math.max(1, k[k.length - 1][1])).toFixed(1)} 倍`]); }
-  const tipBox = tips.length ? `<div class="sc tips"><div class="sc-hd"><span>💡 這週建議</span></div>${tips.slice(0, 3).map(([i, t]) => `<div class="tip"><span class="ti">${i}</span><span>${esc(t)}</span></div>`).join('')}</div>` : '';
+  if (perFriend) tips.push(['mega', `加 LINE 廣告：LINE 好友 ${lf.n} 人，每個約 NT$${perFriend}`]);
+  if (ct && ct.by && ct.by.kind && ct.by.kind.IG) { const k = ct.by.kind.IG.filter((r) => r[2] >= 3).sort((a, b) => b[1] - a[1]); if (k.length >= 2 && k[0][1] >= k[k.length - 1][1] * 1.5) tips.push(['doc', `IG 上「${k[0][0]}」的觀看是「${k[k.length - 1][0]}」的 ${(k[0][1] / Math.max(1, k[k.length - 1][1])).toFixed(1)} 倍`]); }
+  const tipBox = tips.length ? `<div class="sc tips"><div class="sc-hd"><span class="sc-t"><span class="sc-ic">${ic('bulb')}</span>這週建議</span></div>${tips.slice(0, 3).map(([i, t]) => `<div class="tip">${ic(i)}<span>${esc(t)}</span></div>`).join('')}</div>` : '';
   const chip = (t) => t ? `<span class="chip">${t}</span>` : '';
   const delta = (a, b) => { if (a == null || b == null) return ''; const d = a - b; return d > 0 ? `<span class="dl up">↑ ${n(d)}</span>` : d < 0 ? `<span class="dl down">↓ ${n(-d)}</span>` : '<span class="dl">持平</span>'; };
   const row = (l, ls, v, vs2) => `<div class="sr"><div class="sl">${l}${ls ? `<small>${ls}</small>` : ''}</div><div class="sv">${v}${vs2 ? `<small>${vs2}</small>` : ''}</div></div>`;
-  const card = (emo, title, ch, num, unit, dl, desc, body, foot) => `<div class="sc"><div class="sc-hd"><span>${emo} ${title}</span>${chip(ch)}</div>
+  const card = (emo, title, ch, num, unit, dl, desc, body, foot) => `<div class="sc"><div class="sc-hd"><span class="sc-t"><span class="sc-ic">${ic(emo)}</span>${title}</span>${chip(ch)}</div>
     <div class="sc-big"><b>${num}</b>${unit ? `<i>${unit}</i>` : ''}${dl || ''}</div>${desc ? `<div class="sc-desc">${desc}</div>` : ''}${body || ''}${foot ? `<div class="sc-foot">${foot}</div>` : ''}</div>`;
   const mon = curM.m ? +curM.m.slice(5) + ' 月' : '上個月';
-  const visitCard = card('🏃', 'Google 地圖查路線', mon, n(curM.dirs), '次', curM.m && preM.m ? delta(curM.dirs, preM.dirs) : '', '想來店的人按「路線」的次數・跟上個月比',
+  const visitCard = card('pin', 'Google 地圖查路線', mon, n(curM.dirs), '次', curM.m && preM.m ? delta(curM.dirs, preM.dirs) : '', '想來店的人按「路線」的次數・跟上個月比',
     row('Google 商家打電話', mon, n(curM.calls), '') + row('官網按電話／LINE', '近 7 天', want == null ? '—' : n(want), ''));
-  const adCard = ads.length ? card('📣', '廣告花費', '近 30 天', 'NT$' + n(st.ads.twd), '', '', `換到 ${n(st.ads.clicks)} 次點擊`,
+  const adCard = ads.length ? card('mega', '廣告花費', '近 30 天', 'NT$' + n(st.ads.twd), '', '', `換到 ${n(st.ads.clicks)} 次點擊`,
     ads.map((a) => row(esc(a.name.replace('（Google 地圖）', '')), `${a.on ? '播到 ' + esc(a.end) : '已停'}・花 NT$${n(a.twd)}`, `${n(a.clicks)} 次點擊`, `每次 NT$${a.cpc_twd == null ? '—' : a.cpc_twd}`)).join('')
     + (lf && lf.n ? row('LINE 好友', `${esc(String(lf.asOf || '').slice(5, 16).replace('-', '/'))} 的數字`, `${n(lf.n)} 人`, perFriend ? `每個約 NT$${perFriend}` : '') : ''),
     `更新 ${esc(String(st.ads.asOf).slice(11))}`) : '';
-  const webCard = card('🌐', '逛官網的人', '近 7 天', wb.asOf ? n(wb.users) : '—', '人', wb.asOf && wb.usersPrev ? delta(wb.users, wb.usersPrev) : '', wb.asOf && !wb.usersPrev ? '11/4 才開始記錄，下週起可以跟上週比' : '跟上週比',
+  const webCard = card('globe', '逛官網的人', '近 7 天', wb.asOf ? n(wb.users) : '—', '人', wb.asOf && wb.usersPrev ? delta(wb.users, wb.usersPrev) : '', wb.asOf && !wb.usersPrev ? '11/4 才開始記錄，下週起可以跟上週比' : '跟上週比',
     row('按電話或 LINE', '', want == null ? '—' : n(want) + ' 人', ''));
-  const thrCard = card('👀', 'Threads 一般一篇', '近 7 天', med == null ? '—' : n(med), '次觀看', '', `${views.length} 篇的中位數・粉絲 ${n(thr.followers)} 人`,
-    tops.map((p, k) => `<a class="sr link" href="${esc(p.url)}" target="_blank" rel="noopener"><div class="sl"><span class="rk">${k + 1}</span>${esc(p.t)}</div><div class="sv">${n(p.views)}</div></a>`).join(''),
+  const thrCard = card('eye', 'Threads 一般一篇', '近 7 天', med == null ? '—' : n(med), '次觀看', '', `${views.length} 篇的中位數・粉絲 ${n(thr.followers)} 人`,
+    tops.map((p, k) => `<a class="sr link" href="${esc(p.url)}" target="_blank" rel="noopener"><div class="sl"><span class="rk">${k + 1}</span><span>${esc(p.t)}</span></div><div class="sv">${n(p.views)}</div></a>`).join(''),
     topP && share >= 40 ? `第 1 篇占了全部觀看的 ${share}%` : '');
   // 2026-11-07 🔍 客人在查什麼（報價網站）：7 天／30 天切換
   let qr = '7'; try { qr = localStorage.getItem('chiu189_qr') || '7'; } catch (e) {}
@@ -694,9 +753,9 @@ function renderStats() {
     const bt = (Q.brands || []).reduce((a, b) => a + b[1], 0);
     const brands = bt ? (Q.brands || []).filter((b) => b[0] !== '其他' || b[1] / bt >= .05).map(([k, v]) => `${esc(k)} ${Math.round(v / bt * 100)}%`).join('・') : '';
     const sub = (t, x) => `<div class="qh">${t}${x ? `<small>${x}</small>` : ''}</div>`;
-    return `<div class="sc"><div class="sc-hd"><span>🔍 客人在查什麼</span><span class="seg2">${['7', '30'].map((k) => `<button type="button" data-qr="${k}" aria-pressed="${qr === k}">${k} 天</button>`).join('')}</span></div>
+    return `<div class="sc"><div class="sc-hd"><span class="sc-t"><span class="sc-ic">${ic('search')}</span>客人在查什麼</span><span class="seg2">${['7', '30'].map((k) => `<button type="button" data-qr="${k}" aria-pressed="${qr === k}">${k} 天</button>`).join('')}</span></div>
       <div class="sc-big"><b>${n(Q.view)}</b><i>次打開報價頁</i></div>
-      ${(Q.daily || []).length ? (() => { const dd = Q.daily, mx = Math.max(1, ...dd.map((x) => x[1])); return `<div class="qdays">${dd.map(([d, v], i) => `<div title="${esc(d)} ${v} 次"><i style="height:${Math.max(2, Math.round(v / mx * 100))}%"></i>${dd.length <= 7 || i === 0 || i === dd.length - 1 || i % 7 === 0 ? `<span>${esc(d)}</span>` : '<span></span>'}</div>`).join('')}</div>`; })() : ''}
+      ${(Q.daily || []).length ? (() => { const dd = Q.daily, mx = Math.max(1, ...dd.map((x) => x[1])); return `<div class="qdays">${dd.map(([d, v], i) => `<div title="${esc(d)} ${v} 次"><i style="height:calc((100% - 18px) * ${(v / mx).toFixed(3)})"></i>${dd.length <= 7 || i === 0 || i === dd.length - 1 || i % 7 === 0 ? `<span>${esc(d)}</span>` : '<span></span>'}</div>`).join('')}</div>`; })() : ''}
       <div class="sc-desc qdesc">${(Q.funnel || [])[0] !== Q.view ? '下面的步驟從 11/4 開始記錄，所以第一格比較少' : '下面是一步步走到預約的人數'}</div>
       ${steps}
       ${(Q.cats || []).length ? sub('想修什麼', '客人加進報價的項目') + bars(Q.cats, ' 次') : ''}
@@ -707,7 +766,7 @@ function renderStats() {
   })() : '';
   // 11/8 用戶「內容缺了些什麼」→ 最上面放實際來店（收銀數字，不顯示金額）＋ FB／IG 粉絲（shop_stats.py）
   const sh = st.shop, so = st.social;
-  const shopCard = sh && sh.cur ? card('🔧', '實際來店', '近 7 天', n(sh.cur.orders), '筆結帳', sh.pre ? delta(sh.cur.orders, sh.pre.orders) : '', `收銀系統的數字（${esc(sh.range || '')}）・跟前 7 天比`,
+  const shopCard = sh && sh.cur ? card('wrench', '實際來店', '近 7 天', n(sh.cur.orders), '筆結帳', sh.pre ? delta(sh.cur.orders, sh.pre.orders) : '', `收銀系統的數字（${esc(sh.range || '')}）・跟前 7 天比`,
     row('新客人', '第一次來結帳', `${n(sh.cur.newc)} 位`, sh.pre ? `前 7 天 ${n(sh.pre.newc)}` : '')
     + row('收件維修', '開工單的台數', `${n(sh.cur.tickets)} 台`, sh.pre ? `前 7 天 ${n(sh.pre.tickets)}` : '')
     + row('其中有修東西', '結帳裡含維修', `${n(sh.cur.repair)} 筆`, ''),
@@ -718,13 +777,13 @@ function renderStats() {
     const old = hs.filter((x) => x[0] <= wk).slice(-1)[0];
     const th7 = (thr.followerHist || []).length > 1 ? thr.followers - thr.followerHist[Math.max(0, thr.followerHist.length - 8)][1] : null;
     const g7 = (now, i) => old && old[i] != null && now != null ? (now - old[i] >= 0 ? '+' : '') + n(now - old[i]) + ' 這週' : '';
-    fanCard = card('📈', '粉絲', '現在', n((so.fb || 0) + (so.ig || 0) + (thr.followers || 0)), '人', '', old ? 'FB＋IG＋Threads 加起來・右邊是這 7 天多幾個' : 'FB＋IG＋Threads 加起來・FB／IG 11/8 才開始記，下週起看得到這週多幾個',
+    fanCard = card('users', '粉絲', '現在', n((so.fb || 0) + (so.ig || 0) + (thr.followers || 0)), '人', '', old ? 'FB＋IG＋Threads 加起來・右邊是這 7 天多幾個' : 'FB＋IG＋Threads 加起來・FB／IG 11/8 才開始記，下週起看得到這週多幾個',
       row('IG', '', `${n(so.ig)} 人`, g7(so.ig, 2)) + row('FB 粉專', '', `${n(so.fb)} 人`, g7(so.fb, 1))
       + row('Threads', '', `${n(thr.followers)} 人`, th7 == null ? '' : (th7 >= 0 ? '+' : '') + n(th7) + ' 這週'),
       `更新 ${esc(String(so.asOf || '').slice(5).replace('-', '/'))}`);
   }
   const simple = tipBox + shopCard + qCard + visitCard + adCard + webCard + fanCard + thrCard;
-  const more = `<details class="card fold" data-k="__more"${open.__more ? ' open' : ''}><summary><h2>看詳細數據</h2></summary><div class="note2" style="margin-bottom:8px">比較複雜，平常不用看；要問什麼直接到「交代」問就好。</div>${sum}${all}</details>`;
+  const more = `<details class="card fold" data-k="__more"${open.__more ? ' open' : ''}><summary><h2>看詳細數據</h2></summary><div class="note2">比較複雜，平常不用看；要問什麼直接到「問我」問就好。</div>${sum}${all}</details>`;
   $('#stats').innerHTML = simple + more;
   $('#stats').querySelectorAll('details.fold').forEach((d) => d.addEventListener('toggle', () => { try { const o = JSON.parse(localStorage.getItem('chiu189_open') || '{}'); o[d.dataset.k] = d.open; localStorage.setItem('chiu189_open', JSON.stringify(o)); } catch (e) {} }));
 }
@@ -742,12 +801,10 @@ async function decide(card, decision, note) {
     if (!j.ok && j.error === 'pin') { setPin(''); msg.textContent = '密碼不對，請再按一次重新輸入。'; card.querySelectorAll('button').forEach((b) => (b.disabled = false)); return; }
     if (!j.ok) throw new Error(j.error);
     if (decision === 'clear') delete data.decisions[r.id]; else data.decisions[r.id] = { decision, note: note || '' };
-    renderToday(); renderReview(); renderTodo(); renderMini();
+    renderToday(); renderReview(); renderTodo();
     const idx = card.dataset.i;
     if (decision === 'ok' || decision === 'fix') toast(decision === 'ok' ? ((r.id || '').startsWith('hot-') ? '✅ 已通過，5 分鐘內發 Threads' : '✅ 已通過，會自動排程') : (note === '熱議不發' ? '好，這篇不發' : '意見收到，Claude 改好會傳 LINE'), () => { const c = document.querySelector(`.card[data-i="${idx}"]`); if (c) decide(c, 'clear'); });
     else toast('已復原');
-    const m = null;
-    if (m) m.textContent = decision === 'ok' ? (note && note.startsWith('日期:') ? `已存好！會排在 ${+note.slice(8, 10)}/${+note.slice(11, 13)}，晚上 9:30 或早上 10:00 自動排程。` : '已存好！晚上 9:30 或早上 10:00 會自動排程，排好傳 LINE 給你。') : decision === 'fix' ? '意見收到，Claude 改好會再傳 LINE 給你。' : '已撤回。';
   } catch (e) { msg.textContent = '沒存到，請再按一次。'; card.querySelectorAll('button').forEach((b) => (b.disabled = false)); }
 }
 
@@ -758,7 +815,7 @@ $('#list').addEventListener('click', (e) => {
   if (ch) { const ta = ch.closest('.fixbox').querySelector('textarea'), on = ch.getAttribute('aria-pressed') !== 'true', c = ch.dataset.chip; ch.setAttribute('aria-pressed', String(on)); const parts = ta.value.split('、').map((x) => x.trim()).filter(Boolean).filter((x) => x !== c); if (on) parts.push(c); ta.value = parts.join('、'); return; }
   const b = e.target.closest('button[data-act]'); if (!b) return;
   const card = b.closest('.card'), act = b.dataset.act, box = card.querySelector('.fixbox');
-  if (act === 'toggle') { const f = card.querySelector('.full'); f.hidden = !f.hidden; b.textContent = f.hidden ? '看全文 ›' : '收起全文'; return; }
+  if (act === 'toggle') { const f = card.querySelector('.full'); f.hidden = !f.hidden; b.textContent = f.hidden ? b.dataset.l + ' ›' : '收起全文'; return; }
   if (act === 'fixopen') { const f = card.querySelector('.full'); f.hidden = false; card.querySelector('[data-act="toggle"]').textContent = '收起全文'; if (box) { box.hidden = false; const dd = card.querySelector('.datebox'); if (dd) dd.hidden = true; box.querySelector('textarea').focus(); } return; }
   const dbox = card.querySelector('.datebox');
   if (act === 'ok') decide(card, 'ok');
@@ -792,8 +849,8 @@ async function askApi(body) {
   return j;
 }
 function renderAsk(list) {
-  const st = { new: '等處理', done: '已處理', need_you: '要你處理' };
-  $('#askList').innerHTML = (list || []).map((q) => `<div class="req"><div class="q">${esc(q.text)}</div>${q.reply ? `<div class="a">${esc(q.reply)}</div>` : ''}<div class="s">${new Date(q.at).toLocaleString('zh-TW', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false })}・${st[q.status] || q.status}</div></div>`).join('') || '<div class="empty">還沒有交代過事情</div>';
+  const st = { new: ['等處理', ''], done: ['已處理', 'ok'], need_you: ['要你處理', 'bad'] };
+  $('#askList').innerHTML = (list || []).map((q) => { const [lab, cls] = st[q.status] || [q.status, '']; return `<div class="req"><div class="q">${esc(q.text)}</div>${q.reply ? `<div class="a">${esc(q.reply)}</div>` : ''}<div class="s"><span>${new Date(q.at).toLocaleString('zh-TW', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false })}</span><span class="pill ${cls}">${esc(lab)}</span></div></div>`; }).join('') || '<div class="empty">還沒有問過問題</div>';
 }
 async function loadAsk() {
   $('#askList').innerHTML = '<div class="empty">載入中…</div>';
