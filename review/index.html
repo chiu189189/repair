@@ -294,7 +294,7 @@ textarea { width: 100%; min-height: 90px; border-radius: 10px; border: 1px solid
   <section class="pane" id="pane-sched" hidden><div id="sched"></div></section>
   <section class="pane" id="pane-stats" hidden><div id="stats"></div></section>
   <section class="pane" id="pane-ask" hidden>
-    <div class="card"><h2>有事問我</h2><div class="meta">想改排程、問成效、指定下一篇題目…打一句話就好。每天 12:20、20:40 處理，結果會傳 LINE 也會顯示在下面。</div>
+    <div class="card"><h2>有事問我</h2><div class="meta">想改排程、問成效、指定下一篇題目…打一句話就好。通常 15 分鐘內回覆（比較複雜的會等到 12:20、20:40），結果會傳 LINE 也會顯示在下面。</div>
       <textarea id="askText" placeholder="例如：下一篇做 iOS 27.2 耗電／11/5 的影片改到 11/6／這週哪篇最多人看？"></textarea>
       <div class="btns"><button type="button" class="okb" id="askSend">送出</button></div><div class="msg" id="askMsg"></div></div>
     <div id="askList"></div>
@@ -803,7 +803,7 @@ async function loadAsk() {
 $('#askSend').addEventListener('click', async () => {
   const t = $('#askText').value.trim(); if (!t) { $('#askText').focus(); return; }
   $('#askSend').disabled = true; $('#askMsg').textContent = '送出中…';
-  try { const j = await askApi({ a: 'ask', text: t }); if (j) { $('#askText').value = ''; $('#askMsg').textContent = '收到！12:20 或 20:40 處理，結果會傳 LINE。'; renderAsk(j.requests); } else $('#askMsg').textContent = ''; }
+  try { const j = await askApi({ a: 'ask', text: t }); if (j) { $('#askText').value = ''; $('#askMsg').textContent = '收到！通常 15 分鐘內回覆，結果會傳 LINE。'; renderAsk(j.requests); } else $('#askMsg').textContent = ''; }
   catch (e) { $('#askMsg').textContent = e.message === 'pin' ? '密碼不對，請再按一次。' : '沒送出去，請再按一次。'; }
   $('#askSend').disabled = false;
 });
