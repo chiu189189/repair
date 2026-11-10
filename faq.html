@@ -289,12 +289,12 @@
   <a href="https://maps.app.goo.gl/GdYtfryHyToNYyn66" target="_blank" rel="noopener">📍 導航</a>
 </div>
 
-<script src="site.js?v=30"></script>
+<script src="site.js?v=31"></script>
 <script>
 // LINE 用 JS 跳轉（不在頁面放 line.me 連結，避免被廣告阻擋擋掉）
 document.querySelectorAll("[data-line]").forEach(a => a.onclick = e => {
   e.preventDefault();
-  location.href = "https://line.me/R/oaMessage/" + encodeURIComponent("@891llnje") + "/?" + encodeURIComponent("我想詢問維修\n型號：\n問題：");
+  location.href = (window.lineUrl||String)("https://line.me/R/oaMessage/" + encodeURIComponent("@891llnje") + "/?" + encodeURIComponent("我想詢問維修\n型號：\n問題："));
 });
 // 從目錄點進來時，順便把該分類第一題打開
 function openFirst(){ const s = location.hash && document.querySelector(location.hash + " details"); if (s) s.open = true; }

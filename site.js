@@ -6,8 +6,15 @@ const SITE = {
   EMAIL: "service@chiu189.com.tw", // 公司 email：網域開通後填，例如 "service@chiu189.com.tw"；空白就不顯示
   ADDRESS: "臺中市龍井區東海里遠東街189號",
   PHONE: "0905-584-846",
-  V: 29,                        // 改版時加一，避免手機看到舊頁面
+  V: 30,                        // 改版時加一，避免手機看到舊頁面
   GA_ID: "G-KX7S54506Z",                  // Google Analytics 4 評估 ID（G-XXXXXXX）；空白就不載入
+};
+// 2026-11-10：電腦沒有 LINE App，「帶好訊息」的連結（oaMessage）會被 LINE 轉到官網首頁，客人卡住。
+// 電腦改開「加好友」頁（會顯示 QR Code，用手機掃）；手機、平板照舊直接開 LINE。
+window.lineUrl = function(u){
+  var ua = navigator.userAgent;
+  var phone = /Android|iPhone|iPad|iPod/i.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1);
+  return phone ? u : "https://line.me/R/ti/p/%40891llnje";
 };
 // 2026-11-08 全站排版：標題不留單一個字在第二行、段落最後一行不要只剩一兩個字；麵包屑「首頁」好按一點
 (function(){

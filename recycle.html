@@ -56,6 +56,9 @@
     background-repeat:no-repeat;background-position:right 14px center}
   select:disabled{opacity:.6;cursor:default}
   @media (min-width:760px){ .pick{display:grid;grid-template-columns:2fr 1fr;gap:12px} }
+  /* 品牌按鈕是讀完價目才畫出來的，先留好位置，頁面才不會突然往下跳 */
+  #brands{min-height:190px}
+  @media (min-width:600px){ #brands{min-height:140px} }
   .q{margin-top:16px}
   .q .t{font-size:14px;font-weight:600;margin-bottom:6px}
   .opts{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
@@ -100,12 +103,12 @@
 
   <section class="card">
     <h2>1. 選擇機型</h2>
-    <div id="brands"></div>
+    <div id="brands"><div class="hint">讀取價目中…</div></div>
     <div class="pick">
       <div><label class="f" for="model">型號</label><select id="model"></select></div>
       <div><label class="f" for="cap">容量／規格</label><select id="cap"></select></div>
     </div>
-    <div class="hint" id="loadState">讀取價目中…</div>
+    <div class="hint" id="loadState"></div>
   </section>
 
   <section class="card" id="condCard">
@@ -226,7 +229,7 @@ async function load(){
       (((DB[b]??={})[m]??={series:s,caps:{}}).caps)[c||"不分容量"] = price;
     });
     $("#loadState").textContent = "";  // 價格改由試算表管理，不顯示更新日期
-  }catch(e){ $("#loadState").textContent = "價目讀取失敗，請重新整理頁面"; return; }
+  }catch(e){ $("#brands").innerHTML = ""; $("#loadState").textContent = "價目讀取失敗，請重新整理頁面"; return; }
   renderBrands(); pickBrand(Object.keys(DB)[0]);
 }
 
@@ -375,7 +378,7 @@ function show(price, lines, sub, noPriceLabel = "需專人估價"){
 function sendLine(){
   const text = $("#summary").textContent + "\n\n想詢問回收，請問什麼時候方便到店？";
   // 用按鈕跳轉、不放 line.me 連結在頁面上，避免被手機的廣告阻擋隱藏
-  location.href = `https://line.me/R/oaMessage/${encodeURIComponent(CONFIG.LINE_OA_ID)}/?${encodeURIComponent(text)}`;
+  location.href = (window.lineUrl||String)(`https://line.me/R/oaMessage/${encodeURIComponent(CONFIG.LINE_OA_ID)}/?${encodeURIComponent(text)}`);
 }
 
 $("#model").onchange = pickModel;
@@ -395,8 +398,10 @@ fv[0].textContent=CONFIG.ADDRESS; fv[1].textContent=CONFIG.PHONE; fv[2].textCont
 $("#fLine").onclick=e=>{ e.preventDefault(); location.href="https://line.me/R/ti/p/"+encodeURIComponent(CONFIG.LINE_OA_ID); };
 $("#fMap").href=CONFIG.MAP_URL;
 $("#fTel").href="tel:"+CONFIG.PHONE.replace(/[^\d+]/g,"");
+// 機況題目不用等價目，先畫好（預設 iPhone 那組），價目讀進來時頁面才不會往下跳
+brand = "iPhone"; renderConds(); brand = null;
 load();
 </script>
-<script src="site.js?v=30"></script>
+<script src="site.js?v=31"></script>
 </body>
 </html>

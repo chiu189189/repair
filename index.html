@@ -192,10 +192,10 @@
 
 <!-- 頁尾簡短版判斷要看到店家資訊（table.biz），這頁用 .visit，所以加一個隱藏的 table.biz 讓頁尾不重複地址 -->
 <table class="biz" hidden></table>
-<script src="site.js?v=30"></script>
+<script src="site.js?v=31"></script>
 <script>
 const OA = "@891llnje";
-document.getElementById("lineBtn").onclick = e => { e.preventDefault(); location.href = "https://line.me/R/oaMessage/" + encodeURIComponent(OA) + "/?" + encodeURIComponent("我想預約維修\n型號：\n問題：\n想來的時間："); };
+document.getElementById("lineBtn").onclick = e => { e.preventDefault(); location.href = (window.lineUrl||String)("https://line.me/R/oaMessage/" + encodeURIComponent(OA) + "/?" + encodeURIComponent("我想預約維修\n型號：\n問題：\n想來的時間：")); };
 document.getElementById("lineAdd").onclick = e => { e.preventDefault(); location.href = "https://line.me/R/ti/p/" + encodeURIComponent(OA); };
 // 現在有沒有開（台灣時間；週一公休、12:00–22:00）
 (() => {

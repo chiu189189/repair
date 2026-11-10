@@ -444,9 +444,9 @@ function sendLine(){
 }
 function goLine(text){
   // 用按鈕跳轉、不放 line.me 連結在頁面上，避免被手機的廣告阻擋隱藏
-  location.href = CONFIG.LINE_OA_ID
+  location.href = (window.lineUrl||String)(CONFIG.LINE_OA_ID
     ? `https://line.me/R/oaMessage/${encodeURIComponent(CONFIG.LINE_OA_ID)}/?${encodeURIComponent(text)}`
-    : `https://line.me/R/share?text=${encodeURIComponent(text)}`;
+    : `https://line.me/R/share?text=${encodeURIComponent(text)}`);
 }
 
 $("#q").oninput=renderModels;
@@ -471,6 +471,6 @@ syncPicked();
 load();
 hit("view");
 </script>
-<script src="site.js?v=30"></script>
+<script src="site.js?v=31"></script>
 </body>
 </html>

@@ -27,7 +27,9 @@
   <button id="go">打開 LINE 預約</button>
 </div>
 <script>
-  const url = "https://line.me/R/oaMessage/@891llnje/?" + encodeURIComponent("我想預約維修\n型號：\n問題：\n想來的時間：");
+  // 電腦沒有 LINE App，帶訊息的連結會跳到 LINE 官網首頁（死路）；電腦改開加好友 QR 頁，用手機掃
+  const ua = navigator.userAgent, phone = /Android|iPhone|iPad|iPod/i.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1);
+  const url = phone ? "https://line.me/R/oaMessage/@891llnje/?" + encodeURIComponent("我想預約維修\n型號：\n問題：\n想來的時間：") : "https://line.me/R/ti/p/@891llnje";
   document.getElementById("go").onclick = () => { location.href = url; };
   setTimeout(() => { location.href = url; }, 300);
 </script>
