@@ -17,11 +17,11 @@
 <style>
   :root{
     --bg:#f6f5f2; --card:#ffffff; --ink:#1c1c1e; --muted:#6b6b70; --line:#e4e2dc;
-    --accent:#A6843F; --accent-ink:#1E1B14; --accent-soft:#F5EEDF; --ok:#06c755;
+    --accent:#A6843F; --accent-text:#836426; --accent-ink:#1E1B14; --accent-soft:#F5EEDF; --ok:#06c755;
   }
   @media (prefers-color-scheme: dark){
     :root{ --bg:#121214; --card:#1c1c1f; --ink:#f2f2f4; --muted:#9a9aa2; --line:#2e2e33;
-      --accent:#C8A96A; --accent-ink:#1E1B14; --accent-soft:#2A2418; }
+      --accent:#C8A96A; --accent-text:#C8A96A; --accent-ink:#1E1B14; --accent-soft:#2A2418; }
   }
   *{box-sizing:border-box}
   body{margin:0;background:var(--bg);color:var(--ink);
@@ -32,10 +32,10 @@
   .nav a{flex:1;text-align:center;padding:10px 4px;border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--ink);text-decoration:none;font-size:14px}
   .nav a.on{background:var(--ink);color:var(--bg);border-color:var(--ink);font-weight:700}
   @media (max-width:420px){.nav a{font-size:13px;padding:10px 2px}}
-  header .eyebrow{color:var(--accent);font-size:13px;font-weight:700;letter-spacing:.05em}
+  header .eyebrow{color:var(--accent-text);font-size:13px;font-weight:700;letter-spacing:.05em}
   header h1{margin:4px 0 6px;font-size:26px}
   header p{margin:0;color:var(--muted);font-size:14px}
-  .sample{margin:14px 0 0;padding:10px 12px;border-radius:10px;background:var(--accent-soft);color:var(--accent);font-size:13px;font-weight:600}
+  .sample{margin:14px 0 0;padding:10px 12px;border-radius:10px;background:var(--accent-soft);color:var(--accent-text);font-size:13px;font-weight:600}
   .status{display:flex;justify-content:space-between;align-items:center;margin:18px 0 12px;font-size:13px;color:var(--muted)}
   .tabs{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none;min-height:44px}
   .status{min-height:16px}
@@ -50,7 +50,7 @@
   .models li:last-child button{border-bottom:0}
   .models:empty{min-height:60vh}
   .models li button:hover{background:var(--accent-soft)}
-  .models li button.on{background:var(--accent-soft);color:var(--accent);font-weight:700}
+  .models li button.on{background:var(--accent-soft);color:var(--accent-text);font-weight:700}
   .models small{color:var(--muted);font-weight:400}
   .panel{background:var(--card);border:1px solid var(--line);border-radius:14px;min-height:260px;padding:20px}
   .panel.empty{display:flex;align-items:center;justify-content:center;border-style:dashed;color:var(--muted);text-align:center}
@@ -65,13 +65,13 @@
   .tag{font-size:11px;padding:2px 8px;border-radius:999px;background:var(--bg);color:var(--muted);border:1px solid var(--line)}
   .tag.ok{color:#0a7d3e;border-color:#0a7d3e33;background:#0a7d3e12}
   .tag.no{color:#b3261e;border-color:#b3261e33;background:#b3261e10}
-  .tag.star{color:var(--accent);border-color:var(--accent);background:var(--accent-soft)}
-  .item .add{border:1px solid var(--accent);color:var(--accent);background:transparent;border-radius:8px;padding:5px 10px;font-size:13px;cursor:pointer;white-space:nowrap}
+  .tag.star{color:var(--accent-text);border-color:var(--accent);background:var(--accent-soft)}
+  .item .add{border:1px solid var(--accent);color:var(--accent-text);background:transparent;border-radius:8px;padding:5px 10px;font-size:13px;cursor:pointer;white-space:nowrap}
   .item .add.on{background:var(--accent);color:var(--accent-ink)}
   .terms{margin-top:22px;padding:16px;border-radius:14px;background:var(--card);border:1px solid var(--line);font-size:13px;color:var(--muted)}
   .terms ul{margin:6px 0 0;padding-left:18px}
   .about{margin-top:22px;padding:20px;border-radius:14px;background:var(--card);border:1px solid var(--line)}
-  .about .eyebrow{color:var(--accent);font-weight:700;font-size:13px;letter-spacing:.05em}
+  .about .eyebrow{color:var(--accent-text);font-weight:700;font-size:13px;letter-spacing:.05em}
   .about h2{margin:4px 0 8px;font-size:20px}
   .about > p{margin:0 0 14px;color:var(--muted);font-size:14px;line-height:1.7}
   .about ul{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:1fr 1fr;gap:10px}
@@ -108,7 +108,7 @@
   .bar button.ghost{background:none;color:var(--bg);border:1px solid color-mix(in srgb,var(--bg) 45%,transparent);font-weight:600;padding:9px 10px}
   #models .ask-line{width:100%;border:0;background:var(--ok);color:#fff;font-weight:700;border-radius:12px;padding:13px 14px;font-size:15px;cursor:pointer;justify-content:center}
   footer{margin-top:24px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:6px 16px;font-size:14px}
-  footer .f-name{font-weight:700;font-size:15px;padding:12px 0 10px;border-bottom:1px solid var(--line);color:var(--accent)}
+  footer .f-name{font-weight:700;font-size:15px;padding:12px 0 10px;border-bottom:1px solid var(--line);color:var(--accent-text)}
   footer .f-row{display:flex;gap:12px;align-items:flex-start;padding:11px 0;border-bottom:1px solid var(--line);color:var(--ink);text-decoration:none}
   footer .f-row:last-child{border-bottom:0}
   footer .f-k{flex:none;width:64px;color:var(--muted);font-size:13px;padding-top:1px}
@@ -146,7 +146,7 @@
   .book .more{margin-top:14px;border-top:1px solid var(--line);padding-top:4px}
   .book .more summary{cursor:pointer;padding:10px 0;font-size:14px;color:var(--muted);list-style:none}
   .book .more summary::-webkit-details-marker{display:none}
-  .book .more summary::after{content:" ＋";color:var(--accent)}
+  .book .more summary::after{content:" ＋";color:var(--accent-text)}
   .book .more[open] summary::after{content:" －"}
   .book .actions.first{margin-top:12px}
 </style>
@@ -471,6 +471,6 @@ syncPicked();
 load();
 hit("view");
 </script>
-<script src="site.js?v=31"></script>
+<script src="site.js?v=32"></script>
 </body>
 </html>

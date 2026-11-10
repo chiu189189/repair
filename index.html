@@ -14,13 +14,13 @@
 <meta property="og:type" content="website">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="theme-color" content="#17171A">
-<link rel="stylesheet" href="info.css?v=26">
+<link rel="stylesheet" href="info.css?v=27">
 <style>
   body{padding-bottom:calc(84px + env(safe-area-inset-bottom))}
   /* 開頭：一句話說清楚＋現在有沒有開 */
   .hero{display:grid;grid-template-columns:1.1fr 1fr;gap:0;border-radius:18px;overflow:hidden;border:1px solid var(--line);background:var(--card)}
   .hero .txt{padding:22px 20px;display:flex;flex-direction:column;justify-content:center}
-  .hero .eyebrow{display:block;margin-bottom:6px;line-height:1.4;color:var(--accent);font-size:13px;font-weight:700;letter-spacing:.05em}
+  .hero .eyebrow{display:block;margin-bottom:6px;line-height:1.4;color:var(--accent-text);font-size:13px;font-weight:700;letter-spacing:.05em}
   .hero h1{margin:6px 0 8px;font-size:30px;line-height:1.25}
   .hero p{margin:0 0 12px;color:var(--muted);font-size:15px}
   .hero img{display:block;width:100%;height:100%;object-fit:cover;min-height:220px}
@@ -37,14 +37,14 @@
   .tile .ic{font-size:26px;line-height:1}
   .tile b{font-size:16px}
   .tile span{font-size:13px;color:var(--muted);line-height:1.5}
-  .tile em{margin-top:auto;font-style:normal;font-size:13px;font-weight:700;color:var(--accent)}
+  .tile em{margin-top:auto;font-style:normal;font-size:13px;font-weight:700;color:var(--accent-text)}
   @media (max-width:640px){.grid{grid-template-columns:1fr 1fr}}
   .more{display:block;margin-top:10px;text-align:center;padding:13px;border-radius:14px;background:var(--accent);color:var(--accent-ink);font-weight:700;text-decoration:none}
   /* 流程：4 步一排 */
   .flow{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;list-style:none;padding:0;margin:0;counter-reset:f}
   .flow li{counter-increment:f;padding:12px 10px;border-radius:14px;background:var(--card);border:1px solid var(--line);font-size:13px;line-height:1.5;color:var(--muted)}
   .flow li::before{content:counter(f);display:flex;width:26px;height:26px;border-radius:50%;align-items:center;justify-content:center;
-    background:var(--accent-soft);color:var(--accent);font-weight:700;margin-bottom:6px}
+    background:var(--accent-soft);color:var(--accent-text);font-weight:700;margin-bottom:6px}
   .flow li b{display:block;color:var(--ink);font-size:14px}
   @media (max-width:640px){.flow{grid-template-columns:1fr 1fr}}
   .trust{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
@@ -58,7 +58,7 @@
   .pro p{margin:0 0 10px;font-size:15px}
   .pro ul{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;list-style:none;padding:0;margin:0}
   .pro li{font-size:13.5px;font-weight:700;padding:9px 10px;border-radius:10px;background:var(--bg);border:1px solid var(--line)}
-  .pro em{display:block;margin-top:10px;font-style:normal;font-weight:700;color:var(--accent);font-size:14px}
+  .pro em{display:block;margin-top:10px;font-style:normal;font-weight:700;color:var(--accent-text);font-size:14px}
   @media (max-width:640px){.pro ul{grid-template-columns:1fr 1fr}}
   /* 店家資訊 */
   .visit{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:16px;border-radius:16px;background:var(--card);border:1px solid var(--line)}
@@ -157,7 +157,7 @@
     <li><b>報價，您同意才修</b>零件怎麼選說清楚</li>
     <li><b>現場維修、測試交機</b>多數維修可在旁邊看</li>
   </ol>
-  <p class="muted" style="margin:8px 2px 0">檢測要不要錢、資料會不會不見？<a href="faq.html?v=25" style="color:var(--accent);font-weight:700">看常見問題 →</a></p>
+  <p class="muted" style="margin:8px 2px 0">檢測要不要錢、資料會不會不見？<a href="faq.html?v=25" style="color:var(--accent-text);font-weight:700">看常見問題 →</a></p>
 
   <h2 class="sec">為什麼選 CHIU189</h2>
   <div class="trust">
@@ -192,7 +192,7 @@
 
 <!-- 頁尾簡短版判斷要看到店家資訊（table.biz），這頁用 .visit，所以加一個隱藏的 table.biz 讓頁尾不重複地址 -->
 <table class="biz" hidden></table>
-<script src="site.js?v=31"></script>
+<script src="site.js?v=32"></script>
 <script>
 const OA = "@891llnje";
 document.getElementById("lineBtn").onclick = e => { e.preventDefault(); location.href = (window.lineUrl||String)("https://line.me/R/oaMessage/" + encodeURIComponent(OA) + "/?" + encodeURIComponent("我想預約維修\n型號：\n問題：\n想來的時間：")); };

@@ -6,7 +6,7 @@ const SITE = {
   EMAIL: "service@chiu189.com.tw", // 公司 email：網域開通後填，例如 "service@chiu189.com.tw"；空白就不顯示
   ADDRESS: "臺中市龍井區東海里遠東街189號",
   PHONE: "0905-584-846",
-  V: 30,                        // 改版時加一，避免手機看到舊頁面
+  V: 31,                        // 改版時加一，避免手機看到舊頁面
   GA_ID: "G-KX7S54506Z",                  // Google Analytics 4 評估 ID（G-XXXXXXX）；空白就不載入
 };
 // 2026-11-10：電腦沒有 LINE App，「帶好訊息」的連結（oaMessage）會被 LINE 轉到官網首頁，客人卡住。
@@ -31,7 +31,7 @@ window.lineUrl = function(u){
   const css = `
   .sitefoot{margin-top:16px;padding:18px 16px 16px;border-radius:14px;background:var(--card);border:1px solid var(--line);
     font-size:13px;color:var(--muted);line-height:1.6}
-  .sitefoot .sf-name{font-weight:700;font-size:15px;color:var(--accent)}
+  .sitefoot .sf-name{font-weight:700;font-size:15px;color:var(--accent-text,var(--accent))}
   .sitefoot .sf-line{margin:3px 0 0}
   .sitefoot .sf-line a{color:var(--ink);text-decoration:none}
   .sitefoot .sf-cols{margin:14px 0 0;padding:12px 0 10px;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
