@@ -382,6 +382,7 @@ const ICON = {
   ext: '<path d="M7 17 17 7M8 7h9v9"/>',
   cal: '<rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>',
   undo: '<path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/>',
+  bag: '<path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/>',
   wrench: '<path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94z"/>',
   search: '<circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/>',
   pin: '<path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z"/><circle cx="12" cy="10" r="3"/>',
@@ -782,7 +783,21 @@ function renderStats() {
       + row('Threads', '', `${n(thr.followers)} 人`, th7 == null ? '' : (th7 >= 0 ? '+' : '') + n(th7) + ' 這週'),
       `更新 ${esc(String(so.asOf || '').slice(5).replace('-', '/'))}`);
   }
-  const simple = tipBox + shopCard + qCard + visitCard + adCard + webCard + fanCard + thrCard;
+  // 11/12 精品批發專區每天幾台裝置進來（quote_visits.py）；跟維修是兩個事業，放最下面
+  let luxCard = '';
+  const lx = st.luxury;
+  if (lx && lx.days) {
+    const dk = (i) => dayKey(new Date(Date.now() - i * 864e5)), dv = (i) => lx.days[dk(i)] || 0;
+    const first = String(lx.first || ''), d7 = [6, 5, 4, 3, 2, 1, 0].filter((i) => !first || dk(i) >= first);
+    const mx = Math.max(1, ...d7.map(dv)), avg = d7.length ? d7.reduce((a, i) => a + dv(i), 0) / d7.length : 0;
+    const est = String(lx.estUntil || ''), hasEst = est && d7.some((i) => dk(i) <= est);
+    luxCard = card('bag', '精品報價頁', '今天', n(dv(0)), '台裝置進來看', first && dk(1) < first ? '' : delta(dv(0), dv(1)), '批發專區輸入通行碼進去的裝置數・跟昨天比',
+      `<div class="qdays">${d7.map((i) => `<div title="${esc(dk(i))} ${dv(i)} 台"><i style="height:calc((100% - 18px) * ${(dv(i) / mx).toFixed(3)})"></i><span>${esc(dk(i).slice(5).replace('-', '/'))}</span></div>`).join('')}</div>`
+      + row('平均一天', `近 ${d7.length} 天`, `${(Math.round(avg * 10) / 10)} 台`, '')
+      + (lx.devices7 != null ? row('不同的裝置', '近 7 天總共', `${n(lx.devices7)} 台`, '') : ''),
+      `精品批發的數字，跟維修無關・算裝置不算人，你自己看也算${hasEst ? `・${esc(est.slice(5).replace('-', '/'))} 以前是估的` : ''}・更新 ${esc(String(lx.asOf || '').slice(5).replace('-', '/'))}`);
+  }
+  const simple = tipBox + shopCard + qCard + visitCard + adCard + webCard + fanCard + thrCard + luxCard;
   const more = `<details class="card fold" data-k="__more"${open.__more ? ' open' : ''}><summary><h2>看詳細數據</h2></summary><div class="note2">比較複雜，平常不用看；要問什麼直接到「問我」問就好。</div>${sum}${all}</details>`;
   $('#stats').innerHTML = simple + more;
   $('#stats').querySelectorAll('details.fold').forEach((d) => d.addEventListener('toggle', () => { try { const o = JSON.parse(localStorage.getItem('chiu189_open') || '{}'); o[d.dataset.k] = d.open; localStorage.setItem('chiu189_open', JSON.stringify(o)); } catch (e) {} }));
