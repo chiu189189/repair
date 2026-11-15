@@ -6,7 +6,7 @@ const SITE = {
   EMAIL: "service@chiu189.com.tw", // 公司 email：網域開通後填，例如 "service@chiu189.com.tw"；空白就不顯示
   ADDRESS: "臺中市龍井區東海里遠東街189號",
   PHONE: "0905-584-846",
-  V: 31,                        // 改版時加一，避免手機看到舊頁面
+  V: 33,                        // 改版時加一，避免手機看到舊頁面
   GA_ID: "G-KX7S54506Z",                  // Google Analytics 4 評估 ID（G-XXXXXXX）；空白就不載入
 };
 // 2026-11-10：電腦沒有 LINE App，「帶好訊息」的連結（oaMessage）會被 LINE 轉到官網首頁，客人卡住。
@@ -44,6 +44,30 @@ window.lineUrl = function(u){
   const st = document.createElement("style"); st.textContent = css; document.head.appendChild(st);
 
   const v = "?v=" + SITE.V;
+  // 2026-11-16 英文版（/en/）：頁尾換英文；服務條款、隱私權政策只有中文，連回上一層
+  if(/^en/i.test(document.documentElement.lang)){
+    const tel = "+886905584846";
+    const col = (title, items) => '<nav><b>' + title + '</b>' +
+      items.map(([href, name]) => '<a href="' + href + v + '">' + name + '</a>').join('') + '</nav>';
+    const links = '<div class="sf-cols">' +
+      col('Repairs', [["screen.html","Screen"],["battery.html","Battery"],["charging.html","Charging port"],
+                      ["camera.html","Camera"],["water.html","Water damage"],["board.html","Logic board"]]) +
+      col('Shop info', [["about.html","About us"],["faq.html","FAQ"],["../terms.html","Terms (中文)"],["../privacy.html","Privacy (中文)"]]) +
+    '</div>';
+    const tail =
+      '<p class="sf-tm">Apple, iPhone and iPad are trademarks of Apple Inc., registered in the U.S. and other countries. Other brand names belong to their respective owners. ' +
+      'We are an independent repair shop and not an Apple Authorized Service Provider; brand and model names are used only to describe compatible devices.</p>' +
+      '<p class="sf-copy">© ' + new Date().getFullYear() + ' ' + SITE.BIZ_NAME + '</p>';
+    if(document.getElementById("foot") || document.querySelector("table.biz")){
+      el.classList.add("compact");
+      el.innerHTML = links + tail; return;
+    }
+    el.innerHTML = '<div class="sf-name">CHIU189 Phone Repair Center</div>' +
+      '<p class="sf-line">No. 189, Yuandong St., Longjing Dist., Taichung 434</p>' +
+      '<p class="sf-line">Phone <a href="tel:' + tel + '">' + SITE.PHONE + '</a>' +
+        (SITE.EMAIL ? '｜<a href="mailto:' + SITE.EMAIL + '">' + SITE.EMAIL + '</a>' : '') + '</p>' + links + tail;
+    return;
+  }
   const tel = SITE.PHONE.replace(/[^\d+]/g, "");
   const biz = SITE.BIZ_NAME + (SITE.TAX_ID ? "・統一編號 " + SITE.TAX_ID : "");
   // 頁尾連結：「維修項目」「本店資訊」各一區，每排三個
@@ -103,6 +127,6 @@ window.lineUrl = function(u){
 document.addEventListener("click", function(e){
   const b = e.target.closest && e.target.closest(".mapph"); if(!b) return;
   const f = document.createElement("iframe");
-  f.className = "map"; f.title = "CHIU189 手機維修中心地圖"; f.referrerPolicy = "no-referrer-when-downgrade";
+  f.className = "map"; f.title = /^en/i.test(document.documentElement.lang) ? "Map of CHIU189 Phone Repair Center" : "CHIU189 手機維修中心地圖"; f.referrerPolicy = "no-referrer-when-downgrade";
   f.src = b.dataset.src; b.replaceWith(f);
 });
