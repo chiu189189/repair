@@ -33,7 +33,33 @@
 </style>
 </head>
 <body>
-<iframe src="https://script.google.com/macros/s/AKfycbx3DCMskoPLo9LdGVBYDY06KbOuc6BI2HGzG2RJVHU2MbfqZloc0F4JMenCG4gSI8yeDQ/exec"
+<script>
+  // 2026-11-17 iPhone 每次都要重輸密碼、打開很慢：裡面那層（Google 網域）存的東西 Safari 關掉就清，
+  // 所以通行證、價目快取等同步存一份在這裡（自己的網站，Safari 不會清）。只回給「我們自己框框裡的收銀頁」。
+  (() => {
+    if (window.top !== window) return;   // 這頁被別的網站包住 → 不給
+    const PFX = "posmirror:";
+    const fromUs = src => {   // 訊息要來自我們這個 iframe 裡面（收銀頁在 Google 的兩層框框裡）
+      const f = document.getElementById("posFrame");
+      let w = src;
+      for (let i = 0; w && i < 5; i++) { if (f && w === f.contentWindow) return true; if (w === w.parent) break; w = w.parent; }
+      return false;
+    };
+    addEventListener("message", e => {
+      const d = e.data;
+      if (!d || d.chiu189pos !== 1 || !/^https:\/\/[a-z0-9-]+-script\.googleusercontent\.com$/.test(e.origin) || !fromUs(e.source)) return;
+      try {
+        if (d.op === "get") {
+          const items = {};
+          for (let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i); if (k.indexOf(PFX) === 0) items[k.slice(PFX.length)] = localStorage.getItem(k); }
+          e.source.postMessage({ chiu189pos: 1, op: "data", items: items }, e.origin);
+        } else if (d.op === "set") localStorage.setItem(PFX + d.k, String(d.v));
+        else if (d.op === "del") localStorage.removeItem(PFX + d.k);
+      } catch (x) {}
+    });
+  })();
+</script>
+<iframe id="posFrame" src="https://script.google.com/macros/s/AKfycbx3DCMskoPLo9LdGVBYDY06KbOuc6BI2HGzG2RJVHU2MbfqZloc0F4JMenCG4gSI8yeDQ/exec"
   allow="clipboard-read; clipboard-write" title="CHIU189 收銀"></iframe>
 <div id="splash"><img src="pos-icon.png" alt=""><i></i><span>載入中…</span></div>
 <script>
