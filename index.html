@@ -82,6 +82,15 @@
     background:var(--card);color:var(--ink);border:1px solid var(--line)}
   .bar a.line{background:#06C755;border-color:#06C755;color:#fff;flex:1.4}
   @media (min-width:900px){.bar{max-width:820px;margin:0 auto;border-radius:18px 18px 0 0;border:1px solid var(--line)}}
+  /* 2026-11-18 小動畫：營業中綠點呼吸、問題卡片滑到才浮上來、LINE 預約偶爾晃一下（手機設「減少動態效果」就全部不動） */
+  @media (prefers-reduced-motion:no-preference){
+    @keyframes breathe{0%,100%{box-shadow:0 0 0 0 rgba(6,199,85,.5)}60%{box-shadow:0 0 0 7px rgba(6,199,85,0)}}
+    .open.on i{animation:breathe 2s ease-out infinite}
+    .tile.rv{opacity:0;transform:translateY(16px);transition:opacity .55s ease,transform .55s ease}
+    .tile.rv.in{opacity:1;transform:none}
+    @keyframes nudge{0%,86%,100%{transform:none}89%{transform:translateY(-3px) rotate(-2deg)}92%{transform:translateY(-3px) rotate(2deg)}95%{transform:translateY(-1px) rotate(-1deg)}}
+    .bar a.line{animation:nudge 7s ease-in-out 4s infinite}
+  }
 </style>
 <script type="application/ld+json">
 {
@@ -214,6 +223,11 @@ document.getElementById("lineAdd").onclick = e => { e.preventDefault(); location
   }
   document.getElementById("openLine").onclick = e => { e.preventDefault(); document.getElementById("lineBtn").click(); };
 })();
+// 問題卡片：滑到畫面裡才淡入（沒 JS 或設減少動態就直接顯示）
+try { if (matchMedia("(prefers-reduced-motion:no-preference)").matches && "IntersectionObserver" in window) {
+  const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { e.target.classList.add("in"); io.unobserve(e.target); } }), { rootMargin: "0px 0px -8% 0px" });
+  document.querySelectorAll(".grid .tile").forEach((t, i) => { if (t.getBoundingClientRect().top < innerHeight) return; t.style.transitionDelay = (i % 2) * 90 + "ms"; t.classList.add("rv"); io.observe(t); });
+} } catch (e) {}
 // 匿名計數（同一次瀏覽只算一次，不記個資）
 try { if (!sessionStorage.getItem("chiu189_hit_view")) { sessionStorage.setItem("chiu189_hit_view", 1);
   navigator.sendBeacon("https://script.google.com/macros/s/AKfycbwcStF05qkS0cKT8l6PoTTzj21ijwnnyyJkoSDqPYZjDxFVG6EadZCwCp2GrKpV7wNSow/exec", new Blob([JSON.stringify({a:"hit",t:"view"})], {type:"text/plain"})); } } catch (e) {}
