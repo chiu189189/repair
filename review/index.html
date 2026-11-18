@@ -81,7 +81,7 @@ b, strong { font-weight: 700; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
 /* 底部分頁（單手拇指按得到） */
-.tabs { position: fixed; left: 0; right: 0; bottom: 0; z-index: 6; display: grid; grid-template-columns: repeat(4, minmax(0, 150px)); justify-content: center; padding: 6px max(8px, env(safe-area-inset-left)) calc(6px + env(safe-area-inset-bottom)) max(8px, env(safe-area-inset-right)); background: var(--card); border-top: 1px solid var(--line); }
+.tabs { position: fixed; left: 0; right: 0; bottom: 0; z-index: 6; display: grid; grid-template-columns: repeat(3, minmax(0, 150px)); justify-content: center; padding: 6px max(8px, env(safe-area-inset-left)) calc(6px + env(safe-area-inset-bottom)) max(8px, env(safe-area-inset-right)); background: var(--card); border-top: 1px solid var(--line); }
 .tabs button { position: relative; border: 0; background: none; color: var(--sub); font-size: 11.5px; font-weight: 600; letter-spacing: .04em; min-height: 52px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; cursor: pointer; }
 .tabs .ti-ic { display: grid; place-items: center; width: 56px; height: 30px; border-radius: 999px; font-size: 21px; transition: background-color .2s; }
 .tabs button[aria-selected="true"] { color: var(--ink); font-weight: 800; }
@@ -327,6 +327,45 @@ details.fold details.fold .bar { background: var(--card); }
 .req .s { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 12.5px; color: var(--sub); margin-top: 10px; font-variant-numeric: tabular-nums; }
 
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; } }
+
+/* 2026-11-18 清單 B */
+.askb { display: inline-flex; align-items: center; gap: 5px; font: inherit; font-size: 13px; font-weight: 600; color: var(--ink); background: var(--card); border: 1px solid var(--line); border-radius: 999px; padding: 6px 11px; cursor: pointer; }
+.askb .i { width: 15px; height: 15px; }
+.askb[aria-pressed="true"] { background: var(--t-gold); border-color: var(--accent); color: var(--gold); }
+.lst { display: flex; flex-direction: column; gap: 8px; }
+.card.li, .card.pc { padding: 0; margin: 0; }
+.card.li.hot { border-color: color-mix(in srgb, var(--hot) 45%, var(--line)); }
+.li-row { display: flex; gap: 10px; align-items: center; padding: 9px 10px; cursor: pointer; }
+.li-th, .pc-th { flex: none; border-radius: var(--r-sm); overflow: hidden; background: var(--soft); display: grid; place-items: center; color: var(--sub); }
+.li-th { width: 48px; height: 48px; }
+.li-th img, .pc-th img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.li-bd { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.li-kd { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--sub); flex-wrap: wrap; }
+.li-kd .due { color: var(--hot); font-weight: 700; }
+.li-tt { font-weight: 700; font-size: 14.5px; line-height: 1.35; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.card.open .li-tt { white-space: normal; }
+.li-row > button, .card.pc > button { flex: none; font: inherit; font-size: 13.5px; font-weight: 700; border-radius: 10px; padding: 8px 14px; border: 1px solid var(--line); background: var(--card); color: var(--ink); cursor: pointer; }
+.li-row > button.okb, .card.pc > button.okb { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.card.li .full, .card.pc .full { padding: 0 12px 10px; border-top: 1px solid var(--line); }
+.card.li .msg:empty, .card.pc .msg:empty { display: none; }
+.card.li .msg, .card.pc .msg { padding: 0 12px 8px; }
+.pairbox { background: var(--card); border: 1px solid var(--line); border-radius: var(--r-lg); padding: 10px; display: flex; flex-direction: column; gap: 8px; }
+.pair { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.pair.open .card.pc:not(.open) { display: none; }
+.pair .card.pc.open { grid-column: 1 / -1; }
+.card.pc { box-shadow: none; border: 1px solid var(--line); border-radius: var(--r-md); display: flex; flex-direction: column; gap: 8px; padding: 7px; min-width: 0; }
+.pc-top { display: flex; flex-direction: column; gap: 6px; cursor: pointer; }
+.pc-th { width: 100%; aspect-ratio: 4 / 3; max-width: 100%; }
+.card.pc.open .pc-th { display: none; }
+.card.pc.open > button.okb { display: none; }
+.pc-tt { font-weight: 700; font-size: 13.5px; line-height: 1.35; }
+.card.pc .full { padding: 0; border-top: 0; }
+details.more { margin-top: 14px; }
+details.more > summary { cursor: pointer; font-size: 13.5px; color: var(--sub); padding: 10px 12px; border: 1px dashed var(--line); border-radius: var(--r-md); list-style: none; }
+details.more > summary::before { content: '▸ '; }
+details.more[open] > summary::before { content: '▾ '; }
+details.more > summary small { margin-left: 4px; }
+details.more .lst { margin-bottom: 8px; }
 </style>
 </head>
 <body>
@@ -334,7 +373,8 @@ details.fold details.fold .bar { background: var(--card); }
   <div class="wrap brand">
     <div class="bname"><img src="icon.png" alt="" width="36" height="36"><div><h1><span>CHIU189</span> 秘書</h1><div class="bdate" id="hdate"></div></div></div>
     <div class="tools">
-      <button id="bell" class="icb" type="button" aria-label="手機通知">
+      <button id="askBtn" class="askb" type="button"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></svg>問我</button>
+      <button id="bell" class="icb" type="button" aria-label="手機通知" hidden>
         <svg class="i i-off" viewBox="0 0 24 24" aria-hidden="true"><path d="M8.7 3A6 6 0 0 1 18 8a21.3 21.3 0 0 0 .6 5"/><path d="M17 17H3s3-2 3-9a4.67 4.67 0 0 1 .3-1.7"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/><path d="m2 2 20 20"/></svg>
         <svg class="i i-on" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
       </button>
@@ -362,10 +402,9 @@ details.fold details.fold .bar { background: var(--card); }
 </main>
 <div class="toast" id="toast" role="status" hidden></div>
 <nav class="tabs" role="tablist" aria-label="分頁">
-  <button type="button" role="tab" data-tab="review" aria-selected="true"><span class="ti-ic" aria-hidden="true"><svg class="i" viewBox="0 0 24 24"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg></span>首頁<span class="badge" id="badge" hidden></span></button>
+  <button type="button" role="tab" data-tab="review" aria-selected="true"><span class="ti-ic" aria-hidden="true"><svg class="i" viewBox="0 0 24 24"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg></span>待辦<span class="badge" id="badge" hidden></span></button>
   <button type="button" role="tab" data-tab="sched" aria-selected="false"><span class="ti-ic" aria-hidden="true"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg></span>行程</button>
   <button type="button" role="tab" data-tab="stats" aria-selected="false"><span class="ti-ic" aria-hidden="true"><svg class="i" viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M8 17v-5M13 17V7M18 17v-8"/></svg></span>成效</button>
-  <button type="button" role="tab" data-tab="ask" aria-selected="false"><span class="ti-ic" aria-hidden="true"><svg class="i" viewBox="0 0 24 24"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></svg></span>問我</button>
 </nav>
 
 <script>
@@ -411,7 +450,9 @@ function askPin() { const v = prompt('請輸入審稿密碼（只要輸入一次
 const sched = () => (data.reviews || []).find((r) => r.id === '__schedule__') || {};
 const reviews = () => (data.reviews || []).filter((r) => r.id !== '__schedule__');
 
+document.getElementById('askBtn').addEventListener('click', () => { setTab('ask'); window.scrollTo({ top: 0 }); });
 function setTab(t) {
+  const ab = document.getElementById('askBtn'); if (ab) ab.setAttribute('aria-pressed', String(t === 'ask'));
   document.querySelectorAll('.tabs button').forEach((b) => b.setAttribute('aria-selected', String(b.dataset.tab === t)));
   ['review', 'sched', 'stats', 'ask'].forEach((k) => { $('#pane-' + k).hidden = k !== t; });
   $('#today').hidden = t !== 'sched' || !$('#today').dataset.has;
@@ -494,15 +535,15 @@ function renderTodo() {
   const remind = gap ? `<button type="button" class="remind" data-go="sched"><span class="rm-ic">${ic('cal')}</span><span class="tx"><b>排程缺口</b>${gapLines.map((x) => `<small>${x}</small>`).join('')}</span><span class="go">看行程${ic('chev')}</span></button>` : '';
   todoN = out.length;
   const fixes = rv.filter((x) => ((data.decisions || {})[x.id] || {}).decision === 'fix' && !(x.id || '').startsWith('hot-')).length;
-  const nowait = !rv.some((x) => !(data.decisions || {})[x.id]);
+  const nowait = !sortReview().n;
   $('#todo').innerHTML = (out.length ? `<div class="sec">要你處理</div><div class="todo">` + out.map(([c, t, go, gl]) => /^https?:/.test(go)
       ? `<a href="${esc(go)}" target="_blank" rel="noopener"><span class="ic ${c}"></span><span class="tx">${sub2(t)}</span><span class="go">${gl}${ic('ext')}</span></a>`
       : `<button type="button" class="ti" data-go="${go}"><span class="ic ${c}"></span><span class="tx">${sub2(t)}</span><span class="go">${gl}${ic('chev')}</span></button>`).join('') + '</div>' : '') + (remind ? `<div class="sec">提醒</div>${remind}` : '');
   // 招呼語＋總件數
   const hr = now.getHours(), hi = hr < 11 ? '早安' : hr < 18 ? '午安' : '晚安';
-  const waitN = rv.filter((x) => !(data.decisions || {})[x.id]).length, total = waitN + out.length;
+  const waitN = sortReview().n, total = waitN + out.length;
   $('#greet').innerHTML = total
-    ? `<b>${hi}右丞，還有 <em>${total}</em> 件事要你處理</b><span>${waitN ? `${waitN} 篇等你審` : ''}${waitN && out.length ? '・' : ''}${out.length ? `${out.length} 件要處理` : ''}${fixes ? `・${fixes} 篇 Claude 改稿中` : ''}</span>`
+    ? `<b>${hi}右丞，還有 <em>${total}</em> 件事要你處理</b><span>${waitN ? `${waitN} 件等你按` : ''}${waitN && out.length ? '・' : ''}${out.length ? `${out.length} 件要處理` : ''}${fixes ? `・${fixes} 篇 Claude 改稿中` : ''}</span>`
     : `<b>${hi}右丞，今天沒事了</b><span>${nowait ? '新稿做好會傳 LINE 給你' : ''}</span>`;
 }
 let todoN = 0;
@@ -514,7 +555,7 @@ $('#todo').addEventListener('click', (e) => {
 
 function renderToday() {
   const items = sched().schedule || [];
-  const waiting = reviews().filter((x) => !(data.decisions || {})[x.id]).length;
+  const waiting = sortReview().n;
   // 2026-11-04 用戶：行程重複看兩次 → 不再列今天／明天，下面的行程表就有；只留沒發出去的警告
   const fails = items.filter((x) => x.ck === 'fail');
   $('#today').dataset.has = fails.length ? '1' : '';
@@ -568,40 +609,81 @@ function fullCard(r, i) {
   })();
   return inner;
 }
+// 2026-11-18 用戶選 B：清單一行一件；二選一併成一張；過期熱議藏起來；備用稿、已處理收進折疊
+function whenDay(r) {
+  const m = /^(\d{1,2})\/(\d{1,2})/.exec(String(r.when || '')); if (!m) return null;
+  const now = new Date(); let y = now.getFullYear(); if (+m[1] < now.getMonth() - 5) y++;
+  return new Date(y, +m[1] - 1, +m[2]);
+}
+function sortReview() {
+  const rv = reviews(), dec = data.decisions || {}, today = new Date(); today.setHours(0, 0, 0, 0);
+  const hot = [], pairs = [], single = [], vid = [], backup = [], done = [];
+  const grp = {};
+  rv.forEach((r, i) => {
+    if (dec[r.id]) { done.push([r, i]); return; }
+    const id = r.id || '';
+    if (id.startsWith('hot-')) { const ex = hotExpire(id); if (!ex || ex > Date.now()) hot.push([r, i]); return; }   // 過期的熱議系統會自己拿掉
+    if (r.kind === 'vid') { vid.push([r, i]); return; }
+    const d = whenDay(r);
+    if (/二選一/.test(r.when || '')) { const k = String(r.when).split('・')[0]; (grp[k] = grp[k] || []).push([r, i]); return; }
+    if (d && d < today) backup.push([r, i]); else single.push([r, i]);
+  });
+  Object.keys(grp).forEach((k) => {
+    const g = grp[k], d = whenDay(g[0][0]);
+    const partnerDone = rv.some((r) => dec[r.id] && String(r.when || '').split('・')[0] === k && /二選一/.test(r.when || ''));
+    if (partnerDone || (d && d < today)) g.forEach((x) => backup.push(x));
+    else if (g.length >= 2) pairs.push(g.slice(0, 2)), g.slice(2).forEach((x) => single.push(x));
+    else single.push(g[0]);
+  });
+  const byDay = (a, b) => (whenDay(a[0]) || 0) - (whenDay(b[0]) || 0);
+  single.sort(byDay); vid.sort(byDay); pairs.sort((a, b) => byDay(a[0], b[0]));
+  return { hot, pairs, single, vid, backup, done, n: hot.length + pairs.length + single.length + vid.length };
+}
 function renderReview() {
-  const rv = reviews(), dec = data.decisions || {};
-  const wait = rv.map((r, i) => [r, i]).filter(([r]) => !dec[r.id]).sort((a, b) => ((b[0].id || '').startsWith('hot-') - (a[0].id || '').startsWith('hot-')));
-  const done = rv.map((r, i) => [r, i]).filter(([r]) => dec[r.id]);
-  $('#list').innerHTML = (wait.length ? '<div class="sec">等你審</div>' : '') + wait.map(([r, i]) => {
-    const hot = (r.id || '').startsWith('hot-'), vid = r.kind === 'vid', caps = r.caps || {}, nImg = (r.imgs || []).length;
-    const ex = hot ? hotExpire(r.id) : null;
-    const left = ex ? Math.max(0, Math.round((ex - Date.now()) / 36e5 * 10) / 10) : null;
-    const kd = hot
-      ? `<span class="pill hot">${ic('flame')}熱議</span><span>只發 Threads</span>${left != null ? `<span${left < 2 ? ' class="due"' : ''}>${left < 1 ? '快過期了' : `還有 ${Math.round(left)} 小時`}</span>` : ''}`
-      : `<span class="pill ${vid ? 'vid' : 'img'}">${ic(vid ? 'video' : 'doc')}${vid ? '影片' : '教學文'}</span><span>預計 ${esc(r.when)}</span>`;
-    const pv = hot ? (caps.Threads || '') : (caps.FB || caps.Threads || '');
-    const ck = r.check || [], okN = ck.filter((c) => c.startsWith('✅')).length, wN = ck.length - okN;
-    const ckl = ck.length ? `<span class="g">${ic('check')}查證 ${okN} 項${wN ? '通過' : '全部通過'}</span>${wN ? `<span class="w">${ic('alert')}${wN} 項要注意</span>` : ''}` : '';
-    const lab = `看全文${nImg > 1 ? `（${nImg} 張圖）` : ''}`;
-    return `<article class="card act${hot ? ' hot' : ''}" data-i="${i}" id="c-${esc(r.id)}">
-      <div class="row1">${nImg ? `<div class="th"><img src="${esc(r.imgs[0])}" alt="封面" loading="lazy"></div>` : ''}
-        <div class="bd"><div class="kd">${kd}</div><div class="tt">${esc(clean(String(r.title || '').split('｜')[0]))}</div><div class="pv">${esc(pv)}</div>${ckl ? `<div class="ckl">${ckl}</div>` : ''}</div></div>
-      <div class="btns">${hot ? '<button type="button" class="okb" data-act="ok">通過，馬上發</button><button type="button" data-act="fixopen">要改</button><button type="button" data-act="hotno">不發</button>' : '<button type="button" class="okb" data-act="ok">通過</button><button type="button" data-act="fixopen">要改</button>'}</div>
-      <button type="button" class="linkb" data-act="toggle" data-l="${lab}">${lab} ›</button>
-      <div class="full" hidden>${fullCard(r, i)}</div>
-      <div class="msg"></div>
-    </article>`;
-  }).join('');
-  $('#done').innerHTML = done.length ? `<div class="sec">已處理</div>` + done.map(([r, i]) => {
+  const S = sortReview(), dec = data.decisions || {}, today = new Date(); today.setHours(0, 0, 0, 0);
+  const th = (r, cls) => { const src = (r.imgs || [])[0]; return `<div class="${cls}">${src ? `<img src="${esc(src)}" alt="" loading="lazy">` : ic(r.kind === 'vid' ? 'video' : 'doc')}</div>`; };
+  const ttl = (r) => esc(clean(String(r.title || '').split('｜')[0]).replace(/^🎬\s*/, ''));
+  const full = (r, i) => `<div class="full" hidden>${fullCard(r, i)}<button type="button" class="linkb" data-act="toggle">收起 ︿</button></div><div class="msg"></div>`;
+  const row = ([r, i], mode) => {
+    const hot = (r.id || '').startsWith('hot-'), vid = r.kind === 'vid', d = whenDay(r), past = d && d < today;
+    let pill, sub, btn;
+    if (hot) { const ex = hotExpire(r.id), left = ex ? (ex - Date.now()) / 36e5 : 9;
+      pill = `<span class="pill hot">${ic('flame')}熱議</span>`;
+      sub = `<span class="${left < 2 ? 'due' : ''}">${left < 1 ? `剩 ${Math.max(1, Math.round(left * 60))} 分` : `剩 ${Math.round(left)} 小時`}</span>`;
+      btn = '<button type="button" class="okb sm" data-act="ok">發</button>'; }
+    else if (vid) { pill = `<span class="pill vid">${ic('video')}影片</span>`;
+      sub = past ? '<span class="due">日期過了</span>' : `<span>${esc(String(r.when).split('・')[0])}</span>`;
+      btn = past ? '<button type="button" class="sm" data-act="pickdate">選日期</button>' : '<button type="button" class="okb sm" data-act="ok">通過</button>'; }
+    else { pill = `<span class="pill img">${ic('doc')}${/冷知識/.test(r.id || '') ? '冷知識' : '教學文'}</span>`;
+      sub = mode === 'backup' ? '<span>按通過排到最近空的一天</span>' : `<span>${esc(String(r.when).split('・')[0])}</span>`;
+      btn = '<button type="button" class="okb sm" data-act="ok">通過</button>'; }
+    return `<article class="card li${hot ? ' hot' : ''}" data-i="${i}" id="c-${esc(r.id)}">
+      <div class="li-row" data-act="toggle">${th(r, 'li-th')}<div class="li-bd"><div class="li-kd">${pill}${sub}</div><div class="li-tt">${ttl(r)}</div></div>${btn}</div>
+      ${full(r, i)}</article>`;
+  };
+  const pair = (g) => `<div class="pairbox"><div class="li-kd">${'<span class="pill img">' + ic('doc') + '二選一</span>'}<span>${esc(String(g[0][0].when).split('・')[0])}・選一篇，另一篇留著備用</span></div>
+    <div class="pair">${g.map(([r, i]) => `<article class="card pc" data-i="${i}" id="c-${esc(r.id)}">
+      <div class="pc-top" data-act="toggle">${th(r, 'pc-th')}<div class="pc-tt">${ttl(r)}</div></div>
+      <button type="button" class="okb sm" data-act="ok">選這篇</button>${full(r, i)}</article>`).join('')}</div></div>`;
+  const main = [...S.hot.map((x) => row(x)), ...S.pairs.map(pair), ...S.single.map((x) => row(x)), ...S.vid.map((x) => row(x))].join('');
+  $('#list').innerHTML = main ? `<div class="sec">等你按</div><div class="lst">${main}</div>` : '';
+  const doneRows = S.done.map(([r, i]) => {
     const st = dec[r.id].decision, hot = (r.id || '').startsWith('hot-');
     const lab = hot ? (st === 'ok' ? '已通過・5 分鐘內發 Threads' : hotFixLab(dec[r.id])) : (st === 'ok' ? '已通過・等自動排程' : '已退回・等 Claude 改');
     return `<article class="card done" data-i="${i}"><div class="dn"><span class="dn-ic${st === 'ok' ? '' : ' fix'}">${ic(st === 'ok' ? 'check' : 'undo')}</span>
-      <div class="dn-bd"><div class="dn-t">${esc(clean(String(r.title || '').split('｜')[0]))}</div><div class="dn-s">${lab}${hot ? '' : `・${esc(r.when)}`}</div></div>
+      <div class="dn-bd"><div class="dn-t">${ttl(r)}</div><div class="dn-s">${lab}</div></div>
       <button type="button" class="undo" data-act="clear">撤回</button></div>
       <div class="msg"></div></article>`;
-  }).join('') : '';
+  }).join('');
+  const parts = [S.backup.length ? `備用稿 ${S.backup.length} 篇` : '', S.done.length ? `已處理 ${S.done.length} 篇` : ''].filter(Boolean).join('・');
+  const fixing = S.done.filter(([r]) => dec[r.id].decision === 'fix').length;
+  $('#done').innerHTML = parts ? `<details class="more"${moreOpen ? ' open' : ''}><summary>${parts}${fixing ? `<small>（${fixing} 篇等 Claude 改）</small>` : ''}</summary>
+    ${S.backup.length ? `<div class="sec">備用稿・沒被選或日期過了</div><div class="lst">${S.backup.map((x) => row(x, 'backup')).join('')}</div>` : ''}
+    ${S.done.length ? `<div class="sec">已處理</div>${doneRows}` : ''}</details>` : '';
+  const m = $('#done details'); if (m) m.addEventListener('toggle', () => { moreOpen = m.open; });
 }
-$('#done').addEventListener('click', (e) => { const b = e.target.closest('button[data-act="clear"]'); if (b) decide(b.closest('.card'), 'clear'); });
+let moreOpen = false;
+$('#done').addEventListener('click', (e) => listClick(e));
 
 function renderSched() {
   const items = sched().schedule || [];
@@ -823,15 +905,24 @@ async function decide(card, decision, note) {
   } catch (e) { msg.textContent = '沒存到，請再按一次。'; card.querySelectorAll('button').forEach((b) => (b.disabled = false)); }
 }
 
-$('#list').addEventListener('click', (e) => {
+$('#list').addEventListener('click', (e) => listClick(e));
+// 展開／收起一張稿的全文（二選一那張展開時佔滿整排、先藏另一篇）
+function openFull(card, force) {
+  const f = card.querySelector('.full'); if (!f) return;
+  const show = force == null ? f.hidden : force;
+  f.hidden = !show; card.classList.toggle('open', show);
+  const pr = card.closest('.pair'); if (pr) pr.classList.toggle('open', show);
+}
+function listClick(e) {
   const cb = e.target.closest('button[data-cap]');
   if (cb) { const card = cb.closest('.card'), r = reviews()[+card.dataset.i]; card.querySelectorAll('.seg button').forEach((x) => x.setAttribute('aria-pressed', String(x === cb))); card.querySelector('.capbox').textContent = (r.caps || {})[cb.dataset.cap] || ''; return; }
   const ch = e.target.closest('button[data-chip]');
   if (ch) { const ta = ch.closest('.fixbox').querySelector('textarea'), on = ch.getAttribute('aria-pressed') !== 'true', c = ch.dataset.chip; ch.setAttribute('aria-pressed', String(on)); const parts = ta.value.split('、').map((x) => x.trim()).filter(Boolean).filter((x) => x !== c); if (on) parts.push(c); ta.value = parts.join('、'); return; }
-  const b = e.target.closest('button[data-act]'); if (!b) return;
+  const b = e.target.closest('[data-act]'); if (!b) return;
   const card = b.closest('.card'), act = b.dataset.act, box = card.querySelector('.fixbox');
-  if (act === 'toggle') { const f = card.querySelector('.full'); f.hidden = !f.hidden; b.textContent = f.hidden ? b.dataset.l + ' ›' : '收起全文'; return; }
-  if (act === 'fixopen') { const f = card.querySelector('.full'); f.hidden = false; card.querySelector('[data-act="toggle"]').textContent = '收起全文'; if (box) { box.hidden = false; const dd = card.querySelector('.datebox'); if (dd) dd.hidden = true; box.querySelector('textarea').focus(); } return; }
+  if (act === 'toggle') { openFull(card, null); return; }
+  if (act === 'pickdate') { openFull(card, true); const bx = card.querySelector('.fixbox'), dbx = card.querySelector('.datebox'); if (bx) bx.hidden = true; if (dbx) { dbx.hidden = false; dbx.querySelector('input').focus(); } return; }
+  if (act === 'fixopen') { openFull(card, true); if (box) { box.hidden = false; const dd = card.querySelector('.datebox'); if (dd) dd.hidden = true; box.querySelector('textarea').focus(); } return; }
   const dbox = card.querySelector('.datebox');
   if (act === 'ok') decide(card, 'ok');
   else if (act === 'fix') { if (dbox) dbox.hidden = true; box.hidden = false; box.querySelector('textarea').focus(); }
@@ -841,7 +932,7 @@ $('#list').addEventListener('click', (e) => {
   else if (act === 'sendfix') { const t = box.querySelector('textarea').value.trim(); if (!t) { box.querySelector('textarea').focus(); return; } decide(card, 'fix', t); }
   else if (act === 'clear') decide(card, 'clear');
   else if (act === 'hotno') decide(card, 'fix', '熱議不發');
-});
+}
 $('#stats').addEventListener('click', async (e) => {
   const q = e.target.closest('button[data-qr]');
   if (q) { try { localStorage.setItem('chiu189_qr', q.dataset.qr); } catch (err) {} renderStats(); return; }
