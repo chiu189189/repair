@@ -84,6 +84,26 @@
     background:var(--card);color:var(--ink);border:1px solid var(--line)}
   .bar a.line{background:#06C755;border-color:#06C755;color:#fff;flex:1.4}
   @media (min-width:900px){.bar{max-width:820px;margin:0 auto;border-radius:18px 18px 0 0;border:1px solid var(--line)}}
+  /* 2026-11-18 電腦版改滿版：上方整條導覽、首圖區背景整片、內容放寬到 1200（手機版維持原樣） */
+  .band{max-width:820px;margin:0 auto;padding:0 16px}
+  @media (min-width:900px){
+    .band{max-width:none;padding:40px 24px 28px;background:linear-gradient(180deg,var(--accent-soft),var(--bg))}
+    .band .hero{max-width:1152px;margin:0 auto;box-shadow:0 10px 30px rgba(0,0,0,.06)}
+    .hero .txt{padding:40px 44px}
+    .hero h1{font-size:42px}
+    .hero p{font-size:17px}
+    .hero img{min-height:380px}
+    .band+.wrap{padding-top:8px}
+    .sec{font-size:22px;margin-top:28px}
+    .tile{padding:20px;min-height:140px}
+    .tile b{font-size:18px}
+    .tile span{font-size:14px}
+    /* 圖示放左邊淡金圓底，字排右邊 */
+    .tile{display:grid;grid-template-columns:64px 1fr;column-gap:18px;row-gap:2px;align-content:center}
+    .tile .ic{grid-row:1/4;align-self:center;width:64px;height:64px;border-radius:50%;background:var(--accent-soft);display:flex;align-items:center;justify-content:center;font-size:32px;color:inherit}
+    .tile>b,.tile>span:not(.ic),.tile>em{grid-column:2}
+    .tile em{margin-top:4px}
+  }
   /* 2026-11-18 小動畫：營業中綠點呼吸、問題卡片滑到才浮上來、LINE 預約偶爾晃一下（手機設「減少動態效果」就全部不動） */
   @media (prefers-reduced-motion:no-preference){
     @keyframes breathe{0%,100%{box-shadow:0 0 0 0 rgba(6,199,85,.5)}60%{box-shadow:0 0 0 7px rgba(6,199,85,0)}}
@@ -150,12 +170,16 @@
  ]
 }
 </script>
+<link rel="stylesheet" href="../top.css?v=1">
 </head>
 <body>
-<div class="wrap">
+<header class="top"><div class="in">
+  <a class="brand" href="./?v=33">CHIU189<small>Phone Repair Center</small></a>
   <div class="lang"><a href="../?v=33" hreflang="zh-Hant" lang="zh-Hant">中文</a><b>English</b></div>
   <nav class="nav"><a href="./?v=33" class="on">Home</a><a href="quote.html?v=33">Prices</a><a href="about.html?v=33">About</a><a href="faq.html?v=33">FAQ</a></nav>
+</div></header>
 
+<div class="band">
   <section class="hero">
     <div class="txt">
       <h1><span class="eyebrow">Phone Repair in Taichung｜CHIU189</span>Broken phone?<br>Bring it in for a free check</h1>
@@ -164,6 +188,9 @@
     </div>
     <picture><source type="image/webp" srcset="../shop-bench-600.webp 600w, ../shop-bench.webp 1000w" sizes="(max-width:700px) 100vw, 600px"><img src="../shop-bench.jpg" alt="Repair bench inside CHIU189 Phone Repair Center" width="1000" height="750" fetchpriority="high"></picture>
   </section>
+</div>
+
+<div class="wrap">
 
   <h2 class="sec">What's wrong with your phone?<small>Tap for details. Times are approximate.</small></h2>
   <div class="grid">
