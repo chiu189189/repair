@@ -24,6 +24,22 @@
   .spin { width: 28px; height: 28px; border: 3px solid #d6d3cc; border-top-color: #06C755; border-radius: 50%; animation: s 1s linear infinite; }
   @keyframes s { to { transform: rotate(360deg); } }
   [hidden] { display: none !important; }
+  /* 2026-11-18 直接結帳掃 QR（存保固＋評論）：黑底金字，跟收銀畫面、LINE 主頁同一套 */
+  html.sale, html.sale body { background: #0b0b0c; color: #f2f2f2; }
+  .sale .shop { color: #C8A96A; }
+  .sale .ic { background: transparent; border: 2px solid #C8A96A; color: #C8A96A; }
+  .sale h1 { color: #f2f2f2; }
+  .sale p { color: #a9a9ad; }
+  .sale .kbd { display: inline-block; padding: 0 8px; border-radius: 6px; background: #2a2a2e; color: #C8A96A; font-weight: 700; }
+  .wl { margin: 16px 0 0; text-align: left; }
+  .wi { padding: 12px 14px; border-radius: 12px; background: #18181b; border: 1px solid #2c2c30; margin-top: 8px; }
+  .wi b { display: block; color: #f2f2f2; }
+  .wi div { display: flex; justify-content: space-between; gap: 8px; font-size: 14px; color: #a9a9ad; }
+  .wi div span:last-child { color: #C8A96A; font-weight: 700; }
+  .stars { color: #C8A96A; letter-spacing: .15em; font-size: 20px; margin: 22px 0 0; }
+  .goldb { background: #C8A96A; color: #111; }
+  .sale .ghost { color: #a9a9ad; border-color: #3a3a3e !important; }
+  .tiny { font-size: 12px; margin-top: 14px; color: #8a8a8f !important; }
 </style>
 <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 </head>
@@ -51,6 +67,22 @@
   }
   function fail(msg){ show("!", false, "綁定沒有成功", msg, ticketBtn() + `<a class="btn line" href="${OA}">加 LINE 好友，直接傳訊息給我們</a>`); }
 
+  // 直接結帳掃的：顯示保固＋評論按鈕（沒加好友的話先請他加，不然傳「查保固」也收不到回覆）
+  async function saleDone(res){
+    document.documentElement.classList.add("sale");
+    const friend = await liff.getFriendship().then(f => f.friendFlag).catch(() => true);
+    const list = (res.items || []).map(x => `<div class="wi"><b>${esc(x.i)}</b><div><span>${esc(x.day)} 取件</span><span>保固到 ${esc(x.until)}</span></div></div>`).join("");
+    show("✓", false, "保固已存到 LINE", "", (list ? `<div class="wl">${list}</div>` : "") +
+      (friend ? "" : `<a class="btn line" href="${OA}">加 LINE 好友（才查得到保固）</a>`) +
+      `<div class="stars">★ ★ ★ ★ ★</div><a class="btn goldb" id="rv" href="${esc(res.review || "")}">留個 Google 評論</a>` +
+      (liff.isInClient() ? `<button class="btn ghost" id="close">關閉</button>` : "") +
+      `<p class="tiny">人為損壞、進水、摔落不在保固範圍</p>`);
+    $("p").innerHTML = '之後在 LINE 傳 <span class="kbd">查保固</span> 就能查';
+    if ($("close")) $("close").onclick = () => liff.closeWindow();
+    // LINE 裡面的瀏覽器沒登入 Google，評論頁會叫客人先登入 → 改用手機本來的瀏覽器開（Safari／Chrome 通常已登入）
+    if (liff.isInClient() && res.review) $("rv").onclick = e => { e.preventDefault(); liff.openWindow({ url: res.review, external: true }); };
+  }
+
   // 查詢碼放在 ?k=；從 liff.line.me 進來時，LIFF 會先把它包在 liff.state 裡，init 之後才換回來
   const readKey = () => new URLSearchParams(location.search).get("k") || "";
   liff.init({ liffId: LIFF_ID }).then(async () => {
@@ -66,6 +98,7 @@
     const res = await fetch(APP, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" },
       body: JSON.stringify({ bind: key, idToken: liff.getIDToken() }) }).then(r => r.json());
     if (!res.ok) return fail(res.err || "請再掃一次 QR Code，或直接聯絡店家。");
+    if (res.kind === "sale") return saleDone(res);
     $("what").hidden = false;
     $("what").textContent = res.model + "（" + res.issue + "）";
     // 客人取消勾選「加入好友」的話，LINE 不能主動傳訊息給他，提醒他補加
