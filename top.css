@@ -14,3 +14,5 @@ body>.wrap{padding-top:0}
   .top .lang{order:3;margin:0 0 0 auto}
   body>.wrap{max-width:1200px;padding:28px 24px 56px}
 }
+/* 2026-11-19 麵包屑（首頁 › 常見問題）不顯示：只有部分頁有，會讓標題位置跟其他頁不一樣；Google 用的麵包屑資料（BreadcrumbList）還在 */
+body>.wrap>.crumb{display:none}
