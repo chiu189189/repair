@@ -1,0 +1,16 @@
+/* 2026-11-18 全站上方導覽：手機＝原樣（語言右上、選單一排）；電腦（900 以上）＝整條橫跨畫面、內容放寬到 1200 */
+.top .in{max-width:820px;margin:0 auto;padding:24px 16px 0}
+.top .brand{display:none}
+body>.wrap{padding-top:0}
+@media (min-width:900px){
+  .top{position:sticky;top:0;z-index:8;background:color-mix(in srgb,var(--card) 94%,transparent);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+  .top .in{max-width:1200px;display:flex;align-items:center;gap:28px;padding:12px 24px}
+  .top .brand{display:flex;align-items:baseline;gap:8px;color:var(--ink);text-decoration:none;font-size:20px;font-weight:800;letter-spacing:.02em;white-space:nowrap}
+  .top .brand small{font-size:13px;font-weight:700;color:var(--accent-text)}
+  .top .nav{order:2;margin:0;max-width:none;gap:4px}
+  .top .nav a{flex:none;padding:7px 16px;border:0;background:transparent;font-size:15px}
+  .top .nav a.on{background:var(--ink);color:var(--bg)}
+  .top .nav a:not(.on):hover{background:var(--bg)}
+  .top .lang{order:3;margin:0 0 0 auto}
+  body>.wrap{max-width:1200px;padding:28px 24px 56px}
+}
