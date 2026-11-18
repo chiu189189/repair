@@ -6,7 +6,7 @@ const SITE = {
   EMAIL: "service@chiu189.com.tw", // 公司 email：網域開通後填，例如 "service@chiu189.com.tw"；空白就不顯示
   ADDRESS: "臺中市龍井區東海里遠東街189號",
   PHONE: "0905-584-846",
-  V: 33,                        // 改版時加一，避免手機看到舊頁面
+  V: 34,                        // 改版時加一，避免手機看到舊頁面
   GA_ID: "G-KX7S54506Z",                  // Google Analytics 4 評估 ID（G-XXXXXXX）；空白就不載入
 };
 // 2026-11-10：電腦沒有 LINE App，「帶好訊息」的連結（oaMessage）會被 LINE 轉到官網首頁，客人卡住。
@@ -39,8 +39,9 @@ window.lineUrl = function(u){
   .sitefoot .sf-cols nav{display:grid;grid-template-columns:repeat(3,1fr);gap:0 10px;margin-bottom:6px}
   .sitefoot .sf-cols b{grid-column:1/-1;margin-bottom:2px;font-size:12px;font-weight:600;color:var(--muted);letter-spacing:.05em}
   .sitefoot .sf-cols a{padding:5px 0;color:var(--ink);text-decoration:none;font-size:14px;line-height:1.4;white-space:nowrap}
-  .sitefoot .sf-tm{margin:12px 0 0;font-size:12px;line-height:1.7}
-  .sitefoot .sf-copy{margin:8px 0 0;font-size:12px}`;
+  .sitefoot .sf-biz{margin:12px 0 0;font-size:13px;font-weight:600;color:var(--ink)}
+  .sitefoot .sf-biz span{font-weight:400;color:var(--muted)}
+  .sitefoot .sf-tm{margin:6px 0 0;font-size:11.5px;line-height:1.65;color:color-mix(in srgb,var(--muted) 78%,transparent)}`;
   const st = document.createElement("style"); st.textContent = css; document.head.appendChild(st);
 
   const v = "?v=" + SITE.V;
@@ -54,10 +55,9 @@ window.lineUrl = function(u){
                       ["camera.html","Camera"],["water.html","Water damage"],["board.html","Logic board"]]) +
       col('Shop info', [["about.html","About us"],["faq.html","FAQ"],["../terms.html","Terms (中文)"],["../privacy.html","Privacy (中文)"]]) +
     '</div>';
-    const tail =
+    const tail = '<p class="sf-biz">© ' + new Date().getFullYear() + ' ' + SITE.BIZ_NAME + '</p>' +
       '<p class="sf-tm">Apple, iPhone and iPad are trademarks of Apple Inc., registered in the U.S. and other countries. Other brand names belong to their respective owners. ' +
-      'We are an independent repair shop and not an Apple Authorized Service Provider; brand and model names are used only to describe compatible devices.</p>' +
-      '<p class="sf-copy">© ' + new Date().getFullYear() + ' ' + SITE.BIZ_NAME + '</p>';
+      'We are an independent repair shop and not an Apple Authorized Service Provider; brand and model names are used only to describe compatible devices.</p>';
     if(document.getElementById("foot") || document.querySelector("table.biz")){
       el.classList.add("compact");
       el.innerHTML = links + tail; return;
@@ -69,7 +69,6 @@ window.lineUrl = function(u){
     return;
   }
   const tel = SITE.PHONE.replace(/[^\d+]/g, "");
-  const biz = SITE.BIZ_NAME + (SITE.TAX_ID ? "・統一編號 " + SITE.TAX_ID : "");
   // 頁尾連結：「維修項目」「本店資訊」各一區，每排三個
   const col = (title, items) => '<nav><b>' + title + '</b>' +
     items.map(([href, name]) => '<a href="' + href + v + '">' + name + '</a>').join('') + '</nav>';
@@ -78,21 +77,21 @@ window.lineUrl = function(u){
                     ["camera.html","相機鏡頭"],["water.html","泡水處理"],["board.html","主機板維修"]]) +
     col('本店資訊', [["about.html","關於本店"],["faq.html","常見問題"],["terms.html","服務條款"],["privacy.html","隱私權政策"]]) +
   '</div>';
-  const tail =
+  // 2026-11-18：商號＋統編＋© 合成一行，商標聲明縮小變淡
+  const tail = '<p class="sf-biz">© ' + new Date().getFullYear() + ' ' + SITE.BIZ_NAME +
+      (SITE.TAX_ID ? ' <span>・統編 ' + SITE.TAX_ID + '</span>' : '') + '</p>' +
     '<p class="sf-tm">Apple、iPhone、iPad 是 Apple Inc. 在美國及其他國家的註冊商標，其他品牌名稱為各該公司所有。' +
-    '本店為獨立維修店，並非 Apple 授權服務供應商；網站上的品牌與型號僅用來說明適用機型。</p>' +
-    '<p class="sf-copy">© ' + new Date().getFullYear() + ' ' + SITE.BIZ_NAME + '</p>';
+    '本店為獨立維修店，並非 Apple 授權服務供應商；網站上的品牌與型號僅用來說明適用機型。</p>';
 
   // 維修價目、舊機回收上面已經有地址電話卡片 → 這裡只放連結、商號、聲明，不重複
   // 頁面上已經有店家資訊表（首頁、關於本店）也一樣只放簡短版
   if(document.getElementById("foot") || document.querySelector("table.biz")){
     el.classList.add("compact");
-    el.innerHTML = links + '<p class="sf-line" style="margin-top:12px">' + biz + '</p>' + tail;
+    el.innerHTML = links + tail;
     return;
   }
   el.innerHTML =
     '<div class="sf-name">' + SITE.SHOP + '</div>' +
-    '<p class="sf-line">' + biz + '</p>' +
     '<p class="sf-line">' + SITE.ADDRESS + '</p>' +
     '<p class="sf-line">電話 <a href="tel:' + tel + '">' + SITE.PHONE + '</a>' +
       (SITE.EMAIL ? '｜<a href="mailto:' + SITE.EMAIL + '">' + SITE.EMAIL + '</a>' : '') + '</p>' +

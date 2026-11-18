@@ -25,10 +25,13 @@
   .hero h1{margin:6px 0 8px;font-size:30px;line-height:1.25}
   .hero p{margin:0 0 12px;color:var(--muted);font-size:15px}
   .hero img{display:block;width:100%;height:100%;object-fit:cover;min-height:220px}
-  .open{display:inline-flex;align-items:center;gap:8px;font-size:14px;font-weight:700;padding:6px 12px;border-radius:999px;background:var(--bg);border:1px solid var(--line);width:max-content;max-width:100%}
-  .open i{width:9px;height:9px;border-radius:50%;background:#9a9aa2;flex:none}
+  .open{display:flex;gap:10px;align-items:flex-start;padding:12px 14px;border-radius:14px;background:var(--bg);border:1px solid var(--line);max-width:420px}
+  .open i{width:9px;height:9px;border-radius:50%;background:#9a9aa2;margin-top:7px;flex:none}
   .open.on i{background:#06C755;box-shadow:0 0 0 4px rgba(6,199,85,.18)}
-  @media (max-width:640px){.hero{grid-template-columns:1fr}.hero img{order:-1;aspect-ratio:16/9;min-height:0}.hero h1{font-size:26px}}
+  .open b{display:block;font-size:15px}
+  .open small{display:block;font-size:13px;color:var(--muted);margin-top:2px;line-height:1.55}
+  .open small a{color:#06a648;font-weight:700;text-decoration:none;white-space:nowrap}
+  @media (max-width:640px){.hero{grid-template-columns:1fr}.hero picture{order:-1}.hero img{aspect-ratio:16/9;min-height:0}.hero h1{font-size:26px}}
   .sec{margin:26px 2px 10px;font-size:19px;line-height:1.4}
   .sec small{display:block;font-size:13px;color:var(--muted);font-weight:400;margin-top:2px}
   /* 我的手機怎麼了：一格一個問題，含大約時間 */
@@ -128,7 +131,7 @@
     <div class="txt">
       <h1><span class="eyebrow">台中龍井手機維修｜CHIU189</span>手機壞了？<br>先帶來免費檢測</h1>
       <p>台中龍井・東海商圈｜iPhone、Android 手機與平板維修，先報價、您同意才修，維修過程現場看得到。</p>
-      <span class="open" id="open"><i></i><span>營業時間 12:00–22:00（週一公休）</span></span>
+      <div class="open" id="open"><i></i><div><b>營業時間 12:00–22:00</b><small>週一公休・可先 <a href="#" id="openLine">LINE 留言</a> 預約</small></div></div>
     </div>
     <picture><source type="image/webp" srcset="shop-bench-600.webp 600w, shop-bench.webp 1000w" sizes="(max-width:700px) 100vw, 600px"><img src="shop-bench.jpg" alt="CHIU189 手機維修中心店內維修工作台" width="1000" height="750" fetchpriority="high"></picture>
   </section>
@@ -194,7 +197,7 @@
 
 <!-- 頁尾簡短版判斷要看到店家資訊（table.biz），這頁用 .visit，所以加一個隱藏的 table.biz 讓頁尾不重複地址 -->
 <table class="biz" hidden></table>
-<script src="site.js?v=33"></script>
+<script src="site.js?v=34"></script>
 <script>
 const OA = "@891llnje";
 document.getElementById("lineBtn").onclick = e => { e.preventDefault(); location.href = (window.lineUrl||String)("https://line.me/R/oaMessage/" + encodeURIComponent(OA) + "/?" + encodeURIComponent("我想預約維修\n型號：\n問題：\n想來的時間：")); };
@@ -202,11 +205,14 @@ document.getElementById("lineAdd").onclick = e => { e.preventDefault(); location
 // 現在有沒有開（台灣時間；週一公休、12:00–22:00）
 (() => {
   const t = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Taipei" }));
-  const d = t.getDay(), m = t.getHours() * 60 + t.getMinutes(), el = document.getElementById("open"), tx = el.querySelector("span");
-  if (d !== 1 && m >= 720 && m < 1320) { el.classList.add("on"); tx.textContent = "營業中・今天開到 22:00"; }
-  else if (d === 1) tx.textContent = "今天公休・明天 12:00 開門";
-  else if (m < 720) tx.textContent = "今天 12:00 開門";
-  else tx.textContent = (d === 0 ? "明天週一公休・週二 12:00 開門" : "已打烊・明天 12:00 開門");
+  const d = t.getDay(), m = t.getHours() * 60 + t.getMinutes(), el = document.getElementById("open"), b = el.querySelector("b"), sm = el.querySelector("small");
+  const hrs = "營業 12:00–22:00（週一公休）・";
+  if (d !== 1 && m >= 720 && m < 1320) { el.classList.add("on"); b.textContent = "營業中・今天開到 22:00"; sm.firstChild.textContent = hrs + "可先 "; sm.lastChild.textContent = " 預約"; }
+  else {
+    b.textContent = d === 1 ? "今天公休・明天 12:00 開門" : m < 720 ? "還沒開門・今天 12:00 開門" : (d === 0 ? "已打烊・週二 12:00 開門" : "已打烊・明天 12:00 開門");
+    sm.firstChild.textContent = hrs + "現在可先 "; sm.lastChild.textContent = "，開門後回覆";
+  }
+  document.getElementById("openLine").onclick = e => { e.preventDefault(); document.getElementById("lineBtn").click(); };
 })();
 // 匿名計數（同一次瀏覽只算一次，不記個資）
 try { if (!sessionStorage.getItem("chiu189_hit_view")) { sessionStorage.setItem("chiu189_hit_view", 1);
