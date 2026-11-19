@@ -1,0 +1,23 @@
+# 每天把 Google 試算表的公開價目同步成網站備份（prices.csv、recycle.csv）。2026-11-19
+# 網頁會先秀備份、再換成試算表最新的，所以兩邊要一致。檢查不過就不覆蓋（看 tools/sync_prices.py）。
+name: 同步價目備份
+on:
+  schedule:
+    - cron: "17 19 * * *"   # 台灣時間每天 03:17（GitHub 用世界時間）
+  workflow_dispatch:         # 也可以在 Actions 頁面手動按「Run workflow」
+permissions:
+  contents: write
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: 下載並檢查
+        run: python3 tools/sync_prices.py
+      - name: 有變才存
+        if: always()
+        run: |
+          git config user.name "price-sync"
+          git config user.email "price-sync@users.noreply.github.com"
+          git add prices.csv recycle.csv
+          git diff --cached --quiet || (git commit -m "每日同步價目備份" && git push)
