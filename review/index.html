@@ -174,6 +174,7 @@ textarea:focus, .datebox input:focus { outline: 2px solid var(--accent); outline
 .imgs { display: flex; gap: 8px; overflow-x: auto; scroll-snap-type: x mandatory; margin: 12px -14px 0; padding: 0 14px 4px; scrollbar-width: none; }
 .imgs::-webkit-scrollbar { display: none; }
 .imgs:empty { display: none; }
+.imgs .imgph { width: 78%; max-width: 300px; flex: none; aspect-ratio: 4 / 5; border-radius: var(--r-md); background: var(--soft); border: 1px solid var(--line); scroll-snap-align: center; }
 .imgs img { width: 78%; max-width: 300px; flex: none; border-radius: var(--r-md); scroll-snap-align: center; border: 1px solid var(--line); }
 .hint { font-size: 12.5px; color: var(--sub); text-align: right; margin-top: 4px; }
 .check { list-style: none; margin: 12px 0 0; padding: 2px 12px; font-size: 14px; line-height: 1.55; background: var(--soft); border-radius: var(--r-md); }
@@ -491,6 +492,27 @@ function setPin(v) { try { localStorage.setItem('chiu189_pin', v); } catch (e) {
 function askPin() { const v = prompt('請輸入審稿密碼（只要輸入一次）'); if (v) setPin(v.trim()); return v ? v.trim() : ''; }
 const sched = () => (data.reviews || []).find((r) => r.id === '__schedule__') || {};
 const reviews = () => (data.reviews || []).filter((r) => r.id !== '__schedule__');
+// 2026-11-19 加速：清單只帶小封面 cover＋張數 nimg，點開那篇才去拿大圖（a=imgs），拿過的記在 imgCache
+const imgCache = {};
+const imgList = (r) => r.imgs || imgCache[r.id] || null;
+function imgBox(r) {
+  const L = imgList(r), n = L ? L.length : (r.nimg || 0);
+  if (L) return `<div class="imgs">${L.map((src, k) => `<img src="${esc(src)}" alt="第 ${k + 1} 張圖" loading="lazy">`).join('')}</div>`;
+  if (!n) return '<div class="imgs"></div>';
+  return `<div class="imgs" data-lazy="1">${r.cover ? `<img src="${esc(r.cover)}" alt="第 1 張圖">` : '<div class="imgph sk"></div>'}${'<div class="imgph sk"></div>'.repeat(n - 1)}</div>`;
+}
+async function loadImgs(card) {
+  const r = reviews()[+card.dataset.i], box = card.querySelector('.imgs[data-lazy]');
+  if (!r || !box || box.dataset.busy) return;
+  if (imgList(r)) { box.outerHTML = imgBox(r); return; }
+  box.dataset.busy = '1';
+  try {
+    const res = await fetch(API, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ a: 'imgs', id: r.id, pin: getPin() }) });
+    const j = await res.json();
+    if (j.ok && j.imgs) { imgCache[r.id] = j.imgs; document.querySelectorAll('.card').forEach((c) => { const bx = c.querySelector('.imgs[data-lazy]'); if (bx && reviews()[+c.dataset.i] === r) bx.outerHTML = imgBox(r); }); }
+  } catch (e) {}
+  delete box.dataset.busy;
+}
 
 document.getElementById('askBtn').addEventListener('click', () => { setTab('ask'); window.scrollTo({ top: 0 }); });
 function setTab(t) {
@@ -515,11 +537,12 @@ async function load(quiet) {
     try { r = await post(); } catch (e1) { await new Promise((ok) => setTimeout(ok, 1500)); r = await post(); }
     const j = await r.json();
     if (!j.ok) {
-      if (j.error === 'pin') { setPin(''); stateMsg('密碼不對，請重新輸入。', '輸入密碼'); throw new Error('pin'); }
+      if (j.error === 'pin') { setPin(''); try { localStorage.removeItem('chiu189_cache'); } catch (e) {} stateMsg('密碼不對，請重新輸入。', '輸入密碼'); throw new Error('pin'); }
       if (j.error === 'locked') { stateMsg('密碼錯太多次，鎖定 1 小時，請稍後再試。'); throw new Error('locked'); }
       throw new Error(j.error);
     }
     data = j;
+    try { localStorage.setItem('chiu189_cache', JSON.stringify(j)); } catch (e) {}
     $('#state').hidden = true; $('#state').innerHTML = '';
     render();
     const s = sched();
@@ -626,19 +649,19 @@ function fullCard(r, i) {
       <h2>${esc(clean(r.title))}</h2>
       <div class="meta"><b>熱議快訊・只發 Threads</b>・按通過 5 分鐘內發</div>
       ${htag}
-      <div class="imgs">${(r.imgs || []).map((src, k) => `<img src="${esc(src)}" alt="第 ${k + 1} 張圖" loading="lazy">`).join('')}</div>
+      ${imgBox(r)}
       <ul class="check">${(r.check || []).map((c) => `<li>${esc(c)}</li>`).join('')}</ul>
       <div class="capbox">${esc(th)}</div>
       ${st === 'wait' ? `<div class="btns"><button type="button" class="okb" data-act="ok">通過，馬上發</button><button type="button" data-act="fix">要改</button><button type="button" data-act="hotno">不發</button></div>
       <div class="fixbox" hidden><div class="chips">${['文案再短一點', '口氣再好笑一點', '換一張圖', '圖上的字改一下', '傳聞要寫清楚'].map((c) => `<button type="button" data-chip="${esc(c)}" aria-pressed="false">${esc(c)}</button>`).join('')}</div><textarea placeholder="點上面的選項，或自己寫：例如文案改成「…」、圖換成背面"></textarea><div class="note2">Claude 改好會放回這裡、傳 LINE 給你，再按通過才發。熱議有時效，大約 10～20 分鐘改好。</div><div class="btns"><button type="button" class="okb" data-act="sendfix">送出意見</button><button type="button" data-act="cancel">取消</button></div></div>` : '<div class="btns"><button type="button" class="ghost" data-act="clear">按錯了，撤回決定</button></div>'}
     </div>`; }
     const tag = st === 'ok' ? '<span class="tag ok">已通過・等自動排程</span>' : st === 'fix' ? '<span class="tag fix">已退回・等 Claude 改</span>' : '';
-    const caps = r.caps || {}, n = (r.imgs || []).length;
+    const caps = r.caps || {}, n = (r.imgs || []).length || r.nimg || 0;
     return `<div>
       <h2>${esc(clean(r.title))}</h2>
       <div class="meta">預計 <b>${esc(r.when)}</b>・${r.kind === 'vid' ? '影片・FB／IG' : 'FB／IG／Threads'}</div>
       ${tag}
-      <div class="imgs">${(r.imgs || []).map((src, k) => `<img src="${esc(src)}" alt="第 ${k + 1} 張圖" loading="lazy">`).join('')}</div>
+      ${imgBox(r)}
       ${n > 1 ? `<div class="hint">${r.kind === 'vid' ? `影片畫面 ${n} 張` : `共 ${n} 張`}，左右滑 →</div>` : ''}
       <ul class="check">${(r.check || []).map((c) => `<li>${esc(c)}</li>`).join('')}</ul>
       ${(() => { const ks = ['FB', 'IG', 'Threads'].filter((k) => caps[k]).filter((k) => !(k === 'IG' && caps.IG === caps.FB)); if (!ks.length) return ''; const lab = (k) => k === 'FB' && caps.IG === caps.FB ? 'FB／IG' : k;
@@ -683,7 +706,7 @@ function sortReview() {
 }
 function renderReview() {
   const S = sortReview(), dec = data.decisions || {}, today = new Date(); today.setHours(0, 0, 0, 0);
-  const th = (r, cls) => { const src = (r.imgs || [])[0]; return `<div class="${cls}">${src ? `<img src="${esc(src)}" alt="" loading="lazy">` : ic(r.kind === 'vid' ? 'video' : 'doc')}</div>`; };
+  const th = (r, cls) => { const src = r.cover || (r.imgs || [])[0]; return `<div class="${cls}">${src ? `<img src="${esc(src)}" alt="" loading="lazy">` : ic(r.kind === 'vid' ? 'video' : 'doc')}</div>`; };
   const ttl = (r) => esc(clean(String(r.title || '').split('｜')[0]).replace(/^🎬\s*/, ''));
   const full = (r, i) => `<div class="full" hidden>${fullCard(r, i)}<button type="button" class="linkb" data-act="toggle">收起 ︿</button></div><div class="msg"></div>`;
   const row = ([r, i], mode) => {
@@ -1003,6 +1026,7 @@ function openFull(card, force) {
   const f = card.querySelector('.full'); if (!f) return;
   const show = force == null ? f.hidden : force;
   f.hidden = !show; card.classList.toggle('open', show);
+  if (show) loadImgs(card);
   const pr = card.closest('.pair'); if (pr) pr.classList.toggle('open', show);
 }
 function listClick(e) {
@@ -1067,6 +1091,15 @@ $('#reload').addEventListener('click', () => load());
 // 像 APP：切回這個畫面就自動更新；開著的時候每 5 分鐘更新一次
 document.addEventListener('visibilitychange', () => { if (!document.hidden && Date.now() - lastLoad > 30000) load(true); });
 setInterval(() => { if (!document.hidden) load(true); }, 5 * 60 * 1000);
+// 2026-11-19 加速：先顯示這支手機上次存的內容（秒開），新資料到了再自動換掉
+try {
+  const c = getPin() && JSON.parse(localStorage.getItem('chiu189_cache') || 'null');
+  if (c && c.ok && c.reviews) {
+    data = c; render(); $('#state').hidden = true;
+    let sv = ''; try { sv = sessionStorage.getItem('chiu189_tab') || ''; } catch (e) {}
+    setTab(sv || 'review'); firstLoad = false;
+  }
+} catch (e) { data = { reviews: [], decisions: {} }; }
 load();
 
 // 🔔 手機通知（2026-11-05）：取代 LINE 秘書。iPhone 要先「加入主畫面」再從圖示打開
