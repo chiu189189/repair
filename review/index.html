@@ -420,6 +420,11 @@ details.st-row[open] .st-v::after { transform: rotate(90deg); }
 .lxbtn button{font-size:14px;padding:6px 14px;border-radius:999px;border:1px solid var(--line,#ccc);background:transparent;color:inherit}
 .lxbtn button.ok{background:#a8843f;color:#fff;border-color:#a8843f}
 .lxmsg,.lxok{font-size:12px;color:#3d7a4a}
+details.lxwrap > summary { cursor: pointer; list-style: none; }
+details.lxwrap > summary::-webkit-details-marker { display: none; }
+.lxtog { margin-left: auto; font-weight: 600; letter-spacing: 0; color: var(--mute); }
+.lxtog::after { content: "展開 ▾"; }
+details.lxwrap[open] .lxtog::after { content: "收起 ▴"; }
 </style>
 </head>
 <body>
@@ -586,6 +591,8 @@ function toast(t, undo) {
 // ① 待辦：所有要你動手的事集中在這裡
 // 2026-11-19 精品 WhatsApp 先不上 → 待辦裡校正（用戶：要你動手的放待辦）
 const nf = (x) => (x == null ? '—' : Number(x).toLocaleString('zh-TW'));
+// 預設收起來（11/19 用戶：可以縮小，比較不會佔版面）；記住上次開或關
+function lxOpen() { try { return localStorage.getItem('chiu189_lxopen') === '1'; } catch (e) { return false; } }
 function luxSent() { try { return JSON.parse(localStorage.getItem('chiu189_luxfix') || '{}'); } catch (e) { return {}; } }
 function holdHtml(lh) {
   const fixSent = (() => { try { return JSON.parse(localStorage.getItem('chiu189_luxfix') || '{}'); } catch (e) { return {}; } })();
@@ -658,9 +665,11 @@ function renderTodo() {
   const nowait = !sortReview().n;
   $('#todo').innerHTML = (out.length ? `<div class="sec">要你處理</div><div class="todo">` + out.map(([c, t, go, gl]) => /^https?:/.test(go)
       ? `<a href="${esc(go)}" target="_blank" rel="noopener"><span class="ic ${c}"></span><span class="tx">${sub2(t)}</span><span class="go">${gl}${ic('ext')}</span></a>`
-      : `<button type="button" class="ti" data-go="${go}"><span class="ic ${c}"></span><span class="tx">${sub2(t)}</span><span class="go">${gl}${ic('chev')}</span></button>`).join('') + '</div>' : '') + (lh && lh.n ? `<div class="sec">精品要你校正${lhLeft ? `（${lhLeft} 件）` : '（都送出了）'}</div>${holdHtml(lh)}` : '')
+      : `<button type="button" class="ti" data-go="${go}"><span class="ic ${c}"></span><span class="tx">${sub2(t)}</span><span class="go">${gl}${ic('chev')}</span></button>`).join('') + '</div>' : '') + (lh && lh.n ? `<details class="lxwrap"${lxOpen() ? ' open' : ''}><summary class="sec">精品要你校正${lhLeft ? `（${lhLeft} 件）` : '（都送出了）'}<span class="lxtog"></span></summary>${holdHtml(lh)}</details>` : '')
     + (remind ? `<div class="sec">提醒</div>${remind}` : '');
   bindHold($('#todo'));
+  const lw = $('#todo').querySelector('details.lxwrap');
+  if (lw) lw.addEventListener('toggle', () => { try { localStorage.setItem('chiu189_lxopen', lw.open ? '1' : '0'); } catch (e) {} });
   // 招呼語＋總件數
   const hr = now.getHours(), hi = hr < 11 ? '早安' : hr < 18 ? '午安' : '晚安';
   const waitN = sortReview().n, total = waitN + out.length + lhLeft;
