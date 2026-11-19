@@ -589,7 +589,7 @@ const nf = (x) => (x == null ? '—' : Number(x).toLocaleString('zh-TW'));
 function luxSent() { try { return JSON.parse(localStorage.getItem('chiu189_luxfix') || '{}'); } catch (e) { return {}; } }
 function holdHtml(lh) {
   const fixSent = (() => { try { return JSON.parse(localStorage.getItem('chiu189_luxfix') || '{}'); } catch (e) { return {}; } })();
-  return lh && lh.n ? `<div class="sc"><div class="sc-desc">同行群組 360 這幾則程式看不懂，沒自動上架。改好品名、港幣按「上架」，5 分鐘內上到批發專區；不要的按「不上」。你改的我會記住，下次同一則重貼照做；同一種情況連續照建議 5 次，以後就自動上。</div>`
+  return lh && lh.n ? `<div class="sc"><div class="sc-desc">同行群組 360 這幾則程式看不懂，沒自動上架。改好品名、港幣按「上架」，5 分鐘內收進批發專區，<b>先不公開</b>，等 LINE 打「商品」發出去才公開；不要的按「不上」。你改的我會記住，下次同一則重貼照做；同一種情況連續照建議 5 次，以後就自動上。</div>`
     + lh.items.map((x) => {
       const sv = fixSent[x.uid], sentLabel = sv && typeof sv === 'object' ? sv.label : sv;
       // 送出後還沒處理完才顯示「已送出」；已上架且價錢等於送出的＝處理好了
@@ -601,7 +601,7 @@ function holdHtml(lh) {
       return `<div class="lxfix" data-uid="${esc(x.uid)}">${x.img ? `<img src="data:image/jpeg;base64,${x.img}" alt="">` : ''}<div class="lxb">
         <div class="lxt">${esc(x.text).replace(/\n+/g, ' / ')}</div><small>${esc(x.t)}・${esc(x.r)}${x.n ? `・照片 ${x.n} 張` : ''}</small>
         ${sent ? `<div class="lxok">✓ 已送出「${esc(sent)}」，5 分鐘內處理</div><div class="lxbtn"><button type="button" data-lxedit="1">送錯了，改</button></div><div class="lxform" hidden>${form}</div>`
-          : x.listed ? `<div class="lxok">✓ 已上架：${esc(x.name)}・港幣 ${nf(x.hkd)}・賣 NT$ ${nf(x.sell)}</div><div class="lxbtn"><button type="button" data-lxedit="1">價錢／品名打錯，改</button></div><div class="lxform" hidden>${form}</div>`
+          : x.listed ? `<div class="lxok">✓ 已收好：${esc(x.name)}・港幣 ${nf(x.hkd)}・賣 NT$ ${nf(x.sell)}（LINE 打「商品」發出後公開）</div><div class="lxbtn"><button type="button" data-lxedit="1">價錢／品名打錯，改</button></div><div class="lxform" hidden>${form}</div>`
           : form}
       </div></div>`;
     }).join('')
