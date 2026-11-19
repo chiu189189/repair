@@ -591,18 +591,26 @@ function holdHtml(lh) {
   const fixSent = (() => { try { return JSON.parse(localStorage.getItem('chiu189_luxfix') || '{}'); } catch (e) { return {}; } })();
   return lh && lh.n ? `<div class="sc"><div class="sc-desc">同行群組 360 這幾則程式看不懂，沒自動上架。改好品名、港幣按「上架」，5 分鐘內上到批發專區；不要的按「不上」。你改的我會記住，下次同一則重貼照做；同一種情況連續照建議 5 次，以後就自動上。</div>`
     + lh.items.map((x) => {
-      const sent = fixSent[x.uid];
-      return `<div class="lxfix" data-uid="${esc(x.uid)}">${x.img ? `<img src="data:image/jpeg;base64,${x.img}" alt="">` : ''}<div class="lxb">
-        <div class="lxt">${esc(x.text).replace(/\n+/g, ' / ')}</div><small>${esc(x.t)}・${esc(x.r)}${x.n ? `・照片 ${x.n} 張` : ''}</small>
-        ${sent ? `<div class="lxok">✓ 已送出「${esc(sent)}」，5 分鐘內處理</div>` : `${(x.prices || []).length > 1 ? `<small>文字裡的價格：${x.prices.map((p) => nf(p)).join('、')}</small>` : ''}
+      const sv = fixSent[x.uid], sentLabel = sv && typeof sv === 'object' ? sv.label : sv;
+      // 送出後還沒處理完才顯示「已送出」；已上架且價錢等於送出的＝處理好了
+      const sent = sv && !(x.listed && (typeof sv !== 'object' || +sv.hkd === +x.hkd)) ? sentLabel : '';
+      const form = `${(x.prices || []).length > 1 ? `<small>文字裡的價格：${x.prices.map((p) => nf(p)).join('、')}</small>` : ''}
         <label>品名<input class="lxn" value="${esc(x.name || '')}" placeholder="例：Mini Lindy 金棕 銀扣 TC 皮"></label>
         <label>港幣<input class="lxh" inputmode="numeric" value="${x.hkd || ''}" placeholder="例：64800"></label>
-        <div class="lxbtn"><button type="button" class="ok" data-lx="上架">上架</button><button type="button" data-lx="不上">不上</button><span class="lxmsg"></span></div>`}
+        <div class="lxbtn"><button type="button" class="ok" data-lx="上架">${x.listed ? '改好重上' : '上架'}</button>${x.listed ? '' : '<button type="button" data-lx="不上">不上</button>'}<span class="lxmsg"></span></div>`;
+      return `<div class="lxfix" data-uid="${esc(x.uid)}">${x.img ? `<img src="data:image/jpeg;base64,${x.img}" alt="">` : ''}<div class="lxb">
+        <div class="lxt">${esc(x.text).replace(/\n+/g, ' / ')}</div><small>${esc(x.t)}・${esc(x.r)}${x.n ? `・照片 ${x.n} 張` : ''}</small>
+        ${sent ? `<div class="lxok">✓ 已送出「${esc(sent)}」，5 分鐘內處理</div><div class="lxbtn"><button type="button" data-lxedit="1">送錯了，改</button></div><div class="lxform" hidden>${form}</div>`
+          : x.listed ? `<div class="lxok">✓ 已上架：${esc(x.name)}・港幣 ${nf(x.hkd)}・賣 NT$ ${nf(x.sell)}</div><div class="lxbtn"><button type="button" data-lxedit="1">價錢／品名打錯，改</button></div><div class="lxform" hidden>${form}</div>`
+          : form}
       </div></div>`;
     }).join('')
     + `<div class="sc-foot">精品批發的事，跟維修無關・更新 ${esc(String(lh.asOf || '').slice(5).replace('-', '/'))}</div></div>` : '';
 }
 function bindHold(root) {
+  root.querySelectorAll('.lxfix [data-lxedit]').forEach((b4) => b4.addEventListener('click', () => {
+    const f = b4.closest('.lxb').querySelector('.lxform'); if (f) { f.hidden = false; b4.parentElement.hidden = true; const h = f.querySelector('.lxh'); if (h) h.focus(); }
+  }));
   root.querySelectorAll('.lxfix [data-lx]').forEach((b3) => b3.addEventListener('click', async () => {
     const box = b3.closest('.lxfix'), act = b3.dataset.lx, msg = box.querySelector('.lxmsg');
     const name = box.querySelector('.lxn').value.trim(), hkd = box.querySelector('.lxh').value.replace(/[^\d]/g, '');
@@ -613,7 +621,7 @@ function bindHold(root) {
       const j = await askApi({ a: 'ask', text });
       if (!j) { msg.textContent = ''; box.querySelectorAll('button').forEach((x) => { x.disabled = false; }); return; }
       const label = act === '上架' ? `上架 ${name}・港幣 ${nf(+hkd)}` : '不上';
-      try { const o = JSON.parse(localStorage.getItem('chiu189_luxfix') || '{}'); o[box.dataset.uid] = label; localStorage.setItem('chiu189_luxfix', JSON.stringify(o)); } catch (e) {}
+      try { const o = JSON.parse(localStorage.getItem('chiu189_luxfix') || '{}'); o[box.dataset.uid] = { label, hkd: act === '上架' ? +hkd : null }; localStorage.setItem('chiu189_luxfix', JSON.stringify(o)); } catch (e) {}
       msg.textContent = `✓ 已送出（${label}），5 分鐘內處理`; setTimeout(renderTodo, 1200);
     } catch (e) { msg.textContent = e.message === 'pin' ? '密碼不對，請再按一次' : '沒送出去，請再按一次'; box.querySelectorAll('button').forEach((x) => { x.disabled = false; }); }
   }));
@@ -644,7 +652,7 @@ function renderTodo() {
   const gapLines = [noImg.length ? `圖文缺 ${noImg.length} 天・最近 ${md(noImg[0])}` : '', noVid.length ? `影片缺 ${noVid.length} 天・最近 ${md(noVid[0])}・丟進「待發」` : ''].filter(Boolean);
   const remind = gap ? `<button type="button" class="remind" data-go="sched"><span class="rm-ic">${ic('cal')}</span><span class="tx"><b>排程缺口</b>${gapLines.map((x) => `<small>${x}</small>`).join('')}</span><span class="go">看行程${ic('chev')}</span></button>` : '';
   const lh = st.luxuryHold, sentL = luxSent();
-  const lhLeft = lh && lh.items ? lh.items.filter((x) => !sentL[x.uid]).length : 0;
+  const lhLeft = lh && lh.items ? lh.items.filter((x) => !x.listed && !sentL[x.uid]).length : 0;
   todoN = out.length + lhLeft;
   const fixes = rv.filter((x) => ((data.decisions || {})[x.id] || {}).decision === 'fix' && !(x.id || '').startsWith('hot-')).length;
   const nowait = !sortReview().n;
