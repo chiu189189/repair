@@ -117,12 +117,21 @@
   .blk .sec{margin:0 0 16px;font-size:24px}
   .blk .sec small{font-size:14px;margin-top:4px}
   /* 問題卡片：一排往右滑，最右邊露出一半 */
-  .blk.b0 .grid{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;padding-bottom:6px;margin-right:-16px;padding-right:16px}
-  .blk.b0 .grid::-webkit-scrollbar{display:none}
-  .blk.b0 .tile{flex:0 0 220px;min-height:220px;scroll-snap-align:start;padding:20px;border-radius:20px}
-  .blk.b0 .tile .ic{align-self:flex-start;width:56px;height:56px;margin-bottom:14px;border-radius:50%;background:var(--accent-soft);display:flex;align-items:center;justify-content:center;font-size:28px}
-  .blk.b0 .tile b{font-size:19px}
+  @media (min-width:900px){ /* 2026-11-19 電腦版服務卡：3 欄×2 排，圖示放左邊淡金圓底（用戶 11/18 選的）；手機維持兩欄小卡 */
+  .blk.b0 .grid{grid-template-columns:repeat(3,1fr);gap:12px}
+  .blk.b0 .tile{display:grid;grid-template-columns:64px 1fr;column-gap:18px;row-gap:2px;align-content:center;padding:20px;min-height:140px}
+  .blk.b0 .tile .ic{grid-row:1/4;align-self:center;width:64px;height:64px;border-radius:50%;background:var(--accent-soft);display:flex;align-items:center;justify-content:center;font-size:32px}
+  .blk.b0 .tile>b,.blk.b0 .tile>span:not(.ic),.blk.b0 .tile>em{grid-column:2}
+  .blk.b0 .tile b{font-size:18px}
+  .blk.b0 .tile span{font-size:14px}
+  .blk.b0 .tile em{margin-top:4px}
   .blk.b0 .more{margin-top:16px}
+  }
+  @media (max-width:899px){ /* 2026-11-19 手機服務卡：兩欄、圖示放左邊小圓底（用戶選 B） */
+  .blk.b0 .tile{display:grid;grid-template-columns:44px 1fr;column-gap:12px;row-gap:2px;align-content:center;padding:14px 12px}
+  .blk.b0 .tile .ic{grid-row:1/4;align-self:center;width:44px;height:44px;border-radius:50%;background:var(--accent-soft);display:flex;align-items:center;justify-content:center;font-size:22px}
+  .blk.b0 .tile>b,.blk.b0 .tile>span:not(.ic),.blk.b0 .tile>em{grid-column:2}
+  }
   @media (min-width:900px){
     .band .hero{display:block;height:640px;min-height:0}
     .band .hero::after{background:linear-gradient(90deg,rgba(0,0,0,.82) 0%,rgba(0,0,0,.55) 40%,rgba(0,0,0,0) 75%)}
@@ -135,13 +144,6 @@
     .blk.b5{padding:32px 24px}
     .blk .sec{margin-bottom:22px;font-size:32px}
     .blk .sec small{font-size:15px;margin-top:6px}
-    .blk.b0 .grid{gap:16px;margin-right:calc(-1 * max(24px,(100vw - 1152px) / 2));padding-right:max(24px,(100vw - 1152px) / 2)}
-    .blk.b0 .tile{flex:0 0 300px;min-height:300px;padding:28px;border-radius:22px}
-    .blk.b0 .tile .ic{width:72px;height:72px;margin-bottom:18px;font-size:36px}
-    .blk.b0 .tile b{font-size:22px}
-    .blk.b0 .tile span{font-size:15px}
-    .blk.b0 .tile em{font-size:15px}
-    .blk.b0 .more{max-width:320px;margin-top:22px}
   }
   @media (min-width:900px) and (prefers-color-scheme:dark){.blk.b1{background:#000}}
   /* 2026-11-18 小動畫：營業中綠點呼吸、問題卡片滑到才浮上來、LINE 預約偶爾晃一下（手機設「減少動態效果」就全部不動） */
