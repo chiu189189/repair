@@ -89,6 +89,12 @@
   .band .hero img{width:100%;height:100%;min-height:0;aspect-ratio:auto;object-fit:cover;opacity:.9}
   .band .hero::after{content:"";position:absolute;inset:0;background:linear-gradient(0deg,rgba(0,0,0,.9) 0%,rgba(0,0,0,.65) 45%,rgba(0,0,0,.15) 100%)}
   .band .hero .txt{position:relative;z-index:1;width:100%;padding:170px 16px 22px;color:#fff}  /* 手機：上面留一段看照片，字和營業狀態整塊在第一個畫面看得到 */
+  @media (max-width:899px){ /* 2026-11-19 手機：照片只放上半段、顯微鏡露出來，字往下疊在黑底 */
+    .band .hero picture{bottom:auto;height:330px}
+    .band .hero img{object-position:45% 100%}
+    .band .hero::after{background:linear-gradient(0deg,#000 0%,#000 42%,rgba(0,0,0,.55) 60%,rgba(0,0,0,0) 85%)}
+    .band .hero .txt{padding-top:250px}
+  }
   .hero h1{color:#fff;font-size:34px}
   .hero p{color:#d8d8dc}
   .hero .eyebrow{color:#C8A96A}
