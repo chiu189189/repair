@@ -584,6 +584,40 @@ function toast(t, undo) {
 }
 
 // ① 待辦：所有要你動手的事集中在這裡
+// 2026-11-19 精品 WhatsApp 先不上 → 待辦裡校正（用戶：要你動手的放待辦）
+const nf = (x) => (x == null ? '—' : Number(x).toLocaleString('zh-TW'));
+function luxSent() { try { return JSON.parse(localStorage.getItem('chiu189_luxfix') || '{}'); } catch (e) { return {}; } }
+function holdHtml(lh) {
+  const fixSent = (() => { try { return JSON.parse(localStorage.getItem('chiu189_luxfix') || '{}'); } catch (e) { return {}; } })();
+  return lh && lh.n ? `<div class="sc"><div class="sc-desc">同行群組 360 這幾則程式看不懂，沒自動上架。改好品名、港幣按「上架」，5 分鐘內上到批發專區；不要的按「不上」。你改的我會記住，下次同一則重貼照做；同一種情況連續照建議 5 次，以後就自動上。</div>`
+    + lh.items.map((x) => {
+      const sent = fixSent[x.uid];
+      return `<div class="lxfix" data-uid="${esc(x.uid)}">${x.img ? `<img src="data:image/jpeg;base64,${x.img}" alt="">` : ''}<div class="lxb">
+        <div class="lxt">${esc(x.text).replace(/\n+/g, ' / ')}</div><small>${esc(x.t)}・${esc(x.r)}${x.n ? `・照片 ${x.n} 張` : ''}</small>
+        ${sent ? `<div class="lxok">✓ 已送出「${esc(sent)}」，5 分鐘內處理</div>` : `${(x.prices || []).length > 1 ? `<small>文字裡的價格：${x.prices.map((p) => nf(p)).join('、')}</small>` : ''}
+        <label>品名<input class="lxn" value="${esc(x.name || '')}" placeholder="例：Mini Lindy 金棕 銀扣 TC 皮"></label>
+        <label>港幣<input class="lxh" inputmode="numeric" value="${x.hkd || ''}" placeholder="例：64800"></label>
+        <div class="lxbtn"><button type="button" class="ok" data-lx="上架">上架</button><button type="button" data-lx="不上">不上</button><span class="lxmsg"></span></div>`}
+      </div></div>`;
+    }).join('')
+    + `<div class="sc-foot">精品批發的事，跟維修無關・更新 ${esc(String(lh.asOf || '').slice(5).replace('-', '/'))}</div></div>` : '';
+}
+function bindHold(root) {
+  root.querySelectorAll('.lxfix [data-lx]').forEach((b3) => b3.addEventListener('click', async () => {
+    const box = b3.closest('.lxfix'), act = b3.dataset.lx, msg = box.querySelector('.lxmsg');
+    const name = box.querySelector('.lxn').value.trim(), hkd = box.querySelector('.lxh').value.replace(/[^\d]/g, '');
+    if (act === '上架' && (!name || !hkd)) { msg.textContent = '品名和港幣都要填'; return; }
+    const text = act === '上架' ? `【精品校正】${box.dataset.uid}｜上架｜港幣=${hkd}｜品名=${name.replace(/[｜|]/g, ' ')}` : `【精品校正】${box.dataset.uid}｜不上`;
+    box.querySelectorAll('button').forEach((x) => { x.disabled = true; }); msg.textContent = '送出中…';
+    try {
+      const j = await askApi({ a: 'ask', text });
+      if (!j) { msg.textContent = ''; box.querySelectorAll('button').forEach((x) => { x.disabled = false; }); return; }
+      const label = act === '上架' ? `上架 ${name}・港幣 ${nf(+hkd)}` : '不上';
+      try { const o = JSON.parse(localStorage.getItem('chiu189_luxfix') || '{}'); o[box.dataset.uid] = label; localStorage.setItem('chiu189_luxfix', JSON.stringify(o)); } catch (e) {}
+      msg.textContent = `✓ 已送出（${label}），5 分鐘內處理`; setTimeout(renderTodo, 1200);
+    } catch (e) { msg.textContent = e.message === 'pin' ? '密碼不對，請再按一次' : '沒送出去，請再按一次'; box.querySelectorAll('button').forEach((x) => { x.disabled = false; }); }
+  }));
+}
 function renderTodo() {
   const items = sched().schedule || [], st = sched().stats || {}, rv = reviews();
   const now = new Date(), tk = dayKey(now), out = [];
@@ -609,17 +643,21 @@ function renderTodo() {
   const sub2 = (t) => { const [a, b] = String(t).split('｜'); return esc(a) + (b ? `<small>${esc(b)}</small>` : ''); };
   const gapLines = [noImg.length ? `圖文缺 ${noImg.length} 天・最近 ${md(noImg[0])}` : '', noVid.length ? `影片缺 ${noVid.length} 天・最近 ${md(noVid[0])}・丟進「待發」` : ''].filter(Boolean);
   const remind = gap ? `<button type="button" class="remind" data-go="sched"><span class="rm-ic">${ic('cal')}</span><span class="tx"><b>排程缺口</b>${gapLines.map((x) => `<small>${x}</small>`).join('')}</span><span class="go">看行程${ic('chev')}</span></button>` : '';
-  todoN = out.length;
+  const lh = st.luxuryHold, sentL = luxSent();
+  const lhLeft = lh && lh.items ? lh.items.filter((x) => !sentL[x.uid]).length : 0;
+  todoN = out.length + lhLeft;
   const fixes = rv.filter((x) => ((data.decisions || {})[x.id] || {}).decision === 'fix' && !(x.id || '').startsWith('hot-')).length;
   const nowait = !sortReview().n;
   $('#todo').innerHTML = (out.length ? `<div class="sec">要你處理</div><div class="todo">` + out.map(([c, t, go, gl]) => /^https?:/.test(go)
       ? `<a href="${esc(go)}" target="_blank" rel="noopener"><span class="ic ${c}"></span><span class="tx">${sub2(t)}</span><span class="go">${gl}${ic('ext')}</span></a>`
-      : `<button type="button" class="ti" data-go="${go}"><span class="ic ${c}"></span><span class="tx">${sub2(t)}</span><span class="go">${gl}${ic('chev')}</span></button>`).join('') + '</div>' : '') + (remind ? `<div class="sec">提醒</div>${remind}` : '');
+      : `<button type="button" class="ti" data-go="${go}"><span class="ic ${c}"></span><span class="tx">${sub2(t)}</span><span class="go">${gl}${ic('chev')}</span></button>`).join('') + '</div>' : '') + (lh && lh.n ? `<div class="sec">精品要你校正${lhLeft ? `（${lhLeft} 件）` : '（都送出了）'}</div>${holdHtml(lh)}` : '')
+    + (remind ? `<div class="sec">提醒</div>${remind}` : '');
+  bindHold($('#todo'));
   // 招呼語＋總件數
   const hr = now.getHours(), hi = hr < 11 ? '早安' : hr < 18 ? '午安' : '晚安';
-  const waitN = sortReview().n, total = waitN + out.length;
+  const waitN = sortReview().n, total = waitN + out.length + lhLeft;
   $('#greet').innerHTML = total
-    ? `<b>${hi}右丞，還有 <em>${total}</em> 件事要你處理</b><span>${waitN ? `${waitN} 件等你按` : ''}${waitN && out.length ? '・' : ''}${out.length ? `${out.length} 件要處理` : ''}${fixes ? `・${fixes} 篇 Claude 改稿中` : ''}</span>`
+    ? `<b>${hi}右丞，還有 <em>${total}</em> 件事要你處理</b><span>${waitN ? `${waitN} 件等你按` : ''}${waitN && (out.length + lhLeft) ? '・' : ''}${out.length + lhLeft ? `${out.length + lhLeft} 件要處理` : ''}${fixes ? `・${fixes} 篇 Claude 改稿中` : ''}</span>`
     : `<b>${hi}右丞，今天沒事了</b><span>${nowait ? '新稿做好會傳 LINE 給你' : ''}</span>`;
 }
 let todoN = 0;
@@ -979,21 +1017,6 @@ function renderStats() {
       + (lx.devices7 != null ? row('不同的裝置', '近 7 天總共', `${n(lx.devices7)} 台`, '') : ''),
       `精品批發的數字，跟維修無關・算裝置不算人，你自己看也算${hasEst ? `・${esc(est.slice(5).replace('-', '/'))} 以前是估的` : ''}・更新 ${esc(String(lx.asOf || '').slice(5).replace('-', '/'))}`);
   }
-  // 2026-11-19 精品 WhatsApp 先不上、要你看一下的（一則多價、沒品名、價格看不清楚）；wa360_sync.py 每 5 分鐘更新
-  const lh = st.luxuryHold;
-  const fixSent = (() => { try { return JSON.parse(localStorage.getItem('chiu189_luxfix') || '{}'); } catch (e) { return {}; } })();
-  const holdCard = lh && lh.n ? `<div class="sc"><div class="sc-desc">同行群組 360 這幾則程式看不懂，沒自動上架。改好品名、港幣按「上架」，5 分鐘內上到批發專區；不要的按「不上」。你改的我會記住，下次同一則重貼照做；同一種情況連續照建議 5 次，以後就自動上。</div>`
-    + lh.items.map((x) => {
-      const sent = fixSent[x.uid];
-      return `<div class="lxfix" data-uid="${esc(x.uid)}">${x.img ? `<img src="data:image/jpeg;base64,${x.img}" alt="">` : ''}<div class="lxb">
-        <div class="lxt">${esc(x.text).replace(/\n+/g, ' / ')}</div><small>${esc(x.t)}・${esc(x.r)}${x.n ? `・照片 ${x.n} 張` : ''}</small>
-        ${sent ? `<div class="lxok">✓ 已送出「${esc(sent)}」，5 分鐘內處理</div>` : `${(x.prices || []).length > 1 ? `<small>文字裡的價格：${x.prices.map((p) => n(p)).join('、')}</small>` : ''}
-        <label>品名<input class="lxn" value="${esc(x.name || '')}" placeholder="例：Mini Lindy 金棕 銀扣 TC 皮"></label>
-        <label>港幣<input class="lxh" inputmode="numeric" value="${x.hkd || ''}" placeholder="例：64800"></label>
-        <div class="lxbtn"><button type="button" class="ok" data-lx="上架">上架</button><button type="button" data-lx="不上">不上</button><span class="lxmsg"></span></div>`}
-      </div></div>`;
-    }).join('')
-    + `<div class="sc-foot">精品批發的事，跟維修無關・更新 ${esc(String(lh.asOf || '').slice(5).replace('-', '/'))}</div></div>` : '';
   // 2026-11-18 用戶選成效 A：最上面 4 格（點了展開明細），其他每項一行、點了才展開
   const lxAvg = (() => { const lx2 = st.luxury; if (!lx2 || !lx2.days) return null; const f = String(lx2.first || ''); const ks = [0, 1, 2, 3, 4, 5, 6].map((i) => dayKey(new Date(Date.now() - i * 864e5))).filter((k) => !f || k >= f); return ks.length ? Math.round(ks.reduce((a2, k) => a2 + (lx2.days[k] || 0), 0) / ks.length * 10) / 10 : null; })();
   const Q7 = ((st.site || {}).q || {})['7'];
@@ -1009,7 +1032,6 @@ function renderStats() {
     ['web', webCard, 'globe', '逛官網的人', `按電話／LINE ${want == null ? '—' : n(want)} 次・近 7 天`, wb.asOf ? `${n(wb.users)} 人` : '—', wb.asOf && wb.usersPrev ? delta(wb.users, wb.usersPrev) : ''],
     ['fan', fanCard, 'users', '粉絲', so && so.fb != null ? `IG ${n(so.ig)}・FB ${n(so.fb)}・Threads ${n(thr.followers)}` : '', so && so.fb != null ? n((so.fb || 0) + (so.ig || 0) + (thr.followers || 0)) : '—', ''],
     ['thr', thrCard, 'eye', 'Threads 一般一篇', topP ? `最紅：${esc(clean(topP.t).slice(0, 14))} ${n(topP.views)}` : '近 7 天', med == null ? '—' : `${n(med)} 次`, ''],
-    ['lhold', holdCard, 'bag', '精品先不上', '近 7 天・程式看不懂、要你看', lh ? `${n(lh.n)} 件` : '—', ''],
     ['lux', luxCard, 'bag', '精品報價頁', lxAvg != null ? `今天・平均一天 ${lxAvg} 台` : '', st.luxury && st.luxury.days ? `${n(st.luxury.days[dayKey(new Date())] || 0)} 台` : '—', ''],
   ].filter((x) => x[1]);
   const rowHtml = rowsL.length ? `<div class="sec">細項（點開看）</div>` + rowsL.map(([k, c, i2, t2, sub2, v, d]) => `<details class="st-row" data-k="${k}"${stOpen.rows[k] ? ' open' : ''}><summary><span class="st-ic">${ic(i2)}</span><span class="st-k">${t2}${sub2 ? `<small>${sub2}</small>` : ''}</span><span class="st-v">${v}${d}</span></summary><div class="st-body">${c}</div></details>`).join('') : '';
@@ -1024,20 +1046,6 @@ function renderStats() {
     pnl.hidden = !show; b2.classList.toggle('on', show); stOpen.tile = show ? b2.dataset.tile : '';
   }));
   $('#stats').querySelectorAll('details.st-row').forEach((d2) => d2.addEventListener('toggle', () => { stOpen.rows[d2.dataset.k] = d2.open; }));
-  $('#stats').querySelectorAll('.lxfix [data-lx]').forEach((b3) => b3.addEventListener('click', async () => {
-    const box = b3.closest('.lxfix'), act = b3.dataset.lx, msg = box.querySelector('.lxmsg');
-    const name = box.querySelector('.lxn').value.trim(), hkd = box.querySelector('.lxh').value.replace(/[^\d]/g, '');
-    if (act === '上架' && (!name || !hkd)) { msg.textContent = '品名和港幣都要填'; return; }
-    const text = act === '上架' ? `【精品校正】${box.dataset.uid}｜上架｜港幣=${hkd}｜品名=${name.replace(/[｜|]/g, ' ')}` : `【精品校正】${box.dataset.uid}｜不上`;
-    box.querySelectorAll('button').forEach((x) => { x.disabled = true; }); msg.textContent = '送出中…';
-    try {
-      const j = await askApi({ a: 'ask', text });
-      if (!j) { msg.textContent = ''; box.querySelectorAll('button').forEach((x) => { x.disabled = false; }); return; }
-      const label = act === '上架' ? `上架 ${name}・港幣 ${n(+hkd)}` : '不上';
-      try { const o = JSON.parse(localStorage.getItem('chiu189_luxfix') || '{}'); o[box.dataset.uid] = label; localStorage.setItem('chiu189_luxfix', JSON.stringify(o)); } catch (e) {}
-      msg.textContent = `✓ 已送出（${label}），5 分鐘內處理`;
-    } catch (e) { msg.textContent = e.message === 'pin' ? '密碼不對，請再按一次' : '沒送出去，請再按一次'; box.querySelectorAll('button').forEach((x) => { x.disabled = false; }); }
-  }));
   $('#stats').querySelectorAll('details.fold').forEach((d) => d.addEventListener('toggle', () => { try { const o = JSON.parse(localStorage.getItem('chiu189_open') || '{}'); o[d.dataset.k] = d.open; localStorage.setItem('chiu189_open', JSON.stringify(o)); } catch (e) {} }));
 }
 
