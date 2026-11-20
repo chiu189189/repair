@@ -109,6 +109,10 @@ main { padding-top: 16px; padding-bottom: calc(100px + env(safe-area-inset-botto
 .pill.img { background: var(--t-gold); color: var(--gold); }
 .pill.vid { background: var(--t-vid); color: var(--vid); }
 .pill.hot { background: var(--t-hot); color: var(--hot); }
+.pill.cmt { background: var(--t-gold); color: var(--gold); }
+.cmtq { font-size: 14px; color: var(--sub); margin-top: 8px; }
+.cmtq b { color: var(--ink); font-weight: 600; }
+.cmtsay { font-size: 16px; line-height: 1.6; margin: 8px 0 2px; white-space: pre-wrap; overflow-wrap: anywhere; }
 .pill.ok, .tag.ok, .dl.up { background: var(--t-ok); color: var(--ok); }
 .pill.bad, .tag.wait, .tag.fix, .dl.down { background: var(--t-fix); color: var(--fix); }
 .tag { margin-top: 10px; white-space: normal; line-height: 1.45; border-radius: var(--r-md); }
@@ -490,6 +494,7 @@ const ICON = {
   eye: '<path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',
   bulb: '<path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/><path d="M9 18h6M10 22h4"/>',
   star: '<path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8-6.2-3.2L5.8 21 7 14.2 2 9.3l6.9-1z"/>',
+  chat: '<path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/>',
 };
 const ic = (k) => `<svg class="i" viewBox="0 0 24 24" aria-hidden="true">${ICON[k] || ''}</svg>`;
 const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -661,7 +666,7 @@ function renderTodo() {
   const lh = st.luxuryHold, sentL = luxSent();
   const lhLeft = lh && lh.items ? lh.items.filter((x) => !x.listed && !sentL[x.uid]).length : 0;
   todoN = out.length + lhLeft;
-  const fixes = rv.filter((x) => ((data.decisions || {})[x.id] || {}).decision === 'fix' && !(x.id || '').startsWith('hot-')).length;
+  const fixes = rv.filter((x) => ((data.decisions || {})[x.id] || {}).decision === 'fix' && !/^(hot|cmt)-/.test(x.id || '')).length;
   const nowait = !sortReview().n;
   $('#todo').innerHTML = (out.length ? `<div class="sec">要你處理</div><div class="todo">` + out.map(([c, t, go, gl]) => /^https?:/.test(go)
       ? `<a href="${esc(go)}" target="_blank" rel="noopener"><span class="ic ${c}"></span><span class="tx">${sub2(t)}</span><span class="go">${gl}${ic('ext')}</span></a>`
@@ -672,9 +677,9 @@ function renderTodo() {
   if (lw) lw.addEventListener('toggle', () => { try { localStorage.setItem('chiu189_lxopen', lw.open ? '1' : '0'); } catch (e) {} });
   // 招呼語＋總件數
   const hr = now.getHours(), hi = hr < 11 ? '早安' : hr < 18 ? '午安' : '晚安';
-  const waitN = sortReview().n, total = waitN + out.length + lhLeft;
+  const SR = sortReview(), waitN = SR.n, cmtN = SR.c, total = waitN + cmtN + out.length + lhLeft;
   $('#greet').innerHTML = total
-    ? `<b>${hi}右丞，還有 <em>${total}</em> 件事要你處理</b><span>${waitN ? `${waitN} 件等你按` : ''}${waitN && (out.length + lhLeft) ? '・' : ''}${out.length + lhLeft ? `${out.length + lhLeft} 件要處理` : ''}${fixes ? `・${fixes} 篇 Claude 改稿中` : ''}</span>`
+    ? `<b>${hi}右丞，還有 <em>${total}</em> 件事要你處理</b><span>${waitN ? `${waitN} 件等你按` : ''}${waitN && (out.length + lhLeft) ? '・' : ''}${out.length + lhLeft ? `${out.length + lhLeft} 件要處理` : ''}${cmtN ? `${waitN || out.length + lhLeft ? '・' : ''}${cmtN} 則留言` : ''}${fixes ? `・${fixes} 篇 Claude 改稿中` : ''}</span>`
     : `<b>${hi}右丞，今天沒事了</b><span>${nowait ? '新稿做好會傳 LINE 給你' : ''}</span>`;
 }
 let todoN = 0;
@@ -686,7 +691,7 @@ $('#todo').addEventListener('click', (e) => {
 
 function renderToday() {
   const items = sched().schedule || [];
-  const waiting = sortReview().n;
+  const S0 = sortReview(), waiting = S0.n + S0.c;
   // 2026-11-04 用戶：行程重複看兩次 → 不再列今天／明天，下面的行程表就有；只留沒發出去的警告
   const fails = items.filter((x) => x.ck === 'fail');
   $('#today').dataset.has = fails.length ? '1' : '';
@@ -709,6 +714,17 @@ function fullCard(r, i) {
   // 原本的完整卡片（圖、查證、文案、改日期、要改）→ 收在「看全文」裡
   const d = (data.decisions || {})[r.id], st = d ? d.decision : 'wait', hot = (r.id || '').startsWith('hot-');
   const inner = (() => {
+    if (r.kind === 'cmt') return `<div>
+      <div class="meta"><b>Threads 留言・AI 擬好了</b>・改一改按送出才會回</div>
+      <div class="cmtq">我們的貼文：${esc(String(r.post || '').split('\n')[0].slice(0, 60))}</div>
+      ${r.parent ? `<div class="cmtq">他在回：「${esc(r.parent)}」</div>` : ''}
+      <div class="cmtq"><b>@${esc(r.user || '')}</b> 說：</div>
+      <div class="cmtsay">${esc(r.text || r.title || '')}</div>
+      ${st === 'wait' ? `<textarea class="cmtta" maxlength="480">${esc((r.caps || {}).Threads || '')}</textarea>
+      <div class="note2">直接改上面的字。按送出 15 分鐘內回到 Threads。${r.url ? ` <a href="${esc(r.url)}" target="_blank" rel="noopener">在 Threads 看</a>` : ''}</div>
+      <div class="btns"><button type="button" class="okb" data-act="cmtsend">送出回覆</button><button type="button" data-act="cmtno">不回</button></div>`
+      : `<span class="tag ${st === 'ok' ? 'ok' : 'fix'}">${st === 'ok' ? '已送出・15 分鐘內回到 Threads' : '不回'}</span><div class="btns"><button type="button" class="ghost" data-act="clear">按錯了，撤回決定</button></div>`}
+    </div>`;
     if (hot) { const th = (r.caps || {}).Threads || '';
       const htag = st === 'ok' ? '<span class="tag ok">已通過・5 分鐘內發 Threads</span>' : st === 'fix' ? `<span class="tag fix">${hotFixLab(d)}</span>` : '<span class="tag wait">等你審・沒按會自動作廢（晚上做的留到早上 10 點）</span>';
       return `<div>
@@ -748,11 +764,12 @@ function whenDay(r) {
 }
 function sortReview() {
   const rv = reviews(), dec = data.decisions || {}, today = new Date(); today.setHours(0, 0, 0, 0);
-  const hot = [], pairs = [], single = [], vid = [], backup = [], done = [];
+  const hot = [], pairs = [], single = [], vid = [], backup = [], done = [], cmt = [];
   const grp = {};
   rv.forEach((r, i) => {
     if (dec[r.id]) { done.push([r, i]); return; }
     const id = r.id || '';
+    if (id.startsWith('cmt-')) { cmt.push([r, i]); return; }   // 2026-11-20 Threads 留言 AI 擬回覆
     if (id.startsWith('hot-')) { const ex = hotExpire(id); if (!ex || ex > Date.now()) hot.push([r, i]); return; }   // 過期的熱議系統會自己拿掉
     if (r.kind === 'vid') { vid.push([r, i]); return; }
     const d = whenDay(r);
@@ -768,17 +785,20 @@ function sortReview() {
   });
   const byDay = (a, b) => (whenDay(a[0]) || 0) - (whenDay(b[0]) || 0);
   single.sort(byDay); vid.sort(byDay); pairs.sort((a, b) => byDay(a[0], b[0]));
-  return { hot, pairs, single, vid, backup, done, n: hot.length + pairs.length + single.length + vid.length };
+  return { hot, pairs, single, vid, backup, done, cmt, n: hot.length + pairs.length + single.length + vid.length, c: cmt.length };
 }
 function renderReview() {
   const S = sortReview(), dec = data.decisions || {}, today = new Date(); today.setHours(0, 0, 0, 0);
-  const th = (r, cls) => { const src = r.cover || (r.imgs || [])[0]; return `<div class="${cls}">${src ? `<img src="${esc(src)}" alt="" loading="lazy">` : ic(r.kind === 'vid' ? 'video' : 'doc')}</div>`; };
+  const th = (r, cls) => { const src = r.cover || (r.imgs || [])[0]; return `<div class="${cls}">${src ? `<img src="${esc(src)}" alt="" loading="lazy">` : ic(r.kind === 'vid' ? 'video' : r.kind === 'cmt' ? 'chat' : 'doc')}</div>`; };
   const ttl = (r) => esc(clean(String(r.title || '').split('｜')[0]).replace(/^🎬\s*/, ''));
   const full = (r, i) => `<div class="full" hidden>${fullCard(r, i)}<button type="button" class="linkb" data-act="toggle">收起 ︿</button></div><div class="msg"></div>`;
   const row = ([r, i], mode) => {
     const hot = (r.id || '').startsWith('hot-'), vid = r.kind === 'vid', d = whenDay(r), past = d && d < today;
     let pill, sub, btn;
-    if (hot) { const ex = hotExpire(r.id), left = ex ? (ex - Date.now()) / 36e5 : 9;
+    if (r.kind === 'cmt') { pill = `<span class="pill cmt">${ic('chat')}留言</span>`;
+      sub = `<span>@${esc(r.user || '')}・${esc(String(r.at || '').slice(5).replace('-', '/'))}</span>`;
+      btn = '<button type="button" class="okb sm" data-act="toggle">回覆</button>'; }
+    else if (hot) { const ex = hotExpire(r.id), left = ex ? (ex - Date.now()) / 36e5 : 9;
       pill = `<span class="pill hot">${ic('flame')}熱議</span>`;
       sub = `<span class="${left < 2 ? 'due' : ''}">${left < 1 ? `剩 ${Math.max(1, Math.round(left * 60))} 分` : `剩 ${Math.round(left)} 小時`}</span>`;
       btn = '<button type="button" class="okb sm" data-act="ok">發</button>'; }
@@ -797,10 +817,12 @@ function renderReview() {
       <div class="pc-top" data-act="toggle">${th(r, 'pc-th')}<div class="pc-tt">${ttl(r)}</div></div>
       <button type="button" class="okb sm" data-act="ok">選這篇</button>${full(r, i)}</article>`).join('')}</div></div>`;
   const main = [...S.hot.map((x) => row(x)), ...S.pairs.map(pair), ...S.single.map((x) => row(x)), ...S.vid.map((x) => row(x))].join('');
-  $('#list').innerHTML = main ? `<div class="sec">等你按</div><div class="lst">${main}</div>` : '';
+  const cm = S.cmt.map((x) => row(x)).join('');   // 2026-11-20 用戶：留言另外一區，不跟貼文混在一起
+  $('#list').innerHTML = (main ? `<div class="sec">等你按</div><div class="lst">${main}</div>` : '')
+    + (cm ? `<div class="sec">💬 Threads 留言・${S.cmt.length} 則等你回</div><div class="lst">${cm}</div>` : '');
   const doneRows = S.done.map(([r, i]) => {
     const st = dec[r.id].decision, hot = (r.id || '').startsWith('hot-');
-    const lab = hot ? (st === 'ok' ? '已通過・5 分鐘內發 Threads' : hotFixLab(dec[r.id])) : (st === 'ok' ? '已通過・等自動排程' : '已退回・等 Claude 改');
+    const lab = r.kind === 'cmt' ? (st === 'ok' ? '留言回覆・15 分鐘內送出' : '留言・不回') : hot ? (st === 'ok' ? '已通過・5 分鐘內發 Threads' : hotFixLab(dec[r.id])) : (st === 'ok' ? '已通過・等自動排程' : '已退回・等 Claude 改');
     return `<article class="card done" data-i="${i}"><div class="dn"><span class="dn-ic${st === 'ok' ? '' : ' fix'}">${ic(st === 'ok' ? 'check' : 'undo')}</span>
       <div class="dn-bd"><div class="dn-t">${ttl(r)}</div><div class="dn-s">${lab}</div></div>
       <button type="button" class="undo" data-act="clear">撤回</button></div>
@@ -1081,7 +1103,8 @@ async function decide(card, decision, note) {
     if (decision === 'clear') delete data.decisions[r.id]; else data.decisions[r.id] = { decision, note: note || '' };
     renderToday(); renderReview(); renderTodo();
     const idx = card.dataset.i;
-    if (decision === 'ok' || decision === 'fix') toast(decision === 'ok' ? ((r.id || '').startsWith('hot-') ? '✅ 已通過，5 分鐘內發 Threads' : '✅ 已通過，會自動排程') : (note === '熱議不發' ? '好，這篇不發' : '意見收到，Claude 改好會傳 LINE'), () => { const c = document.querySelector(`.card[data-i="${idx}"]`); if (c) decide(c, 'clear'); });
+    if (r.kind === 'cmt' && (decision === 'ok' || decision === 'fix')) toast(decision === 'ok' ? '💬 好，15 分鐘內回到 Threads' : '好，這則不回', () => { const c = document.querySelector(`.card[data-i="${idx}"]`); if (c) decide(c, 'clear'); });
+    else if (decision === 'ok' || decision === 'fix') toast(decision === 'ok' ? ((r.id || '').startsWith('hot-') ? '✅ 已通過，5 分鐘內發 Threads' : '✅ 已通過，會自動排程') : (note === '熱議不發' ? '好，這篇不發' : '意見收到，Claude 改好會傳 LINE'), () => { const c = document.querySelector(`.card[data-i="${idx}"]`); if (c) decide(c, 'clear'); });
     else toast('已復原');
   } catch (e) { msg.textContent = '沒存到，請再按一次。'; card.querySelectorAll('button').forEach((b) => (b.disabled = false)); }
 }
@@ -1114,6 +1137,8 @@ function listClick(e) {
   else if (act === 'sendfix') { const t = box.querySelector('textarea').value.trim(); if (!t) { box.querySelector('textarea').focus(); return; } decide(card, 'fix', t); }
   else if (act === 'clear') decide(card, 'clear');
   else if (act === 'hotno') decide(card, 'fix', '熱議不發');
+  else if (act === 'cmtsend') { const ta = card.querySelector('.cmtta'), t = ta.value.trim(); if (!t) { ta.focus(); return; } decide(card, 'ok', t); }
+  else if (act === 'cmtno') decide(card, 'fix', '留言不回');
 }
 $('#stats').addEventListener('click', async (e) => {
   const q = e.target.closest('button[data-qr]');
