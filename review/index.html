@@ -472,6 +472,7 @@ details.lxwrap > summary::-webkit-details-marker { display: none; }
 .lxtog { margin-left: auto; font-weight: 600; letter-spacing: 0; color: var(--mute); }
 .lxtog::after { content: "展開 ▾"; }
 details.lxwrap[open] .lxtog::after { content: "收起 ▴"; }
+body.nopin .tabs, body.nopin [id^="pane-"], body.nopin #today, body.nopin #upd { display: none !important; }   /* 2026-11-21 密碼錯／沒密碼：收起上次的舊資料 */
 </style>
 </head>
 <body>
@@ -599,16 +600,16 @@ async function load(quiet) {
     let r;
     // 2026-11-10：讀稿也要密碼（PIN 存在這支手機，只輸入一次）
     let pin = getPin() || askPin();
-    if (!pin) { stateMsg('要輸入審稿密碼才看得到內容。', '輸入密碼'); throw new Error('nopin'); }
+    if (!pin) { hideOld(); stateMsg('要輸入審稿密碼才看得到內容。', '輸入密碼'); throw new Error('nopin'); }
     const post = () => fetch(API, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ a: 'list', pin }) });
     try { r = await post(); } catch (e1) { await new Promise((ok) => setTimeout(ok, 1500)); r = await post(); }
     const j = await r.json();
     if (!j.ok) {
-      if (j.error === 'pin') { setPin(''); try { localStorage.removeItem('chiu189_cache'); } catch (e) {} stateMsg('密碼不對，請重新輸入。', '輸入密碼'); throw new Error('pin'); }
+      if (j.error === 'pin') { setPin(''); try { localStorage.removeItem('chiu189_cache'); } catch (e) {} hideOld(); stateMsg('密碼不對，請重新輸入。', '輸入密碼'); throw new Error('pin'); }
       if (j.error === 'locked') { stateMsg('密碼錯太多次，鎖定 1 小時，請稍後再試。'); throw new Error('locked'); }
       throw new Error(j.error);
     }
-    data = j;
+    data = j; document.body.classList.remove('nopin');
     try { localStorage.setItem('chiu189_cache', JSON.stringify(j)); } catch (e) {}
     $('#state').hidden = true; $('#state').innerHTML = '';
     render();
@@ -629,6 +630,9 @@ async function load(quiet) {
   }
   btn.disabled = false; loading = false;
 }
+
+// 2026-11-21：密碼錯時把畫面上舊的數字／稿子收起來，免得以為密碼錯還看得到
+function hideOld() { document.body.classList.add('nopin'); data = { reviews: [], decisions: {} }; firstLoad = true; }
 
 function render() { renderToday(); renderReview(); renderTodo(); renderSched(); renderStats(); renderVideo(); }
 
