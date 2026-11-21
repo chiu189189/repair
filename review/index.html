@@ -382,7 +382,7 @@ details.vdone summary { cursor: pointer; font-size: 13.5px; color: var(--sub); p
 .pair.open .card.pc:not(.open) { display: none; }
 .pair .card.pc.open { grid-column: 1 / -1; }
 .card.pc { box-shadow: none; border: 1px solid var(--line); border-radius: var(--r-md); display: flex; flex-direction: column; gap: 8px; padding: 7px; min-width: 0; }
-.pc-top { display: flex; flex-direction: column; gap: 6px; cursor: pointer; }
+.pc-top { display: flex; flex-direction: column; gap: 6px; cursor: pointer; flex: 1 1 auto; } /* 撐滿：二選一兩張的「選這篇」都貼底、對齊 */
 .pc-th { width: 100%; aspect-ratio: 4 / 3; max-width: 100%; }
 .card.pc.open .pc-th { display: none; }
 .card.pc.open > button.okb { display: none; }
