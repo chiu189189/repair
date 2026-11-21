@@ -1262,7 +1262,7 @@ function renderVideo() {
     return `<div class="card"><div class="vtitle">${esc(job)} <span class="pill ${doing ? 'vid' : ''}">${doing ? (x.kind === '剪片修改' ? '照意見改中' : '剪片中') : '排隊中'}</span></div>
       <div class="vpath">${doing ? `${j.start ? esc(hm(j.start)) + ' 開工・' : ''}通常 30～90 分鐘，好了手機會跳通知` : esc(x.q.reply || 'Mac 15 分鐘內接手')}${x.note ? `<br>交代：${esc(x.note)}` : ''}</div>
       ${doing ? '<div class="vbar"><i></i></div>' : ''}</div>`;
-  }).concat(finals.filter((x) => !byJob[x.arg] || byJob[x.arg].status !== 'done').map((x) => `<div class="card"><div class="vtitle">${esc(x.arg)} <span class="pill">定案處理中</span></div><div class="vpath">沒拍到人臉會放進 iCloud 維修影片/待發；有人臉會提醒你先用剪映打馬賽克</div></div>`))
+  }).concat(finals.filter((x) => !byJob[x.arg] || byJob[x.arg].status !== 'done').map((x) => `<div class="card"><div class="vtitle">${esc(x.arg)} <span class="pill">定案處理中</span></div><div class="vpath">預覽留在 iCloud 維修影片，確認後你自己丟待發；有人臉會提醒你先用剪映打馬賽克</div></div>`))
     .concat(failed.map((x) => `<div class="card"><div class="vtitle">${esc(x.kind === '剪片' ? jobOf(x.arg) : x.arg)} <span class="pill bad">沒做成</span></div><div class="vpath">${esc(x.q.reply || '')}</div></div>`));
   if (prog.length) B.push(`<div class="sec">進行中 <i>${prog.length}</i></div>` + prog.join(''));
   // 3 素材資料夾
@@ -1309,7 +1309,7 @@ $('#video').addEventListener('click', async (e) => {
     if (!(await vidSend(`【剪片修改】${card.dataset.job}｜${n}`, '✏️ 收到，改好會再通知你'))) b.disabled = false;
   } else if (act === 'final') {
     b.disabled = true;
-    if (!(await vidSend(`【剪片定案】${card.dataset.job}`, '👍 定案：15 分鐘內 Mac 檢查人臉，沒人臉放進待發、有人臉提醒你打馬賽克'))) b.disabled = false;
+    if (!(await vidSend(`【剪片定案】${card.dataset.job}`, '👍 定案：15 分鐘內 Mac 清舊版、檢查人臉；確認後你自己丟待發'))) b.disabled = false;
   }
 });
 $('#reload').addEventListener('click', () => load());
