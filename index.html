@@ -184,6 +184,12 @@
     "dayOfWeek": ["Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"],
     "opens": "12:00",
     "closes": "22:00"
+  },{
+    "@type": "OpeningHoursSpecification",
+    "opens": "00:00",
+    "closes": "00:00",
+    "validFrom": "2026-11-22",
+    "validThrough": "2026-11-28"
   }],
   "sameAs": [
     "https://www.facebook.com/chiu189repair",
@@ -294,7 +300,12 @@ document.getElementById("lineAdd").onclick = e => { e.preventDefault(); location
   const t = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Taipei" }));
   const d = t.getDay(), m = t.getHours() * 60 + t.getMinutes(), el = document.getElementById("open"), b = el.querySelector("b"), sm = el.querySelector("small");
   const hrs = "營業 12:00–22:00（週一公休）・";
-  if (d !== 1 && m >= 720 && m < 1320) { el.classList.add("on"); b.textContent = "營業中・今天開到 22:00"; sm.firstChild.textContent = hrs + "可先 "; sm.lastChild.textContent = " 預約"; }
+  // 臨時店休：日期區間（含頭尾），過了自動恢復正常顯示
+  const OFF = [["2026-11-22", "2026-11-28", "11/29（日）"]];
+  const ymd = t.getFullYear() + "-" + String(t.getMonth() + 1).padStart(2, "0") + "-" + String(t.getDate()).padStart(2, "0");
+  const off = OFF.find(r => ymd >= r[0] && ymd <= r[1]);
+  if (off) { b.textContent = "店休中・" + off[2] + "12:00 恢復營業"; sm.firstChild.textContent = "這幾天可先 "; sm.lastChild.textContent = "，回來後依序回覆"; }
+  else if (d !== 1 && m >= 720 && m < 1320) { el.classList.add("on"); b.textContent = "營業中・今天開到 22:00"; sm.firstChild.textContent = hrs + "可先 "; sm.lastChild.textContent = " 預約"; }
   else {
     b.textContent = d === 1 ? "今天公休・明天 12:00 開門" : m < 720 ? "還沒開門・今天 12:00 開門" : (d === 0 ? "已打烊・週二 12:00 開門" : "已打烊・明天 12:00 開門");
     sm.firstChild.textContent = hrs + "現在可先 "; sm.lastChild.textContent = "，開門後回覆";
