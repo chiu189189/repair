@@ -420,6 +420,18 @@ details.more .lst { margin-bottom: 8px; }
 .sd-st { display: flex; gap: 8px; flex-wrap: wrap; font-size: 11.5px; color: var(--sub); }
 .sd-st .good { color: var(--ok); font-weight: 600; } .sd-st .bad { color: var(--fix); font-weight: 700; }
 details.sd-past { margin: 0 0 4px; }
+/* 2026-11-21 用戶選 A：行程點那一行原地展開看全部圖＋文案 */
+.sd.has { cursor: pointer; }
+.sd-cv { flex: none; color: var(--mute); display: grid; transition: transform .15s; }
+.sd.open .sd-cv { transform: rotate(90deg); }
+.sd.open { border-bottom-left-radius: 0; border-bottom-right-radius: 0; }
+.sd-more { margin-top: -9px; background: var(--card); border: 1px solid var(--line); border-top: 1px dashed var(--line); border-radius: 0 0 var(--r-md) var(--r-md); padding: 10px; display: flex; flex-direction: column; gap: 8px; }
+.sd.today + .sd-more { border-color: var(--accent); }
+.sd-pics { display: flex; gap: 6px; overflow-x: auto; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; }
+.sd-pics a { flex: none; width: 72%; max-width: 260px; scroll-snap-align: start; }
+.sd-pics img { width: 100%; aspect-ratio: 4 / 5; object-fit: contain; border-radius: var(--r-sm); background: var(--soft); display: block; }
+.sd-cap h4 { margin: 0 0 4px; font-size: 12px; color: var(--sub); font-weight: 600; border-bottom: 1px solid var(--line); padding-bottom: 3px; }
+.sd-cap p { margin: 0; font-size: 13.5px; line-height: 1.6; white-space: pre-wrap; word-break: break-word; }
 details.sd-past .sd { opacity: .75; }
 /* 2026-11-18 成效 A */
 .st-tiles { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px; }
@@ -872,6 +884,15 @@ function renderReview() {
 let moreOpen = false;
 $('#done').addEventListener('click', (e) => listClick(e));
 
+let sdList = [];
+const sdOpen = new Set(), sdKey = (x) => x.at + '|' + x.k;
+function sdMore(x) {
+  const pl = x.p || [], fbig = x.k === 'vid' || pl.some((v) => v !== 'Threads'), th = x.k !== 'vid' && (pl.includes('Threads') || x.th);
+  const pics = x.pics && x.pics.length ? x.pics : x.img ? [x.img] : [];
+  const cap = (h, t) => t ? `<div class="sd-cap"><h4>${h}</h4><p>${esc(t)}</p></div>` : '';
+  return `<div class="sd-more">${pics.length ? `<div class="sd-pics">${pics.map((u, k) => `<a href="${esc(u)}" target="_blank" rel="noopener"><img src="${esc(u)}" alt="第 ${k + 1} 張圖" loading="lazy"></a>`).join('')}</div>` : ''}
+    ${fbig ? cap(x.k === 'vid' ? '影片文案' : 'FB／IG', x.cap) : ''}${th ? cap('Threads', x.cth) : ''}${!fbig && !th ? cap('文案', x.cap || x.cth) : ''}</div>`;
+}
 // 2026-11-18 用戶選行程 A：一天一行清單；沒排圖文的日子空一格虛線；已發的收起來
 function renderSched() {
   const items = (sched().schedule || []).slice().sort((x, y) => (x.at < y.at ? -1 : 1));
@@ -888,7 +909,9 @@ function renderSched() {
   const thS = { queued: ['Threads 已排', ''], posted: ['Threads 已發', 'good'], missed: ['Threads 沒發到', 'bad'], failed: ['Threads 失敗', 'bad'] };
   const kind = (x) => { const t = String(x.t || ''); if (x.k === 'vid') return ['影片', 'vid']; if (/冷知識/.test(t.slice(0, 12))) return ['冷知識', 'img']; if (/教學/.test(t.slice(0, 12))) return ['教學', 'img']; return ['圖文', 'img']; };
   const ttl = (x) => clean(String(x.t || '').replace(/^【[^】]{0,12}】\s*/, '').replace(/^手機(冷知識|教學)\s*/, ''));
+  sdList = [];
   const it = (x, k) => {
+    const si = sdList.push(x) - 1, has = !!(x.cap || x.cth || (x.pics && x.pics.length)), op = has && sdOpen.has(sdKey(x));
     const [kn, kc] = kind(x), d = new Date(k + 'T00:00:00'), isT = k === tk, vid = x.k === 'vid';
     const plats = x.p.filter((v) => v !== 'Threads').join('・');
     const t = !vid && x.th ? thS[x.th] || ['Threads', ''] : null;
@@ -896,9 +919,9 @@ function renderSched() {
     if (x.ck === 'ok') st = `<span class="good">${esc(x.p.join('・'))} 都發了 ✓</span>`;
     else if (x.ck === 'fail') st = `<span class="bad">沒發出去${x.ckn ? '：' + esc(x.ckn) : ''}</span>`;
     else st = `${plats ? `<span>${esc(plats)}</span>` : ''}${t ? `<span class="${t[1]}">${t[0]}</span>` : ''}${x.done ? '<span>已過・等確認</span>' : ''}`;
-    return `<div class="sd${isT ? ' today' : ''}${x.ck === 'fail' ? ' fail' : ''}"><div class="sd-dt"><b>${isT ? '今天' : `${d.getMonth() + 1}/${d.getDate()}`}</b><span>${isT ? `${d.getMonth() + 1}/${d.getDate()}` : '週' + WD[d.getDay()]}</span></div>
+    return `<div class="sd${isT ? ' today' : ''}${x.ck === 'fail' ? ' fail' : ''}${has ? ' has' : ''}${op ? ' open' : ''}" data-si="${si}"${has ? ` role="button" tabindex="0" aria-expanded="${op}"` : ''}><div class="sd-dt"><b>${isT ? '今天' : `${d.getMonth() + 1}/${d.getDate()}`}</b><span>${isT ? `${d.getMonth() + 1}/${d.getDate()}` : '週' + WD[d.getDay()]}</span></div>
       <div class="sd-th">${x.img ? `<img src="${esc(x.img)}" alt="" loading="lazy">` : ic(vid ? 'video' : 'doc')}</div>
-      <div class="sd-bd"><div class="sd-kd"><span class="pill ${kc}">${kn}</span><span>${esc(x.at.slice(11, 16))}</span></div><div class="sd-tt">${esc(ttl(x))}</div><div class="sd-st">${st}</div></div></div>`;
+      <div class="sd-bd"><div class="sd-kd"><span class="pill ${kc}">${kn}</span><span>${esc(x.at.slice(11, 16))}</span></div><div class="sd-tt">${esc(ttl(x))}</div><div class="sd-st">${st}</div></div>${has ? `<span class="sd-cv">${ic('chev')}</span>` : ''}</div>${op ? sdMore(x) : ''}`;
   };
   const gap = (k) => { const d = new Date(k + 'T00:00:00'), isT = k === tk;
     return `<div class="sd gap"><div class="sd-dt"><b>${isT ? '今天' : `${d.getMonth() + 1}/${d.getDate()}`}</b><span>${isT ? `${d.getMonth() + 1}/${d.getDate()}` : '週' + WD[d.getDay()]}</span></div><div class="sd-bd">11:00 還沒排圖文</div></div>`; };
@@ -1186,7 +1209,15 @@ $('#stats').addEventListener('click', async (e) => {
   try { const j = await askApi({ a: 'ask', text: `【下一篇題目】${topic}（報價頁很多人想修）` }); if (j) { b.textContent = '✓ 已指定'; toast('收到！15 分鐘內排進下一篇，晚上 8:10 做稿會用這題。'); } else b.disabled = false; }
   catch (err) { b.disabled = false; toast(err.message === 'pin' ? '密碼不對，請再按一次。' : '沒送出去，請再按一次。'); }
 });
-$('#sched').addEventListener('click', (e) => { if (e.target.id === 'more') { showAll = true; renderSched(); } });
+$('#sched').addEventListener('click', (e) => {
+  if (e.target.id === 'more') { showAll = true; renderSched(); return; }
+  if (e.target.closest('.sd-more')) return;
+  const row = e.target.closest('.sd.has'); if (!row) return;
+  const x = sdList[+row.dataset.si], k = sdKey(x), open = !row.classList.contains('open');
+  if (open) { sdOpen.add(k); row.insertAdjacentHTML('afterend', sdMore(x)); } else { sdOpen.delete(k); const m = row.nextElementSibling; if (m && m.classList.contains('sd-more')) m.remove(); }
+  row.classList.toggle('open', open); row.setAttribute('aria-expanded', String(open));
+});
+$('#sched').addEventListener('keydown', (e) => { if ((e.key === 'Enter' || e.key === ' ') && e.target.matches('.sd.has')) { e.preventDefault(); e.target.click(); } });
 document.querySelector('.tabs').addEventListener('click', (e) => { const b = e.target.closest('button[data-tab]'); if (b) { setTab(b.dataset.tab); window.scrollTo({ top: 0 }); } });
 async function askApi(body) {
   const pin = getPin() || askPin(); if (!pin) return null;
