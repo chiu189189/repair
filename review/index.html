@@ -125,6 +125,7 @@ main { padding-top: 16px; padding-bottom: calc(100px + env(safe-area-inset-botto
 .btns button { flex: 1; min-width: 0; min-height: 48px; padding: 0 10px; border-radius: var(--r-md); border: 1px solid transparent; background: var(--soft); color: var(--ink); font-weight: 700; font-size: 16px; cursor: pointer; transition: transform .12s; }
 .btns button:active:not(:disabled) { transform: scale(.97); }
 .btns .okb { flex: 1.5; background: var(--accent); color: var(--accent-ink); }
+.btns a.vwatch { display: flex; align-items: center; justify-content: center; min-height: 48px; border-radius: var(--r-md); font-weight: 700; font-size: 16px; text-decoration: none; }
 .btns .ghost { min-height: 42px; background: none; border: 1px dashed var(--line); color: var(--sub); font-size: 14px; font-weight: 600; }
 textarea, .datebox input { display: block; width: 100%; border-radius: var(--r-md); border: 1px solid var(--line); background: var(--bg); color: var(--ink); font: inherit; padding: 12px; margin-top: 12px; }
 textarea { min-height: 96px; resize: vertical; }
@@ -1223,6 +1224,8 @@ async function loadVid() {
   vidAt = Date.now();
   try { const j = await askApi({ a: 'my_requests' }); if (j) { vidReqs = j.requests || []; renderVideo(); } } catch (e) {}
 }
+// 「觀看」：直接開 iPhone「檔案」App 裡 iCloud 雲碟的預覽片（11/21 用戶要把定案鈕換成觀看）
+const vidUrl = (name) => 'shareddocuments:///private/var/mobile/Library/Mobile%20Documents/com~apple~CloudDocs/' + ['維修影片', name].map(encodeURIComponent).join('/');
 function renderVideo() {
   const v = sched().video, box = $('#video');
   if (!box) return;
@@ -1252,7 +1255,7 @@ function renderVideo() {
         ${p ? `<div class="tag ok">✓ 已送出${p.kind === '剪片定案' ? '定案' : `修改「${esc(p.note.slice(0, 40))}」`}，Mac 15 分鐘內接手</div>`
           : open ? `<div class="vform"><textarea id="vnote" placeholder="要改哪裡？例：開頭太長剪掉 3 秒、馬賽克再小一點"></textarea>
               <div class="btns"><button type="button" class="ghost" data-v="cancel">取消</button><button type="button" class="okb" data-v="fix">送出修改</button></div></div>`
-          : `<div class="btns"><button type="button" class="okb" data-v="final">👍 定案</button><button type="button" data-v="openfix">✏️ 要改</button></div>`}
+          : `<div class="btns"><a class="okb vwatch" href="${vidUrl(j.preview)}">▶️ 觀看</a><button type="button" data-v="openfix">✏️ 要改</button></div>`}
       </div>`);
     });
   }
