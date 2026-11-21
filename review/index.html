@@ -1257,7 +1257,7 @@ function renderVideo() {
         ${p ? `<div class="tag ok">✓ 已送出${p.kind === '剪片定案' ? '定案' : `修改「${esc(p.note.slice(0, 40))}」`}，Mac 15 分鐘內接手</div>`
           : open ? `<div class="vform"><textarea id="vnote" placeholder="要改哪裡？例：開頭太長剪掉 3 秒、馬賽克再小一點"></textarea>
               <div class="btns"><button type="button" class="ghost" data-v="cancel">取消</button><button type="button" class="okb" data-v="fix">送出修改</button></div></div>`
-          : `<div class="btns"><a class="okb vwatch" href="${j.play ? esc(j.play) : vidUrl(j.preview)}"${j.play ? ' target="_blank" rel="noopener"' : ''}>▶️ 觀看</a><button type="button" data-v="openfix">✏️ 要改</button></div>`}
+          : `<div class="btns"><a class="okb vwatch" href="${j.play ? 'play.html#' + encodeURIComponent(j.play) : vidUrl(j.preview)}">▶️ 觀看</a><button type="button" data-v="openfix">✏️ 要改</button></div>`}
       </div>`);
     });
   }

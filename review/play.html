@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>預覽播放</title>
+<style>
+  :root { --bg: #000; --fg: #eee; --muted: #999; --accent: #4da3ff; }
+  html, body { margin: 0; height: 100%; background: var(--bg); color: var(--fg);
+    font: 16px -apple-system, "PingFang TC", sans-serif; }
+  body { display: flex; flex-direction: column; }
+  video { flex: 1; width: 100%; min-height: 0; background: #000; }
+  .bar { display: flex; gap: 16px; justify-content: center; padding: 12px 16px calc(12px + env(safe-area-inset-bottom)); }
+  a { color: var(--accent); text-decoration: none; }
+  .msg { margin: auto; padding: 24px 16px; text-align: center; color: var(--muted); line-height: 1.6; }
+</style>
+</head>
+<body>
+<script>
+// 2026-11-21：剪片預覽的 R2 播放連結放在 # 後面（不會送到伺服器）；只接受 R2 網址
+(function () {
+  var u = decodeURIComponent(location.hash.slice(1));
+  var ok = /^https:\/\/[0-9a-f]{32}\.r2\.cloudflarestorage\.com\/[^\s"'<>]+$/.test(u);
+  if (!ok) {
+    document.body.innerHTML = '<div class="msg">連結不對或已經過期。<br>預覽也在 iPhone「檔案」→ iCloud 雲碟 → 維修影片。<br><br><a href="./">回審稿頁</a></div>';
+    return;
+  }
+  var v = document.createElement('video');
+  v.controls = true; v.playsInline = true; v.autoplay = true; v.preload = 'auto'; v.src = u;
+  v.onerror = function () {
+    document.body.innerHTML = '<div class="msg">影片打不開（連結 7 天到期）。<br>預覽也在 iPhone「檔案」→ iCloud 雲碟 → 維修影片。<br><br><a href="./">回審稿頁</a></div>';
+  };
+  document.body.appendChild(v);
+  var bar = document.createElement('div'); bar.className = 'bar';
+  bar.innerHTML = '<a href="./">← 回審稿頁</a>';
+  var dl = document.createElement('a'); dl.href = u; dl.textContent = '用 Safari 開'; dl.target = '_blank'; dl.rel = 'noopener';
+  bar.appendChild(dl);
+  document.body.appendChild(bar);
+})();
+</script>
+</body>
+</html>
