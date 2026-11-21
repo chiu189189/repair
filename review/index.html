@@ -81,7 +81,7 @@ b, strong { font-weight: 700; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
 /* 底部分頁（單手拇指按得到） */
-.tabs { position: fixed; left: 0; right: 0; bottom: 0; z-index: 6; display: grid; grid-template-columns: repeat(3, minmax(0, 150px)); justify-content: center; padding: 6px max(8px, env(safe-area-inset-left)) calc(6px + env(safe-area-inset-bottom)) max(8px, env(safe-area-inset-right)); background: var(--card); border-top: 1px solid var(--line); }
+.tabs { position: fixed; left: 0; right: 0; bottom: 0; z-index: 6; display: grid; grid-template-columns: repeat(4, minmax(0, 130px)); justify-content: center; padding: 6px max(8px, env(safe-area-inset-left)) calc(6px + env(safe-area-inset-bottom)) max(8px, env(safe-area-inset-right)); background: var(--card); border-top: 1px solid var(--line); }
 .tabs button { position: relative; border: 0; background: none; color: var(--sub); font-size: 11.5px; font-weight: 600; letter-spacing: .04em; min-height: 52px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; cursor: pointer; }
 .tabs .ti-ic { display: grid; place-items: center; width: 56px; height: 30px; border-radius: 999px; font-size: 21px; transition: background-color .2s; }
 .tabs button[aria-selected="true"] { color: var(--ink); font-weight: 800; }
@@ -326,6 +326,27 @@ details.fold details.fold .bar { background: var(--card); }
 .note2 .best { color: var(--gold); }
 
 /* 問我 */
+/* 🎬 剪片分頁（2026-11-21，用戶選 A：剪好等你看 → 正在剪 → 素材資料夾） */
+.vthumb { display: block; width: 100%; aspect-ratio: 16 / 9; max-width: 100%; object-fit: cover; border-radius: var(--r-md); background: var(--soft); margin-bottom: 12px; }
+.vph { display: grid; place-items: center; color: var(--mute); font-size: 28px; }
+.vtitle { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; font-size: 17px; font-weight: 800; line-height: 1.4; overflow-wrap: anywhere; }
+.vpath { font-size: 12.5px; color: var(--sub); margin-top: 4px; overflow-wrap: anywhere; }
+.vrow { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-top: 1px solid var(--line); }
+.vrow:first-child { border-top: 0; }
+.vrow .x { flex: 1; min-width: 0; }
+.vrow .t { font-weight: 700; overflow-wrap: anywhere; }
+.vrow .m { font-size: 12.5px; color: var(--sub); font-variant-numeric: tabular-nums; }
+.vbtn { flex: none; min-height: 40px; padding: 0 14px; border-radius: var(--r-md); border: 0; background: var(--accent); color: var(--accent-ink); font-weight: 700; font-size: 14.5px; cursor: pointer; }
+.vbtn.dim { background: var(--soft); color: var(--sub); }
+span.vbtn { display: inline-grid; place-items: center; cursor: default; }
+.vform textarea { min-height: 72px; }
+.vlist { padding: 4px 16px; }
+.vbar { height: 6px; border-radius: 3px; background: var(--soft); margin-top: 10px; overflow: hidden; }
+.vbar i { display: block; height: 100%; width: 35%; border-radius: 3px; background: var(--vid); animation: vslide 1.6s ease-in-out infinite; }
+@keyframes vslide { 0% { transform: translateX(-100%); } 100% { transform: translateX(290%); } }
+@media (prefers-reduced-motion: reduce) { .vbar i { animation: none; width: 100%; opacity: .5; } }
+.vfoot { font-size: 12.5px; color: var(--sub); margin: 4px 2px 16px; line-height: 1.6; }
+details.vdone summary { cursor: pointer; font-size: 13.5px; color: var(--sub); padding: 10px 2px; }
 .req { background: var(--card); border: 1px solid var(--line); border-radius: var(--r-lg); padding: 14px 16px; margin-bottom: 10px; box-shadow: var(--shadow); }
 .req .q { font-weight: 700; overflow-wrap: anywhere; }
 .req .a { margin-top: 10px; padding: 10px 12px; background: var(--soft); border-radius: var(--r-md); font-size: 14.5px; line-height: 1.6; white-space: pre-wrap; overflow-wrap: anywhere; }
@@ -456,6 +477,7 @@ details.lxwrap[open] .lxtog::after { content: "收起 ▴"; }
   <section class="pane" id="pane-review"><div id="greet" class="greet"></div><div id="list"></div><div id="todo"></div><div id="done"></div></section>
   <section class="pane" id="pane-sched" hidden><div id="sched"></div></section>
   <section class="pane" id="pane-stats" hidden><div id="stats"></div></section>
+  <section class="pane" id="pane-video" hidden><div id="video"></div></section>
   <section class="pane" id="pane-ask" hidden>
     <div class="card"><h2>有事問我</h2><div class="meta">想改排程、問成效、指定下一篇題目…打一句話就好。通常 15 分鐘內回覆（比較複雜的會等到 12:20、20:40），結果會傳 LINE 也會顯示在下面。</div>
       <textarea id="askText" placeholder="例如：下一篇做 iOS 27.2 耗電／11/5 的影片改到 11/6／這週哪篇最多人看？"></textarea>
@@ -468,6 +490,7 @@ details.lxwrap[open] .lxtog::after { content: "收起 ▴"; }
   <button type="button" role="tab" data-tab="review" aria-selected="true"><span class="ti-ic" aria-hidden="true"><svg class="i" viewBox="0 0 24 24"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg></span>待辦<span class="badge" id="badge" hidden></span></button>
   <button type="button" role="tab" data-tab="sched" aria-selected="false"><span class="ti-ic" aria-hidden="true"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg></span>行程</button>
   <button type="button" role="tab" data-tab="stats" aria-selected="false"><span class="ti-ic" aria-hidden="true"><svg class="i" viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M8 17v-5M13 17V7M18 17v-8"/></svg></span>成效</button>
+  <button type="button" role="tab" data-tab="video" aria-selected="false"><span class="ti-ic" aria-hidden="true"><svg class="i" viewBox="0 0 24 24"><rect x="2" y="6" width="14" height="12" rx="2"/><path d="m16 10 6-3v10l-6-3z"/></svg></span>剪片<span class="badge" id="badgeV" hidden></span></button>
 </nav>
 
 <script>
@@ -539,10 +562,11 @@ document.getElementById('askBtn').addEventListener('click', () => { setTab('ask'
 function setTab(t) {
   const ab = document.getElementById('askBtn'); if (ab) ab.setAttribute('aria-pressed', String(t === 'ask'));
   document.querySelectorAll('.tabs button').forEach((b) => b.setAttribute('aria-selected', String(b.dataset.tab === t)));
-  ['review', 'sched', 'stats', 'ask'].forEach((k) => { $('#pane-' + k).hidden = k !== t; });
+  ['review', 'sched', 'stats', 'video', 'ask'].forEach((k) => { $('#pane-' + k).hidden = k !== t; });
   $('#today').hidden = t !== 'sched' || !$('#today').dataset.has;
   try { sessionStorage.setItem('chiu189_tab', t); } catch (e) {}
   if (t === 'ask' && !askLoaded) { askLoaded = true; loadAsk(); }
+  if (t === 'video' && Date.now() - vidAt > 30000) loadVid();
 }
 
 let firstLoad = true, loading = false, lastLoad = 0;
@@ -584,7 +608,7 @@ async function load(quiet) {
   btn.disabled = false; loading = false;
 }
 
-function render() { renderToday(); renderReview(); renderTodo(); renderSched(); renderStats(); }
+function render() { renderToday(); renderReview(); renderTodo(); renderSched(); renderStats(); renderVideo(); }
 
 
 function toast(t, undo) {
@@ -1178,6 +1202,106 @@ $('#askSend').addEventListener('click', async () => {
   $('#askSend').disabled = false;
 });
 let askLoaded = false;
+
+// ⑤ 🎬 剪片（2026-11-21）：資料＝行程同步帶上來的 sched().video（素材資料夾、剪好的片＋小圖），
+// 進度＝交代裡的【剪片】【剪片修改】【剪片定案】（跟 LINE 秘書同一份；Mac 每 15 分鐘接手，line_video.py）
+let vidReqs = null, vidAt = 0, vidOpen = '';
+const jobOf = (key) => String(key).split(':').slice(1).join(':').replace(/[^\p{L}\p{N}_-]+/gu, '').slice(0, 30) || '影片';
+const vParse = (t) => { const m = /^【(剪片|剪片修改|剪片定案)】([^｜]*)(?:｜([\s\S]*))?$/.exec(t || ''); return m ? { kind: m[1], arg: m[2].trim(), note: (m[3] || '').trim() } : null; };
+const hm = (s) => (s ? String(s).slice(5, 16).replace('-', '/').replace('T', ' ') : '');
+async function loadVid() {
+  vidAt = Date.now();
+  try { const j = await askApi({ a: 'my_requests' }); if (j) { vidReqs = j.requests || []; renderVideo(); } } catch (e) {}
+}
+function renderVideo() {
+  const v = sched().video, box = $('#video');
+  if (!box) return;
+  if (!v) { box.innerHTML = '<div class="empty">剪片資料還沒同步上來（店裡電腦每 15 分鐘送一次）</div>'; $('#badgeV').hidden = true; return; }
+  const reqs = (vidReqs || []).map((q) => Object.assign({ q }, vParse(q.text))).filter((x) => x.kind);
+  const live = reqs.filter((x) => ['new', 'doing'].includes(x.q.status));
+  const recent = (x) => Date.now() - new Date(x.q.at).getTime() < 3 * 864e5;
+  const jobs = v.jobs || [], byJob = {}; jobs.forEach((j) => { byJob[j.job] = j; });
+  // 已送出還沒被 Mac 接手的定案／修改：那支先不給按鈕
+  const pendingOn = (job) => live.find((x) => x.kind !== '剪片' && x.arg === job);
+  const ready = jobs.filter((j) => j.status === 'done');
+  // 先開工的排上面；剛送出、還掛在「剪好等你看」那張卡上的修改不重複列
+  const working = live.filter((x) => x.kind !== '剪片定案' && !(x.kind === '剪片修改' && x.q.status === 'new' && (byJob[x.arg] || {}).status === 'done')).sort((x, y) => (y.q.status === 'doing') - (x.q.status === 'doing') || String(x.q.at).localeCompare(String(y.q.at)));
+  const finals = live.filter((x) => x.kind === '剪片定案');
+  const failed = reqs.filter((x) => x.q.status === 'need_you' && recent(x));
+  const cutting = new Set(live.filter((x) => x.kind === '剪片').map((x) => x.arg));
+  const B = [];
+  // 1 剪好等你看
+  if (ready.length) {
+    B.push(`<div class="sec">剪好等你看 <i>${ready.length}</i></div>`);
+    ready.forEach((j) => {
+      const p = pendingOn(j.job), open = vidOpen === 'fix:' + j.job;
+      B.push(`<div class="card" data-job="${esc(j.job)}">
+        ${j.thumb ? `<img class="vthumb" src="${esc(j.thumb)}" alt="${esc(j.job)} 預覽畫面">` : `<div class="vthumb vph">${ic('video')}</div>`}
+        <div class="vtitle">${esc(j.job)} <span class="pill ok">第 ${esc(j.ver || 1)} 版剪好了</span></div>
+        <div class="vpath">預覽：iPhone「檔案」→ iCloud 雲碟 → 維修影片 → ${esc(j.preview)}${j.end ? `・${esc(hm(j.end))} 剪好` : ''}</div>
+        ${p ? `<div class="tag ok">✓ 已送出${p.kind === '剪片定案' ? '定案' : `修改「${esc(p.note.slice(0, 40))}」`}，Mac 15 分鐘內接手</div>`
+          : open ? `<div class="vform"><textarea id="vnote" placeholder="要改哪裡？例：開頭太長剪掉 3 秒、馬賽克再小一點"></textarea>
+              <div class="btns"><button type="button" class="ghost" data-v="cancel">取消</button><button type="button" class="okb" data-v="fix">送出修改</button></div></div>`
+          : `<div class="btns"><button type="button" class="okb" data-v="final">👍 定案</button><button type="button" data-v="openfix">✏️ 要改</button></div>`}
+      </div>`);
+    });
+  }
+  // 2 正在剪／排隊／沒剪成功
+  const prog = working.map((x) => {
+    const job = x.kind === '剪片' ? jobOf(x.arg) : x.arg, j = byJob[job] || {}, doing = x.q.status === 'doing';
+    return `<div class="card"><div class="vtitle">${esc(job)} <span class="pill ${doing ? 'vid' : ''}">${doing ? (x.kind === '剪片修改' ? '照意見改中' : '剪片中') : '排隊中'}</span></div>
+      <div class="vpath">${doing ? `${j.start ? esc(hm(j.start)) + ' 開工・' : ''}通常 30～90 分鐘，好了手機會跳通知` : esc(x.q.reply || 'Mac 15 分鐘內接手')}${x.note ? `<br>交代：${esc(x.note)}` : ''}</div>
+      ${doing ? '<div class="vbar"><i></i></div>' : ''}</div>`;
+  }).concat(finals.filter((x) => !byJob[x.arg] || byJob[x.arg].status !== 'done').map((x) => `<div class="card"><div class="vtitle">${esc(x.arg)} <span class="pill">定案處理中</span></div><div class="vpath">會放進 iCloud 維修影片/待發</div></div>`))
+    .concat(failed.map((x) => `<div class="card"><div class="vtitle">${esc(x.kind === '剪片' ? jobOf(x.arg) : x.arg)} <span class="pill bad">沒做成</span></div><div class="vpath">${esc(x.q.reply || '')}</div></div>`));
+  if (prog.length) B.push(`<div class="sec">進行中 <i>${prog.length}</i></div>` + prog.join(''));
+  // 3 素材資料夾
+  const fs = v.folders || [], todo = fs.filter((f) => !f.done), done = fs.filter((f) => f.done);
+  const row = (f) => {
+    const q = cutting.has(f.key), open = vidOpen === 'cut:' + f.key;
+    return `<div class="vrow" data-key="${esc(f.key)}"><div class="x"><div class="t">${f.src === 'ssd' ? '💾' : '☁️'} ${esc(f.name)}</div>
+      <div class="m">${esc(f.n)} 支・${esc(f.gb)} GB${f.mt ? '・' + new Date(f.mt * 1000).toLocaleDateString('zh-TW', { month: 'numeric', day: 'numeric' }) : ''}</div>
+      ${open ? `<div class="vform"><textarea id="vnote" placeholder="特別交代（可不填）例：客人講電池 70% 那段要留"></textarea>
+        <div class="btns"><button type="button" class="ghost" data-v="cancel">取消</button><button type="button" class="okb" data-v="cut">🎬 排進剪片</button></div></div>` : ''}</div>
+      ${open ? '' : q ? '<span class="vbtn dim">已排進去</span>' : `<button type="button" class="vbtn${f.done ? ' dim' : ''}" data-v="opencut">${f.done ? '再剪一次' : '剪這個'}</button>`}</div>`;
+  };
+  B.push(`<div class="sec">素材資料夾 <i>${v.ssd ? 'SSD 有接上' : 'SSD 沒接上，只看得到 iCloud'}</i></div>`);
+  B.push(todo.length ? `<div class="card vlist">${todo.map(row).join('')}</div>`
+    : '<div class="empty">沒有新的素材。影片放 iCloud 雲碟 → 維修影片 → 素材 → 新資料夾（例：1125 15pro換電池），或插 SSD 放「手機維修」，15 分鐘內出現在這裡。</div>');
+  if (done.length) B.push(`<details class="vdone"${vidOpen.startsWith('cut:') && done.some((f) => 'cut:' + f.key === vidOpen) ? ' open' : ''}><summary>剪過的素材 ${done.length} 個</summary><div class="card vlist">${done.map(row).join('')}</div></details>`);
+  B.push(`<div class="vfoot">剪法照 14 Pro 換電池那支（邊修邊講＋字幕＋上方重點字、約 60～80 秒、客人臉打馬賽克）。跟 LINE 秘書「剪片」是同一份，哪邊按都一樣。${v.at ? `<br>素材清單 ${esc(hm(v.at))} 更新` : ''}${vidReqs ? '' : '<br>進度讀取中…'}</div>`);
+  box.innerHTML = B.join('');
+  const n = ready.filter((j) => !pendingOn(j.job)).length, bv = $('#badgeV');
+  bv.hidden = !n; bv.textContent = n;
+}
+async function vidSend(text, okMsg) {
+  try {
+    const j = await askApi({ a: 'ask', text });
+    if (!j) return false;
+    vidReqs = j.requests || vidReqs; vidOpen = ''; renderVideo(); toast(okMsg); return true;
+  } catch (e) { toast(e.message === 'pin' ? '密碼不對，請再按一次。' : '沒送出去，請再按一次。'); return false; }
+}
+$('#video').addEventListener('click', async (e) => {
+  const b = e.target.closest('[data-v]'); if (!b) return;
+  const act = b.dataset.v, card = b.closest('[data-job]'), row = b.closest('[data-key]');
+  const note = () => (($('#vnote') || {}).value || '').replace(/[｜|\n\r]+/g, ' ').trim().slice(0, 200);
+  if (act === 'cancel') { vidOpen = ''; renderVideo(); return; }
+  if (act === 'opencut' || act === 'openfix') {
+    vidOpen = act === 'opencut' ? 'cut:' + row.dataset.key : 'fix:' + card.dataset.job; renderVideo();
+    const t = $('#vnote'); if (t) t.focus(); return;
+  }
+  if (act === 'cut') {
+    const n = note(); b.disabled = true;
+    if (!(await vidSend(`【剪片】${row.dataset.key}${n ? '｜' + n : ''}`, '🎬 排進剪片了，Mac 15 分鐘內開工，剪好手機會跳通知'))) b.disabled = false;
+  } else if (act === 'fix') {
+    const n = note(); if (!n) { $('#vnote').focus(); toast('寫一下要改哪裡'); return; }
+    b.disabled = true;
+    if (!(await vidSend(`【剪片修改】${card.dataset.job}｜${n}`, '✏️ 收到，改好會再通知你'))) b.disabled = false;
+  } else if (act === 'final') {
+    b.disabled = true;
+    if (!(await vidSend(`【剪片定案】${card.dataset.job}`, '👍 定案，15 分鐘內放進 iCloud 維修影片/待發'))) b.disabled = false;
+  }
+});
 $('#reload').addEventListener('click', () => load());
 // 像 APP：切回這個畫面就自動更新；開著的時候每 5 分鐘更新一次
 document.addEventListener('visibilitychange', () => { if (!document.hidden && Date.now() - lastLoad > 30000) load(true); });
