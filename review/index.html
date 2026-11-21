@@ -1226,6 +1226,8 @@ async function loadVid() {
 }
 // 「觀看」：直接開 iPhone「檔案」App 裡 iCloud 雲碟的預覽片（11/21 用戶要把定案鈕換成觀看）
 const vidUrl = (name) => 'shareddocuments:///private/var/mobile/Library/Mobile%20Documents/com~apple~CloudDocs/' + ['維修影片', name].map(encodeURIComponent).join('/');
+// 畫面上的資料夾名：macOS 檔名裡的「:」在 Finder 顯示成「/」，這裡跟 Finder 一樣（只改顯示，送出的還是真名；11/21）
+const dn = (s) => String(s || '').replace(/:/g, '/');
 function renderVideo() {
   const v = sched().video, box = $('#video');
   if (!box) return;
@@ -1250,7 +1252,7 @@ function renderVideo() {
       const p = pendingOn(j.job), open = vidOpen === 'fix:' + j.job;
       B.push(`<div class="card" data-job="${esc(j.job)}">
         ${j.thumb ? `<img class="vthumb" src="${esc(j.thumb)}" alt="${esc(j.job)} 預覽畫面">` : `<div class="vthumb vph">${ic('video')}</div>`}
-        <div class="vtitle">${esc(j.job)} <span class="pill ok">第 ${esc(j.ver || 1)} 版剪好了</span></div>
+        <div class="vtitle">${esc(dn(j.job))} <span class="pill ok">第 ${esc(j.ver || 1)} 版剪好了</span></div>
         <div class="vpath">預覽：iPhone「檔案」→ iCloud 雲碟 → 維修影片 → ${esc(j.preview)}${j.end ? `・${esc(hm(j.end))} 剪好` : ''}</div>
         ${p ? `<div class="tag ok">✓ 已送出${p.kind === '剪片定案' ? '定案' : `修改「${esc(p.note.slice(0, 40))}」`}，Mac 15 分鐘內接手</div>`
           : open ? `<div class="vform"><textarea id="vnote" placeholder="要改哪裡？例：開頭太長剪掉 3 秒、馬賽克再小一點"></textarea>
@@ -1262,17 +1264,17 @@ function renderVideo() {
   // 2 正在剪／排隊／沒剪成功
   const prog = working.map((x) => {
     const job = x.kind === '剪片' ? jobOf(x.arg) : x.arg, j = byJob[job] || {}, doing = x.q.status === 'doing';
-    return `<div class="card"><div class="vtitle">${esc(job)} <span class="pill ${doing ? 'vid' : ''}">${doing ? (x.kind === '剪片修改' ? '照意見改中' : '剪片中') : '排隊中'}</span></div>
+    return `<div class="card"><div class="vtitle">${esc(dn(job))} <span class="pill ${doing ? 'vid' : ''}">${doing ? (x.kind === '剪片修改' ? '照意見改中' : '剪片中') : '排隊中'}</span></div>
       <div class="vpath">${doing ? `${j.start ? esc(hm(j.start)) + ' 開工・' : ''}通常 30～90 分鐘，好了手機會跳通知` : esc(x.q.reply || 'Mac 15 分鐘內接手')}${x.note ? `<br>交代：${esc(x.note)}` : ''}</div>
       ${doing ? '<div class="vbar"><i></i></div>' : ''}</div>`;
-  }).concat(finals.filter((x) => !byJob[x.arg] || byJob[x.arg].status !== 'done').map((x) => `<div class="card"><div class="vtitle">${esc(x.arg)} <span class="pill">定案處理中</span></div><div class="vpath">預覽留在 iCloud 維修影片，確認後你自己丟待發；有人臉會提醒你先用剪映打馬賽克</div></div>`))
-    .concat(failed.map((x) => `<div class="card"><div class="vtitle">${esc(x.kind === '剪片' ? jobOf(x.arg) : x.arg)} <span class="pill bad">沒做成</span></div><div class="vpath">${esc(x.q.reply || '')}</div></div>`));
+  }).concat(finals.filter((x) => !byJob[x.arg] || byJob[x.arg].status !== 'done').map((x) => `<div class="card"><div class="vtitle">${esc(dn(x.arg))} <span class="pill">定案處理中</span></div><div class="vpath">預覽留在 iCloud 維修影片，確認後你自己丟待發；有人臉會提醒你先用剪映打馬賽克</div></div>`))
+    .concat(failed.map((x) => `<div class="card"><div class="vtitle">${esc(dn(x.kind === '剪片' ? jobOf(x.arg) : x.arg))} <span class="pill bad">沒做成</span></div><div class="vpath">${esc(x.q.reply || '')}</div></div>`));
   if (prog.length) B.push(`<div class="sec">進行中 <i>${prog.length}</i></div>` + prog.join(''));
   // 3 素材資料夾
   const fs = v.folders || [], todo = fs.filter((f) => !f.done), done = fs.filter((f) => f.done);
   const row = (f) => {
     const q = cutting.has(f.key), open = vidOpen === 'cut:' + f.key;
-    return `<div class="vrow" data-key="${esc(f.key)}"><div class="x"><div class="t">${f.src === 'ssd' ? '💾' : '☁️'} ${esc(f.name)}</div>
+    return `<div class="vrow" data-key="${esc(f.key)}"><div class="x"><div class="t">${f.src === 'ssd' ? '💾' : '☁️'} ${esc(dn(f.name))}</div>
       <div class="m">${esc(f.n)} 支・${esc(f.gb)} GB${f.mt ? '・' + new Date(f.mt * 1000).toLocaleDateString('zh-TW', { month: 'numeric', day: 'numeric' }) : ''}</div>
       ${open ? `<div class="vform"><textarea id="vnote" placeholder="特別交代（可不填）例：客人講電池 70% 那段要留"></textarea>
         <div class="btns"><button type="button" class="ghost" data-v="cancel">取消</button><button type="button" class="okb" data-v="cut">🎬 排進剪片</button></div></div>` : ''}</div>
