@@ -1340,8 +1340,26 @@ let swReg = null;
 const b64key = (s) => { s = s.replace(/-/g, '+').replace(/_/g, '/'); s += '='.repeat((4 - s.length % 4) % 4); return Uint8Array.from(atob(s), (c) => c.charCodeAt(0)); };
 const setBell = (on) => bell.classList.toggle('on', on);
 async function saveSub(sub, a) { const pin = getPin() || askPin(); if (!pin) throw new Error('nopin'); const res = await fetch(API, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ a: a || 'push_sub', pin, sub: sub.toJSON() }) }); const j = await res.json(); if (!j.ok && j.error === 'pin') { setPin(''); throw new Error('pin'); } if (!j.ok) throw new Error(j.error); }
+// 2026-11-21：點通知後要開的頁面（例：預覽播放 play.html）。iPhone 主畫面版常只叫回審稿頁不換頁 → sw.js 先記下，這裡接手跳過去（只收同網站）
+function goPending(url) { if (typeof url === 'string' && url.indexOf(location.origin + '/') === 0 && url !== location.href) location.href = url; }
+async function takePending() {
+  try {
+    if (!('caches' in window)) return;
+    const c = await caches.open('pending'), r = await c.match('pending-open');
+    if (!r) return;
+    await c.delete('pending-open');
+    const d = await r.json();
+    if (Date.now() - d.t < 3 * 60 * 1000) goPending(d.url);
+  } catch (e) {}
+}
+takePending();
+document.addEventListener('visibilitychange', () => { if (!document.hidden) takePending(); });
+window.addEventListener('focus', takePending);
+if ('serviceWorker' in navigator) navigator.serviceWorker.addEventListener('message', (e) => {
+  if (e.data && e.data.open) { if ('caches' in window) caches.open('pending').then((c) => c.delete('pending-open')).catch(() => {}); goPending(e.data.open); }
+});
 if (canPush) {
-  swReg = navigator.serviceWorker.register('sw.js').then(() => navigator.serviceWorker.ready);
+  swReg = navigator.serviceWorker.register('sw.js').then((r) => { r.update().catch(() => {}); return navigator.serviceWorker.ready; });
   swReg.then((r) => r.pushManager.getSubscription()).then((sub) => { if (sub && Notification.permission === 'granted') { setBell(true); if (getPin()) saveSub(sub).catch(() => {}); } }).catch(() => {});
 }
 bell.addEventListener('click', async () => {

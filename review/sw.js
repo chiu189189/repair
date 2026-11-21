@@ -9,8 +9,18 @@ self.addEventListener('push', function (e) {
 self.addEventListener('notificationclick', function (e) {
   e.notification.close();
   var url = (e.notification.data && e.notification.data.url) || './';
-  e.waitUntil(self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(function (list) {
-    for (var i = 0; i < list.length; i++) { if ('navigate' in list[i]) { return list[i].navigate(url).then(function (c) { return c && c.focus(); }); } }
-    return self.clients.openWindow(url);
+  // 2026-11-21：iPhone 主畫面版點通知常常只把審稿頁叫到前面、不換頁 → 先記下要開的網址，審稿頁一回到前面就自己跳過去
+  var same = url.indexOf(self.location.origin) === 0;
+  e.waitUntil((same ? caches.open('pending').then(function (c) {
+    return c.put('pending-open', new Response(JSON.stringify({ url: url, t: Date.now() })));
+  }).catch(function () {}) : Promise.resolve()).then(function () {
+    return self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+  }).then(function (list) {
+    if (!list.length) return self.clients.openWindow(url);
+    var w = list[0];
+    if (same) { try { w.postMessage({ open: url }); } catch (x) {} }
+    return w.focus().catch(function () {}).then(function () {
+      if (same && 'navigate' in w) return w.navigate(url).catch(function () {});
+    });
   }));
 });
