@@ -1107,7 +1107,8 @@ function renderStats() {
     ['lux', luxCard, 'bag', '精品報價頁', lxAvg != null ? `今天・平均一天 ${lxAvg} 台` : '', st.luxury && st.luxury.days ? `${n(st.luxury.days[dayKey(new Date())] || 0)} 台` : '—', ''],
   ].filter((x) => x[1]);
   const rowHtml = rowsL.length ? `<div class="sec">細項（點開看）</div>` + rowsL.map(([k, c, i2, t2, sub2, v, d]) => `<details class="st-row" data-k="${k}"${stOpen.rows[k] ? ' open' : ''}><summary><span class="st-ic">${ic(i2)}</span><span class="st-k">${t2}${sub2 ? `<small>${sub2}</small>` : ''}</span><span class="st-v">${v}${d}</span></summary><div class="st-body">${c}</div></details>`).join('') : '';
-  const simple = tipBox + tileHtml + rowHtml;
+  // 2026-11-21 用戶選「整塊拿掉」：這週建議沒叫人做事（評論跟待辦重複、其他只是數字），不顯示
+  const simple = tileHtml + rowHtml;
   const more = `<details class="card fold" data-k="__more"${open.__more ? ' open' : ''}><summary><h2>看詳細數據</h2></summary><div class="note2">比較複雜，平常不用看；要問什麼直接到「問我」問就好。</div>${sum}${all}</details>`;
   $('#stats').innerHTML = simple + more;
   $('#stats').querySelectorAll('.st-tile[data-tile]').forEach((b2) => b2.addEventListener('click', () => {
