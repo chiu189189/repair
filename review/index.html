@@ -712,8 +712,8 @@ function renderTodo() {
   const hr = now.getHours(), hi = hr < 11 ? '早安' : hr < 18 ? '午安' : '晚安';
   const SR = sortReview(), waitN = SR.n, cmtN = SR.c, total = waitN + cmtN + out.length + lhLeft;
   $('#greet').innerHTML = total
-    ? `<b>${hi}老闆，還有 <em>${total}</em> 件事要你處理</b><span>${waitN ? `${waitN} 件等你按` : ''}${waitN && (out.length + lhLeft) ? '・' : ''}${out.length + lhLeft ? `${out.length + lhLeft} 件要處理` : ''}${cmtN ? `${waitN || out.length + lhLeft ? '・' : ''}${cmtN} 則留言` : ''}${fixes ? `・${fixes} 篇 Claude 改稿中` : ''}</span>`
-    : `<b>${hi}老闆，今天沒事了</b><span>${nowait ? '新稿做好會傳 LINE 給你' : ''}</span>`;
+    ? `<b>老闆，還有 <em>${total}</em> 件事要你處理</b><span>${waitN ? `${waitN} 件等你按` : ''}${waitN && (out.length + lhLeft) ? '・' : ''}${out.length + lhLeft ? `${out.length + lhLeft} 件要處理` : ''}${cmtN ? `${waitN || out.length + lhLeft ? '・' : ''}${cmtN} 則留言` : ''}${fixes ? `・${fixes} 篇 Claude 改稿中` : ''}</span>`
+    : `<b>老闆，今天沒事了</b><span>${nowait ? '新稿做好會傳 LINE 給你' : ''}</span>`;
 }
 let todoN = 0;
 $('#todo').addEventListener('click', (e) => {
