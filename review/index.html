@@ -20,7 +20,7 @@
 :root {
   --bg: #f4f1ea; --card: #ffffff; --soft: #f1ece2; --ink: #1e1b14; --sub: #6b6458; --mute: #a39b8c; --line: #e6dfd2;
   --accent: #A6843F; --accent-ink: #1E1B14; --gold: #7f6226;
-  --ok: #1f8a4c; --fix: #c2410c; --hot: #d4501c; --vid: #3b6fd8;
+  --ok: #1f8a4c; --red: #d92d20; --fix: #c2410c; --hot: #d4501c; --vid: #3b6fd8;
   --shadow: 0 1px 2px rgba(64, 50, 20, .04), 0 6px 18px rgba(64, 50, 20, .05);
   --r-lg: 16px; --r-md: 12px; --r-sm: 8px;
   --t-ok: color-mix(in srgb, var(--ok) 13%, transparent);
@@ -33,7 +33,7 @@
   :root:not([data-theme="light"]) {
     --bg: #14130f; --card: #1d1b16; --soft: #26231d; --ink: #f3efe6; --sub: #a69e8f; --mute: #6f695e; --line: #312d25;
     --accent: #C8A96A; --accent-ink: #1E1B14; --gold: #C8A96A;
-    --ok: #3fc47f; --fix: #fb923c; --hot: #ff8552; --vid: #7aa2ff;
+    --ok: #3fc47f; --red: #ff6b5e; --fix: #fb923c; --hot: #ff8552; --vid: #7aa2ff;
     --shadow: 0 1px 2px rgba(0, 0, 0, .25);
     color-scheme: dark;
   }
@@ -41,7 +41,7 @@
 :root[data-theme="dark"] {
   --bg: #14130f; --card: #1d1b16; --soft: #26231d; --ink: #f3efe6; --sub: #a69e8f; --mute: #6f695e; --line: #312d25;
   --accent: #C8A96A; --accent-ink: #1E1B14; --gold: #C8A96A;
-  --ok: #3fc47f; --fix: #fb923c; --hot: #ff8552; --vid: #7aa2ff;
+  --ok: #3fc47f; --red: #ff6b5e; --fix: #fb923c; --hot: #ff8552; --vid: #7aa2ff;
   --shadow: 0 1px 2px rgba(0, 0, 0, .25);
   color-scheme: dark;
 }
@@ -165,7 +165,7 @@ textarea:focus, .datebox input:focus { outline: 2px solid var(--accent); outline
 .th img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .row1 .bd { flex: 1; min-width: 0; }
 .kd { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; font-size: 12.5px; color: var(--sub); font-variant-numeric: tabular-nums; }
-.kd .due { color: var(--hot); font-weight: 700; }
+.kd .due { color: var(--red); font-weight: 700; }
 .act .tt { font-size: 17px; font-weight: 800; line-height: 1.38; margin: 6px 0 4px; overflow-wrap: anywhere; }
 .pv { font-size: 13.5px; color: var(--sub); line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: anywhere; }
 .ckl { display: flex; flex-wrap: wrap; gap: 2px 12px; font-size: 12.5px; margin-top: 8px; }
@@ -369,7 +369,14 @@ details.vdone summary { cursor: pointer; font-size: 13.5px; color: var(--sub); p
 .li-th img, .pc-th img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .li-bd { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
 .li-kd { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--sub); flex-wrap: wrap; }
-.li-kd .due { color: var(--hot); font-weight: 700; }
+.li-kd .due { color: var(--red); font-weight: 700; }
+/* 2026-11-21 用戶選「紅橘分級」：紅＝快來不及（熱議倒數、排程缺口）；橘＝要注意（日期、要你處理） */
+.li-kd .dt { color: var(--fix); font-weight: 700; }
+.todo { border-left: 4px solid var(--fix); }
+.todo .tx { color: var(--fix); }
+.remind { border-left: 4px solid var(--red); }
+.remind .tx b, .remind .tx small { color: var(--red); }
+.remind .rm-ic { color: var(--red); }
 .li-tt { font-weight: 700; font-size: 14.5px; line-height: 1.35; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .card.open .li-tt { white-space: normal; }
 .li-row > button, .card.pc > button { flex: none; font: inherit; font-size: 13.5px; font-weight: 700; border-radius: 10px; padding: 8px 14px; border: 1px solid var(--line); background: var(--card); color: var(--ink); cursor: pointer; }
@@ -705,8 +712,8 @@ function renderTodo() {
   const hr = now.getHours(), hi = hr < 11 ? '早安' : hr < 18 ? '午安' : '晚安';
   const SR = sortReview(), waitN = SR.n, cmtN = SR.c, total = waitN + cmtN + out.length + lhLeft;
   $('#greet').innerHTML = total
-    ? `<b>${hi}右丞，還有 <em>${total}</em> 件事要你處理</b><span>${waitN ? `${waitN} 件等你按` : ''}${waitN && (out.length + lhLeft) ? '・' : ''}${out.length + lhLeft ? `${out.length + lhLeft} 件要處理` : ''}${cmtN ? `${waitN || out.length + lhLeft ? '・' : ''}${cmtN} 則留言` : ''}${fixes ? `・${fixes} 篇 Claude 改稿中` : ''}</span>`
-    : `<b>${hi}右丞，今天沒事了</b><span>${nowait ? '新稿做好會傳 LINE 給你' : ''}</span>`;
+    ? `<b>${hi}老闆，還有 <em>${total}</em> 件事要你處理</b><span>${waitN ? `${waitN} 件等你按` : ''}${waitN && (out.length + lhLeft) ? '・' : ''}${out.length + lhLeft ? `${out.length + lhLeft} 件要處理` : ''}${cmtN ? `${waitN || out.length + lhLeft ? '・' : ''}${cmtN} 則留言` : ''}${fixes ? `・${fixes} 篇 Claude 改稿中` : ''}</span>`
+    : `<b>${hi}老闆，今天沒事了</b><span>${nowait ? '新稿做好會傳 LINE 給你' : ''}</span>`;
 }
 let todoN = 0;
 $('#todo').addEventListener('click', (e) => {
@@ -826,19 +833,19 @@ function renderReview() {
       btn = '<button type="button" class="okb sm" data-act="toggle">回覆</button>'; }
     else if (hot) { const ex = hotExpire(r.id), left = ex ? (ex - Date.now()) / 36e5 : 9;
       pill = `<span class="pill hot">${ic('flame')}熱議</span>`;
-      sub = `<span class="${left < 2 ? 'due' : ''}">${left < 1 ? `剩 ${Math.max(1, Math.round(left * 60))} 分` : `剩 ${Math.round(left)} 小時`}</span>`;
+      sub = `<span class="due">${left < 1 ? `剩 ${Math.max(1, Math.round(left * 60))} 分` : `剩 ${Math.round(left)} 小時`}</span>`;
       btn = '<button type="button" class="okb sm" data-act="ok">發</button>'; }
     else if (vid) { pill = `<span class="pill vid">${ic('video')}影片</span>`;
-      sub = past ? '<span class="due">日期過了</span>' : `<span>${esc(String(r.when).split('・')[0])}</span>`;
+      sub = past ? '<span class="due">日期過了</span>' : `<span class="dt">${esc(String(r.when).split('・')[0])}</span>`;
       btn = past ? '<button type="button" class="sm" data-act="pickdate">選日期</button>' : '<button type="button" class="okb sm" data-act="ok">通過</button>'; }
     else { pill = `<span class="pill img">${ic('doc')}${/冷知識/.test(r.id || '') ? '冷知識' : '教學文'}</span>`;
-      sub = mode === 'backup' ? '<span>按通過排到最近空的一天</span>' : `<span>${esc(String(r.when).split('・')[0])}</span>`;
+      sub = mode === 'backup' ? '<span>按通過排到最近空的一天</span>' : `<span class="dt">${esc(String(r.when).split('・')[0])}</span>`;
       btn = '<button type="button" class="okb sm" data-act="ok">通過</button>'; }
     return `<article class="card li${hot ? ' hot' : ''}" data-i="${i}" id="c-${esc(r.id)}">
       <div class="li-row" data-act="toggle">${th(r, 'li-th')}<div class="li-bd"><div class="li-kd">${pill}${sub}</div><div class="li-tt">${ttl(r)}</div></div>${btn}</div>
       ${full(r, i)}</article>`;
   };
-  const pair = (g) => `<div class="pairbox"><div class="li-kd">${'<span class="pill img">' + ic('doc') + '二選一</span>'}<span>${esc(String(g[0][0].when).split('・')[0])}・選一篇，另一篇留著備用</span></div>
+  const pair = (g) => `<div class="pairbox"><div class="li-kd">${'<span class="pill img">' + ic('doc') + '二選一</span>'}<span><span class="dt">${esc(String(g[0][0].when).split('・')[0])}</span>・選一篇，另一篇留著備用</span></div>
     <div class="pair">${g.map(([r, i]) => `<article class="card pc" data-i="${i}" id="c-${esc(r.id)}">
       <div class="pc-top" data-act="toggle">${th(r, 'pc-th')}<div class="pc-tt">${ttl(r)}</div></div>
       <button type="button" class="okb sm" data-act="ok">選這篇</button>${full(r, i)}</article>`).join('')}</div></div>`;
