@@ -672,13 +672,13 @@ function renderTodo() {
   if (g && g.unreplied) out.push(['r', `${g.unreplied} 則 Google 評論還沒回｜${String(g.reviewsAsOf || g.asOf || '').slice(5, 16).replace('-', '/')} 的資料・每週一更新`, 'https://business.google.com/reviews', '去回覆']);
   const ago = new Date(now.getTime() - 3 * 864e5);
   items.filter((x) => x.ck === 'fail' && new Date(x.at.replace(' ', 'T')) > ago).forEach((x) => out.push(['r', `${md(x.at.slice(0, 10))}「${clean(x.t).split('｜')[0].slice(0, 18)}」沒發出去`, 'sched', '看行程']));
-  // 接下來 7 天：中午沒圖文、晚上沒影片（已審待排的也算有）
+  // 接下來 7 天：中午沒圖文、週二／五晚上沒影片（已審待排的也算有；影片 11/21 起一週 2 支）
   const noImg = [], noVid = [];
   for (let i = 1; i <= 7; i++) {
     const k = dayKey(new Date(now.getTime() + i * 864e5));
     const day = items.filter((x) => x.at.slice(0, 10) === k);
     if (!day.some((x) => x.k === 'img') && !rv.some((r) => r.kind !== 'vid' && String(r.when || '').startsWith(`${+k.slice(5, 7)}/${+k.slice(8)}`))) noImg.push(k);
-    if (!day.some((x) => x.k === 'vid') && !rv.some((r) => r.kind === 'vid' && String(r.when || '').startsWith(`${+k.slice(5, 7)}/${+k.slice(8)}`))) noVid.push(k);
+    if ([2, 5].includes(new Date(k + 'T00:00:00').getDay()) && !day.some((x) => x.k === 'vid') && !rv.some((r) => r.kind === 'vid' && String(r.when || '').startsWith(`${+k.slice(5, 7)}/${+k.slice(8)}`))) noVid.push(k);
   }
   // 排程缺口只是提醒（合併成一行）；「搜尋找不到」放成效分頁
   const gap = [noImg.length ? `圖文缺 ${noImg.length} 天` : '', noVid.length ? `影片缺 ${noVid.length} 天` : ''].filter(Boolean).join('、');
