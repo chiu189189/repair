@@ -1262,7 +1262,7 @@ function renderVideo() {
     return `<div class="card"><div class="vtitle">${esc(job)} <span class="pill ${doing ? 'vid' : ''}">${doing ? (x.kind === '剪片修改' ? '照意見改中' : '剪片中') : '排隊中'}</span></div>
       <div class="vpath">${doing ? `${j.start ? esc(hm(j.start)) + ' 開工・' : ''}通常 30～90 分鐘，好了手機會跳通知` : esc(x.q.reply || 'Mac 15 分鐘內接手')}${x.note ? `<br>交代：${esc(x.note)}` : ''}</div>
       ${doing ? '<div class="vbar"><i></i></div>' : ''}</div>`;
-  }).concat(finals.filter((x) => !byJob[x.arg] || byJob[x.arg].status !== 'done').map((x) => `<div class="card"><div class="vtitle">${esc(x.arg)} <span class="pill">定案處理中</span></div><div class="vpath">會放進 iCloud 維修影片/待發</div></div>`))
+  }).concat(finals.filter((x) => !byJob[x.arg] || byJob[x.arg].status !== 'done').map((x) => `<div class="card"><div class="vtitle">${esc(x.arg)} <span class="pill">定案處理中</span></div><div class="vpath">沒拍到人臉會放進 iCloud 維修影片/待發；有人臉會提醒你先用剪映打馬賽克</div></div>`))
     .concat(failed.map((x) => `<div class="card"><div class="vtitle">${esc(x.kind === '剪片' ? jobOf(x.arg) : x.arg)} <span class="pill bad">沒做成</span></div><div class="vpath">${esc(x.q.reply || '')}</div></div>`));
   if (prog.length) B.push(`<div class="sec">進行中 <i>${prog.length}</i></div>` + prog.join(''));
   // 3 素材資料夾
@@ -1279,7 +1279,7 @@ function renderVideo() {
   B.push(todo.length ? `<div class="card vlist">${todo.map(row).join('')}</div>`
     : '<div class="empty">沒有新的素材。影片放 iCloud 雲碟 → 維修影片 → 素材 → 新資料夾（例：1125 15pro換電池），或插 SSD 放「手機維修」，15 分鐘內出現在這裡。</div>');
   if (done.length) B.push(`<details class="vdone"${vidOpen.startsWith('cut:') && done.some((f) => 'cut:' + f.key === vidOpen) ? ' open' : ''}><summary>剪過的素材 ${done.length} 個</summary><div class="card vlist">${done.map(row).join('')}</div></details>`);
-  B.push(`<div class="vfoot">剪法照 14 Pro 換電池那支（邊修邊講＋字幕＋上方重點字、約 60～80 秒、客人臉打馬賽克）。跟 LINE 秘書「剪片」是同一份，哪邊按都一樣。${v.at ? `<br>素材清單 ${esc(hm(v.at))} 更新` : ''}${vidReqs ? '' : '<br>進度讀取中…'}</div>`);
+  B.push(`<div class="vfoot">剪法照 14 Pro 換電池那支（邊修邊講＋字幕＋上方重點字、約 60～80 秒；不打馬賽克，有拍到客人定案時會提醒你用剪映打）。跟 LINE 秘書「剪片」是同一份，哪邊按都一樣。${v.at ? `<br>素材清單 ${esc(hm(v.at))} 更新` : ''}${vidReqs ? '' : '<br>進度讀取中…'}</div>`);
   box.innerHTML = B.join('');
   const n = ready.filter((j) => !pendingOn(j.job)).length, bv = $('#badgeV');
   bv.hidden = !n; bv.textContent = n;
@@ -1309,7 +1309,7 @@ $('#video').addEventListener('click', async (e) => {
     if (!(await vidSend(`【剪片修改】${card.dataset.job}｜${n}`, '✏️ 收到，改好會再通知你'))) b.disabled = false;
   } else if (act === 'final') {
     b.disabled = true;
-    if (!(await vidSend(`【剪片定案】${card.dataset.job}`, '👍 定案，15 分鐘內放進 iCloud 維修影片/待發'))) b.disabled = false;
+    if (!(await vidSend(`【剪片定案】${card.dataset.job}`, '👍 定案：15 分鐘內 Mac 檢查人臉，沒人臉放進待發、有人臉提醒你打馬賽克'))) b.disabled = false;
   }
 });
 $('#reload').addEventListener('click', () => load());
