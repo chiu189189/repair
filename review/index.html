@@ -1284,7 +1284,7 @@ function renderVideo() {
   B.push(todo.length ? `<div class="card vlist">${todo.map(row).join('')}</div>`
     : '<div class="empty">沒有新的素材。影片放 iCloud 雲碟 → 維修影片 → 素材 → 新資料夾（例：1125 15pro換電池），或插 SSD 放「手機維修」，15 分鐘內出現在這裡。</div>');
   if (done.length) B.push(`<details class="vdone"${vidOpen.startsWith('cut:') && done.some((f) => 'cut:' + f.key === vidOpen) ? ' open' : ''}><summary>剪過的素材 ${done.length} 個</summary><div class="card vlist">${done.map(row).join('')}</div></details>`);
-  B.push(`<div class="vfoot">剪法照 14 Pro 換電池那支（邊修邊講＋字幕＋上方重點字、約 60～80 秒；不打馬賽克，有拍到客人定案時會提醒你用剪映打）。跟 LINE 秘書「剪片」是同一份，哪邊按都一樣。${v.at ? `<br>素材清單 ${esc(hm(v.at))} 更新` : ''}${vidReqs ? '' : '<br>進度讀取中…'}</div>`);
+  B.push(`<div class="vfoot">剪法照 14 Pro 換電池那支（邊修邊講＋字幕＋上方重點字、約 60～80 秒；不打馬賽克，有拍到客人時剪好的通知會提醒你：丟待發前先用剪映打）。跟 LINE 秘書「剪片」是同一份，哪邊按都一樣。${v.at ? `<br>素材清單 ${esc(hm(v.at))} 更新` : ''}${vidReqs ? '' : '<br>進度讀取中…'}</div>`);
   box.innerHTML = B.join('');
   const n = ready.filter((j) => !pendingOn(j.job)).length, bv = $('#badgeV');
   bv.hidden = !n; bv.textContent = n;
