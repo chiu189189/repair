@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-title" content="秘書">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon.png">
 <link rel="icon" href="icon.png">
@@ -49,6 +49,8 @@
 /* 基礎 */
 * { box-sizing: border-box; }
 html { -webkit-text-size-adjust: 100%; }
+/* 主畫面 App 的狀態列（時間、電量）透明疊在頁面上、字是白的：最上面墊一條深色，淺色模式也看得清楚 */
+body::before { content: ""; position: fixed; top: 0; left: 0; right: 0; height: env(safe-area-inset-top); background: #14130f; z-index: 30; pointer-events: none; }
 body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.55 -apple-system, BlinkMacSystemFont, "PingFang TC", "Noto Sans TC", "Microsoft JhengHei", sans-serif; -webkit-font-smoothing: antialiased; -webkit-tap-highlight-color: transparent; }
 button { font: inherit; color: inherit; touch-action: manipulation; }
 button:disabled { opacity: .5; cursor: default; }
