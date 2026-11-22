@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>TikTok 待發</title>
+<style>
+  :root { --bg: #111; --card: #1c1c1e; --fg: #eee; --muted: #999; --accent: #fe2c55; --ok: #4cd964; --bad: #ff6b6b; }
+  html, body { margin: 0; background: var(--bg); color: var(--fg); font: 16px -apple-system, "PingFang TC", sans-serif; }
+  .wrap { max-width: 520px; margin: 0 auto; padding: 16px 16px calc(24px + env(safe-area-inset-bottom)); }
+  h1 { font-size: 18px; margin: 4px 0 12px; }
+  video { width: 100%; max-height: 52vh; background: #000; border-radius: 12px; }
+  .btn { display: block; width: 100%; box-sizing: border-box; margin: 10px 0 0; padding: 14px; border: 0; border-radius: 12px;
+    background: var(--accent); color: #fff; font: 600 17px -apple-system, "PingFang TC", sans-serif; text-align: center; text-decoration: none; }
+  .btn.alt { background: var(--card); color: var(--fg); }
+  .st { min-height: 20px; margin: 6px 0 0; font-size: 13px; color: var(--muted); text-align: center; }
+  .st.ok { color: var(--ok); } .st.bad { color: var(--bad); }
+  pre { white-space: pre-wrap; background: var(--card); padding: 12px; border-radius: 12px; font: 14px/1.6 -apple-system, "PingFang TC", sans-serif; }
+  ol { color: var(--muted); font-size: 14px; line-height: 1.8; padding-left: 20px; }
+  a.link { color: #4da3ff; text-decoration: none; }
+  .msg { padding: 40px 16px; text-align: center; color: var(--muted); line-height: 1.6; }
+</style>
+</head>
+<body>
+<div class="wrap" id="app"></div>
+<script>
+// 2026-11-21：TikTok 沒有能用的 API → 影片時間到推播這頁，用戶存影片、複製文案後自己在 TikTok App 上傳
+// #b=<base64url(JSON {v: R2 影片連結, c: 文案, t: 標題})>；只接受 R2 網址
+(function () {
+  var app = document.getElementById('app'), d = null;
+  try {
+    var h = location.hash.slice(1);
+    if (h.indexOf('b=') === 0) {
+      var s = h.slice(2).replace(/-/g, '+').replace(/_/g, '/'); while (s.length % 4) s += '=';
+      var bin = atob(s), bytes = new Uint8Array(bin.length);
+      for (var i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+      d = JSON.parse(new TextDecoder().decode(bytes));
+    }
+  } catch (e) { d = null; }
+  var ok = d && /^https:\/\/[0-9a-f]{32}\.r2\.cloudflarestorage\.com\/[^\s"'<>]+$/.test(d.v || '');
+  if (!ok) { app.innerHTML = '<div class="msg">連結不對或已經過期（7 天）。<br><br><a class="link" href="./">回審稿頁</a></div>'; return; }
+  var esc = function (t) { return String(t).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); };
+  app.innerHTML =
+    '<h1>📱 TikTok 待發：' + esc(d.t || '') + '</h1>' +
+    '<video id="v" controls playsinline webkit-playsinline muted preload="metadata"></video>' +
+    '<button class="btn" id="save">① 存影片到相簿</button><div class="st" id="s1"></div>' +
+    (d.c ? '<button class="btn" id="copy">② 複製文案</button><div class="st" id="s2"></div><pre>' + esc(d.c) + '</pre>'
+         : '<div class="st bad">這次文案沒放進連結，請到審稿頁行程複製</div>') +
+    '<ol><li>打開 TikTok App → 下面「＋」→ 右下「上傳」</li><li>選剛存的影片 → 下一步</li><li>描述欄長按 → 貼上 → 發佈</li></ol>' +
+    '<a class="btn alt" href="./">← 回審稿頁</a>';
+  var v = document.getElementById('v'); v.src = d.v;
+  var say = function (id, t, cls) { var el = document.getElementById(id); el.textContent = t; el.className = 'st' + (cls ? ' ' + cls : ''); };
+  var fallback = function (why) {
+    say('s1', why + '：改用 Safari 開影片 → 下方「分享」→「儲存影片」', 'bad');
+    window.open(d.v, '_blank', 'noopener');
+  };
+  document.getElementById('save').onclick = function () {
+    say('s1', '下載中…（影片約 100MB，要等一下）');
+    fetch(d.v).then(function (r) { if (!r.ok) throw new Error(r.status); return r.blob(); }).then(function (b) {
+      var ext = /\.mov(\?|$)/i.test(d.v) ? 'mov' : 'mp4';
+      var f = new File([b], 'chiu189_tiktok.' + ext, { type: b.type || (ext === 'mov' ? 'video/quicktime' : 'video/mp4') });
+      if (!(navigator.canShare && navigator.canShare({ files: [f] }))) return fallback('這支手機不能直接存');
+      say('s1', '跳出選單後按「儲存影片」');
+      return navigator.share({ files: [f] }).then(function () { say('s1', '✅ 已存到相簿', 'ok'); })
+        .catch(function (e) { if (e && e.name === 'AbortError') say('s1', '取消了，可以再按一次'); else fallback('存不了'); });
+    }).catch(function () { fallback('下載失敗'); });
+  };
+  var cp = document.getElementById('copy');
+  if (cp) cp.onclick = function () {
+    navigator.clipboard.writeText(d.c).then(function () { say('s2', '✅ 文案已複製', 'ok'); })
+      .catch(function () { say('s2', '複製失敗：長按下面文字自己選取複製', 'bad'); });
+  };
+})();
+</script>
+</body>
+</html>
