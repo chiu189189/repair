@@ -472,6 +472,14 @@ details.lxwrap > summary::-webkit-details-marker { display: none; }
 .lxtog { margin-left: auto; font-weight: 600; letter-spacing: 0; color: var(--mute); }
 .lxtog::after { content: "展開 ▾"; }
 details.lxwrap[open] .lxtog::after { content: "收起 ▴"; }
+/* 2026-11-22 微商相冊不太確定、先不上的精品 */
+.lrv { padding: 12px 0; border-top: 1px solid var(--line, #e5e5e5); }
+.lrv:first-child { border-top: 0; }
+.lrv .ph { display: flex; gap: 6px; overflow-x: auto; }
+.lrv .ph img { width: 84px; height: 84px; object-fit: cover; border-radius: 8px; flex: none; background: #8882; }
+.lrv .why { color: #c0392b; font-size: 13px; margin: 6px 0 2px; }
+.lrv .mate { display: flex; gap: 8px; align-items: center; font-size: 13px; margin: 6px 0; padding: 6px; border-radius: 8px; background: #8881; }
+.lrv .mate img { width: 48px; height: 48px; object-fit: cover; border-radius: 6px; flex: none; }
 body.nopin .tabs, body.nopin [id^="pane-"], body.nopin #today, body.nopin #upd { display: none !important; }   /* 2026-11-21 密碼錯／沒密碼：收起上次的舊資料 */
 </style>
 </head>
@@ -669,6 +677,37 @@ function holdHtml(lh) {
     }).join('')
     + `<div class="sc-foot">精品批發的事，跟維修無關・更新 ${esc(String(lh.asOf || '').slice(5).replace('-', '/'))}</div></div>` : '';
 }
+function luxRevSent() { try { return JSON.parse(localStorage.getItem('chiu189_luxrev') || '{}'); } catch (e) { return {}; } }
+function reviewHtml(lr) {
+  if (!lr || !lr.n) return '';
+  const sent = luxRevSent();
+  const nm = (x) => [x.brand, x.name].filter(Boolean).join(' ');
+  return `<div class="sc"><div class="sc-desc">微商相冊這幾件程式沒把握，<b>先不上</b>商品頁、LINE 也不發。看一下照片，沒問題按「上架」，有問題按「不上」；5 分鐘內生效。${lr.n > lr.items.length ? `共 ${lr.n} 件，先列最新 ${lr.items.length} 件，按完會補上來。` : ''}</div>`
+    + lr.items.map((x) => {
+      const done = sent[x.id];
+      return `<div class="lrv" data-id="${esc(x.id)}"><div class="ph">${(x.photos || []).map((u) => `<img src="${esc(u)}" loading="lazy" alt="">`).join('')}</div>
+        <div class="lxt"><b>${esc(x.price)}</b> ${esc(nm(x))}</div>
+        <small>${esc(x.src)}・${esc(x.text)}${x.size ? '・' + esc(x.size) : ''}${x.sku ? '・貨號 ' + esc(x.sku) : ''}</small>
+        <div class="why">⚠️ ${(x.why || []).map(esc).join('；')}</div>
+        ${x.mate ? `<div class="mate">${(x.mate.photos || [])[0] ? `<img src="${esc(x.mate.photos[0])}" loading="lazy" alt="">` : ''}<span>已上架的那件：<b>${esc(x.mate.price)}</b> ${esc(nm(x.mate))}${x.mate.sku ? '・貨號 ' + esc(x.mate.sku) : ''}</span></div>` : ''}
+        ${done ? `<div class="lxok">✓ 已送出「${esc(done)}」，5 分鐘內處理</div>`
+          : `<div class="lxbtn"><button type="button" class="ok" data-lr="上架">${x.mate ? '不是重複，上架' : '上架'}</button><button type="button" data-lr="不上">不上</button><span class="lxmsg"></span></div>`}
+      </div>`;
+    }).join('')
+    + `<div class="sc-foot">精品批發的事，跟維修無關・更新 ${esc(String(lr.asOf || '').slice(5).replace('-', '/'))}</div></div>`;
+}
+function bindReview(root) {
+  root.querySelectorAll('.lrv [data-lr]').forEach((b) => b.addEventListener('click', async () => {
+    const box = b.closest('.lrv'), act = b.dataset.lr, msg = box.querySelector('.lxmsg');
+    box.querySelectorAll('button').forEach((x) => { x.disabled = true; }); msg.textContent = '送出中…';
+    try {
+      const j = await askApi({ a: 'ask', text: `【精品校正】審核:${box.dataset.id}｜${act}` });
+      if (!j) { msg.textContent = ''; box.querySelectorAll('button').forEach((x) => { x.disabled = false; }); return; }
+      try { const o = luxRevSent(); o[box.dataset.id] = act; localStorage.setItem('chiu189_luxrev', JSON.stringify(o)); } catch (e) {}
+      msg.textContent = `✓ 已送出（${act}），5 分鐘內處理`; setTimeout(renderTodo, 1200);
+    } catch (e) { msg.textContent = e.message === 'pin' ? '密碼不對，請再按一次' : '沒送出去，請再按一次'; box.querySelectorAll('button').forEach((x) => { x.disabled = false; }); }
+  }));
+}
 function bindHold(root) {
   root.querySelectorAll('.lxfix [data-lxedit]').forEach((b4) => b4.addEventListener('click', () => {
     const f = b4.closest('.lxb').querySelector('.lxform'); if (f) { f.hidden = false; b4.parentElement.hidden = true; const h = f.querySelector('.lxh'); if (h) h.focus(); }
@@ -714,15 +753,17 @@ function renderTodo() {
   const gapLines = [noImg.length ? `圖文缺 ${noImg.length} 天・最近 ${md(noImg[0])}` : '', noVid.length ? `影片缺 ${noVid.length} 天・最近 ${md(noVid[0])}・丟進「待發」` : ''].filter(Boolean);
   const remind = gap ? `<button type="button" class="remind" data-go="sched"><span class="rm-ic">${ic('cal')}</span><span class="tx"><b>排程缺口</b>${gapLines.map((x) => `<small>${x}</small>`).join('')}</span><span class="go">看行程${ic('chev')}</span></button>` : '';
   const lh = st.luxuryHold, sentL = luxSent();
-  const lhLeft = lh && lh.items ? lh.items.filter((x) => !x.listed && !sentL[x.uid]).length : 0;
+  const lr = st.luxuryReview, sentR = luxRevSent();
+  const lhLeft = (lh && lh.items ? lh.items.filter((x) => !x.listed && !sentL[x.uid]).length : 0)
+    + (lr && lr.items ? lr.items.filter((x) => !sentR[x.id]).length : 0);
   todoN = out.length + lhLeft;
   const fixes = rv.filter((x) => ((data.decisions || {})[x.id] || {}).decision === 'fix' && !/^(hot|cmt)-/.test(x.id || '')).length;
   const nowait = !sortReview().n;
   $('#todo').innerHTML = (out.length ? `<div class="sec">要你處理</div><div class="todo">` + out.map(([c, t, go, gl]) => /^https?:/.test(go)
       ? `<a href="${esc(go)}" target="_blank" rel="noopener"><span class="ic ${c}"></span><span class="tx">${sub2(t)}</span><span class="go">${gl}${ic('ext')}</span></a>`
-      : `<button type="button" class="ti" data-go="${go}"><span class="ic ${c}"></span><span class="tx">${sub2(t)}</span><span class="go">${gl}${ic('chev')}</span></button>`).join('') + '</div>' : '') + (lh && lh.n ? `<details class="lxwrap"${lxOpen() ? ' open' : ''}><summary class="sec">精品要你校正${lhLeft ? `（${lhLeft} 件）` : '（都送出了）'}<span class="lxtog"></span></summary>${holdHtml(lh)}</details>` : '')
+      : `<button type="button" class="ti" data-go="${go}"><span class="ic ${c}"></span><span class="tx">${sub2(t)}</span><span class="go">${gl}${ic('chev')}</span></button>`).join('') + '</div>' : '') + ((lh && lh.n) || (lr && lr.n) ? `<details class="lxwrap"${lxOpen() ? ' open' : ''}><summary class="sec">精品要你校正${lhLeft ? `（${lhLeft} 件）` : '（都送出了）'}<span class="lxtog"></span></summary>${holdHtml(lh)}${reviewHtml(lr)}</details>` : '')
     + (remind ? `<div class="sec">提醒</div>${remind}` : '');
-  bindHold($('#todo'));
+  bindHold($('#todo')); bindReview($('#todo'));
   const lw = $('#todo').querySelector('details.lxwrap');
   if (lw) lw.addEventListener('toggle', () => { try { localStorage.setItem('chiu189_lxopen', lw.open ? '1' : '0'); } catch (e) {} });
   // 招呼語＋總件數
