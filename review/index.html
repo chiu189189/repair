@@ -687,24 +687,41 @@ function reviewHtml(lr) {
       const done = sent[x.id];
       return `<div class="lrv" data-id="${esc(x.id)}"><div class="ph">${(x.photos || []).map((u) => `<img src="${esc(u)}" loading="lazy" alt="">`).join('')}</div>
         <div class="lxt"><b>${esc(x.price)}</b> ${esc(nm(x))}</div>
-        <small>${esc(x.src)}・${esc(x.text)}${x.size ? '・' + esc(x.size) : ''}${x.sku ? '・貨號 ' + esc(x.sku) : ''}</small>
+        <small>${esc(x.src)}・${esc(x.text)}</small>
         <div class="why">⚠️ ${(x.why || []).map(esc).join('；')}</div>
         ${x.mate ? `<div class="mate">${(x.mate.photos || [])[0] ? `<img src="${esc(x.mate.photos[0])}" loading="lazy" alt="">` : ''}<span>已上架的那件：<b>${esc(x.mate.price)}</b> ${esc(nm(x.mate))}${x.mate.sku ? '・貨號 ' + esc(x.mate.sku) : ''}</span></div>` : ''}
         ${done ? `<div class="lxok">✓ 已送出「${esc(done)}」，5 分鐘內處理</div>`
-          : `<div class="lxbtn"><button type="button" class="ok" data-lr="上架">${x.mate ? '不是重複，上架' : '上架'}</button><button type="button" data-lr="不上">不上</button><span class="lxmsg"></span></div>`}
+          : `<div class="lxbtn"><button type="button" class="ok" data-lr="上架">${x.mate ? '不是重複，上架' : '上架'}</button><button type="button" data-lredit="1">改</button><button type="button" data-lr="不上">不上</button><span class="lxmsg"></span></div>
+            <div class="lxform" hidden><label>品名<input class="lrn" value="${esc(x.name || '')}" placeholder="例：Ivy 手拿包"></label>
+              <label>台幣售價<input class="lrp" inputmode="numeric" value="${esc(String(x.price || '').replace(/[^0-9]/g, ''))}" placeholder="例：45000"></label>
+              <small>品牌（${esc(x.brand || '—')}）會自動寫在品名前面</small>
+              <div class="lxbtn"><button type="button" class="ok" data-lr="改">改好上架</button><button type="button" data-lrcancel="1">取消</button><span class="lxmsg"></span></div></div>`}
       </div>`;
     }).join('')
     + `<div class="sc-foot">精品批發的事，跟維修無關・更新 ${esc(String(lr.asOf || '').slice(5).replace('-', '/'))}</div></div>`;
 }
 function bindReview(root) {
+  root.querySelectorAll('.lrv [data-lredit]').forEach((b) => b.addEventListener('click', () => {
+    const box = b.closest('.lrv'); box.querySelector('.lxform').hidden = false; b.parentElement.hidden = true; box.querySelector('.lrn').focus();
+  }));
+  root.querySelectorAll('.lrv [data-lrcancel]').forEach((b) => b.addEventListener('click', () => {
+    const box = b.closest('.lrv'); box.querySelector('.lxform').hidden = true; box.querySelector('.lxbtn').hidden = false;
+  }));
   root.querySelectorAll('.lrv [data-lr]').forEach((b) => b.addEventListener('click', async () => {
-    const box = b.closest('.lrv'), act = b.dataset.lr, msg = box.querySelector('.lxmsg');
+    const box = b.closest('.lrv'), act = b.dataset.lr, msg = b.parentElement.querySelector('.lxmsg');
+    let text = `【精品校正】審核:${box.dataset.id}｜${act}`, label = act;
+    if (act === '改') {
+      const name = box.querySelector('.lrn').value.trim().replace(/[｜|=]/g, ' '), tw = box.querySelector('.lrp').value.replace(/[^\d]/g, '');
+      if (!name && !tw) { msg.textContent = '品名或台幣至少填一個'; return; }
+      if (tw && (+tw < 1000 || +tw > 2000000)) { msg.textContent = '台幣看起來不對'; return; }
+      text += `｜品名=${name}｜台幣=${tw}`; label = `改成 ${name}${tw ? '・NT$ ' + nf(+tw) : ''}`;
+    }
     box.querySelectorAll('button').forEach((x) => { x.disabled = true; }); msg.textContent = '送出中…';
     try {
-      const j = await askApi({ a: 'ask', text: `【精品校正】審核:${box.dataset.id}｜${act}` });
+      const j = await askApi({ a: 'ask', text });
       if (!j) { msg.textContent = ''; box.querySelectorAll('button').forEach((x) => { x.disabled = false; }); return; }
-      try { const o = luxRevSent(); o[box.dataset.id] = act; localStorage.setItem('chiu189_luxrev', JSON.stringify(o)); } catch (e) {}
-      msg.textContent = `✓ 已送出（${act}），5 分鐘內處理`; setTimeout(renderTodo, 1200);
+      try { const o = luxRevSent(); o[box.dataset.id] = label; localStorage.setItem('chiu189_luxrev', JSON.stringify(o)); } catch (e) {}
+      msg.textContent = `✓ 已送出（${label}），5 分鐘內處理`; setTimeout(renderTodo, 1200);
     } catch (e) { msg.textContent = e.message === 'pin' ? '密碼不對，請再按一次' : '沒送出去，請再按一次'; box.querySelectorAll('button').forEach((x) => { x.disabled = false; }); }
   }));
 }
@@ -1363,7 +1380,7 @@ function renderVideo() {
   B.push(todo.length ? `<div class="card vlist">${todo.map(row).join('')}</div>`
     : '<div class="empty">沒有新的素材。影片放 iCloud 雲碟 → 維修影片 → 素材 → 新資料夾（例：1125 15pro換電池），或插 SSD 放「手機維修」，15 分鐘內出現在這裡。</div>');
   if (done.length) B.push(`<details class="vdone"${vidOpen.startsWith('cut:') && done.some((f) => 'cut:' + f.key === vidOpen) ? ' open' : ''}><summary>剪過的素材 ${done.length} 個</summary><div class="card vlist">${done.map(row).join('')}</div></details>`);
-  B.push(`<div class="vfoot">剪法照 14 Pro 換電池那支（邊修邊講＋字幕＋上方重點字、約 60～80 秒；不打馬賽克，有拍到客人時剪好的通知會提醒你：丟待發前先用剪映打）。跟 LINE 秘書「剪片」是同一份，哪邊按都一樣。${v.at ? `<br>素材清單 ${esc(hm(v.at))} 更新` : ''}${vidReqs ? '' : '<br>進度讀取中…'}</div>`);
+  B.push(`<div class="vfoot">${esc(v.note || '剪法照 14 Pro 換電池那支（邊修邊講＋字幕＋上方重點字、約 60～80 秒；不打馬賽克，有拍到客人時剪好的通知會提醒你：丟待發前先用剪映打）。跟 LINE 秘書「剪片」是同一份，哪邊按都一樣。')}${v.at ? `<br>素材清單 ${esc(hm(v.at))} 更新` : ''}${vidReqs ? '' : '<br>進度讀取中…'}</div>`);
   box.innerHTML = B.join('');
   const n = ready.filter((j) => !pendingOn(j.job)).length, bv = $('#badgeV');
   bv.hidden = !n; bv.textContent = n;
