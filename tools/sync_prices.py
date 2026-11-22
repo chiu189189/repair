@@ -6,7 +6,7 @@
 安全檢查（不過就不覆蓋，網站維持舊備份）：
   1. 第一行欄位開頭跟現在的備份一樣（防 Google 回錯誤網頁；後面多欄可以）
   2. 筆數至少現在的 80%（防試算表被清空、只抓到一半）
-  3. 維修價目的價格欄不能有明碼數字（只能是 3,••• / 8•• / 檢測後報價 / 現場報價），防網址被換成內部完整價格分頁
+  3. 維修價目的價格欄只能是整數（100～99999，2026-11-22 起公開完整價格）或不含數字的文字（檢測後報價 / 現場報價），防抓到亂掉的資料
 """
 import csv, io, os, re, sys, urllib.request
 
@@ -31,9 +31,14 @@ def problems(text, kind, old_text):
     if len(rows) < 3:
         out.append("筆數太少")
     if kind == "prices":
-        bad = [r[3] for r in rows[1:] if len(r) > 3 and re.search(r"\d{2}", r[3]) and "•" not in r[3]]
+        def ok(p):
+            p = p.strip()
+            if re.fullmatch(r"\d+", p):
+                return 100 <= int(p) <= 99999
+            return p != "" and not re.search(r"\d", p)
+        bad = [r[3] for r in rows[1:] if len(r) > 3 and not ok(r[3])]
         if bad:
-            out.append(f"價格欄有明碼數字 {len(bad)} 筆（例：{bad[0]}），疑似抓到內部完整價格")
+            out.append(f"價格欄格式不對 {len(bad)} 筆（例：{bad[0]!r}），疑似資料亂掉")
     return out
 
 
