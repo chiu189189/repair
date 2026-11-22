@@ -343,6 +343,21 @@ details.fold details.fold .bar { background: var(--card); }
 .vbtn.dim { background: var(--soft); color: var(--sub); }
 span.vbtn { display: inline-grid; place-items: center; cursor: default; }
 .vform textarea { min-height: 72px; }
+.vready { padding: 4px 14px; }
+.vitem { padding: 12px 0; border-top: 1px solid var(--line); }
+.vitem:first-child { border-top: 0; }
+.vhead { display: flex; gap: 10px; align-items: center; }
+.vsm { flex: none; width: 84px; aspect-ratio: 16 / 9; object-fit: cover; border-radius: var(--r-sm); background: var(--soft); }
+.vsm.vph { display: grid; place-items: center; color: var(--mute); }
+.vhead .x { flex: 1; min-width: 0; }
+.vhead .t { font-size: 16px; font-weight: 800; line-height: 1.35; overflow-wrap: anywhere; }
+.vhead .m { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; margin-top: 4px; font-size: 12.5px; color: var(--sub); font-variant-numeric: tabular-nums; }
+.vitem .btns { margin-top: 10px; }
+.vitem .vform { margin-top: 10px; }
+.vic { flex: none; display: grid; place-items: center; width: 42px; height: 42px; border-radius: 50%; border: 0; background: var(--soft); color: var(--ink); text-decoration: none; cursor: pointer; }
+.vic.go { background: var(--accent); color: var(--accent-ink); }
+.vic + .vic { margin-left: -4px; }
+.vhead .m { white-space: nowrap; }
 .vlist { padding: 4px 16px; }
 .vbar { height: 6px; border-radius: 3px; background: var(--soft); margin-top: 10px; overflow: hidden; }
 .vbar i { display: block; height: 100%; width: 35%; border-radius: 3px; background: var(--vid); animation: vslide 1.6s ease-in-out infinite; }
@@ -1408,19 +1423,22 @@ function renderVideo() {
   const B = [];
   // 1 剪好等你看
   if (ready.length) {
-    B.push(`<div class="sec">剪好等你看 <i>${ready.length}</i></div>`);
+    // 11/22 用戶選 A：橫排清單（左小縮圖、右片名＋第幾版＋剪好時間，按鈕一排；iCloud 路徑拿掉）
+    B.push(`<div class="sec">剪好等你看 <i>${ready.length}</i></div><div class="card vready">`);
     ready.forEach((j) => {
       const p = pendingOn(j.job), open = vidOpen === 'fix:' + j.job;
-      B.push(`<div class="card" data-job="${esc(j.job)}">
-        ${j.thumb ? `<img class="vthumb" src="${esc(j.thumb)}" alt="${esc(j.job)} 預覽畫面">` : `<div class="vthumb vph">${ic('video')}</div>`}
-        <div class="vtitle">${esc(dn(j.job))} <span class="pill ok">第 ${esc(j.ver || 1)} 版剪好了</span></div>
-        <div class="vpath">預覽：iPhone「檔案」→ iCloud 雲碟 → 維修影片 → ${esc(j.preview)}${j.end ? `・${esc(hm(j.end))} 剪好` : ''}</div>
+      B.push(`<div class="vitem" data-job="${esc(j.job)}"><div class="vhead">
+        ${j.thumb ? `<img class="vsm" src="${esc(j.thumb)}" alt="${esc(j.job)} 預覽畫面">` : `<div class="vsm vph">${ic('video')}</div>`}
+        <div class="x"><div class="t">${esc(dn(j.job))}</div>
+        <div class="m"><span class="pill ok">第 ${esc(j.ver || 1)} 版</span>${j.end ? `<span>${esc(hm(j.end))}</span>` : ''}</div></div>
+        ${p || open ? '' : `<a class="vic go" aria-label="觀看 ${esc(dn(j.job))}" href="${j.play ? 'play.html#b=' + btoa(j.play).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '') : vidUrl(j.preview)}"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M8 5.5v13l11-6.5z" fill="currentColor"/></svg></a><button type="button" class="vic" aria-label="要改" data-v="openfix"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="m13.5 6.5 4 4"/></svg></button>`}</div>
         ${p ? `<div class="tag ok">✓ 已送出${p.kind === '剪片定案' ? '定案' : `修改「${esc(p.note.slice(0, 40))}」`}，Mac 15 分鐘內接手</div>`
           : open ? `<div class="vform"><textarea id="vnote" placeholder="要改哪裡？例：開頭太長剪掉 3 秒、馬賽克再小一點"></textarea>
               <div class="btns"><button type="button" class="ghost" data-v="cancel">取消</button><button type="button" class="okb" data-v="fix">送出修改</button></div></div>`
-          : `<div class="btns"><a class="okb vwatch" href="${j.play ? 'play.html#b=' + btoa(j.play).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '') : vidUrl(j.preview)}">▶️ 觀看</a><button type="button" data-v="openfix">✏️ 要改</button></div>`}
+          : ''}
       </div>`);
     });
+    B.push('</div>');
   }
   // 2 正在剪／排隊／沒剪成功
   const prog = working.map((x) => {
