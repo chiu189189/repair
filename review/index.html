@@ -1277,7 +1277,10 @@ function renderVideo() {
   // 先開工的排上面；剛送出、還掛在「剪好等你看」那張卡上的修改不重複列
   const working = live.filter((x) => x.kind !== '剪片定案' && !(x.kind === '剪片修改' && x.q.status === 'new' && (byJob[x.arg] || {}).status === 'done')).sort((x, y) => (y.q.status === 'doing') - (x.q.status === 'doing') || String(x.q.at).localeCompare(String(y.q.at)));
   const finals = live.filter((x) => x.kind === '剪片定案');
-  const failed = reqs.filter((x) => x.q.status === 'need_you' && recent(x));
+  // 11/22：同一支片後來又送過（重剪、修改、定案），舊的「沒做成」就不再掛著
+  const jobName = (x) => (x.kind === '剪片' ? jobOf(x.arg) : x.arg);
+  const failed = reqs.filter((x) => x.q.status === 'need_you' && recent(x)
+    && !reqs.some((y) => y !== x && jobName(y) === jobName(x) && String(y.q.at) > String(x.q.at)));
   const cutting = new Set(live.filter((x) => x.kind === '剪片').map((x) => x.arg));
   const B = [];
   // 1 剪好等你看
