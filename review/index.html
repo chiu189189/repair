@@ -684,14 +684,18 @@ function reviewHtml(lr) {
   const nm = (x) => [x.brand, x.name].filter(Boolean).join(' ');
   return `<div class="sc"><div class="sc-desc">微商相冊這幾件程式沒把握，<b>先不上</b>商品頁、LINE 也不發。看一下照片，沒問題按「上架」，有問題按「不上」；5 分鐘內生效。${lr.n > lr.items.length ? `共 ${lr.n} 件，先列最新 ${lr.items.length} 件，按完會補上來。` : ''}</div>`
     + lr.items.map((x) => {
-      const done = sent[x.id];
+      // 送出後清單已經更新過（Mac 5 分鐘處理一次），這件還在＝沒處理到 → 按鈕叫回來
+      const sv = sent[x.id], lab = sv && typeof sv === 'object' ? sv.label : sv, at = sv && sv.at ? sv.at : 0;
+      const asOf = Date.parse(String(lr.asOf || '').replace(' ', 'T'));
+      const lost = sv && at && asOf && asOf - at > 6 * 60e3;
+      const done = lost ? '' : lab;
       return `<div class="lrv" data-id="${esc(x.id)}"><div class="ph">${(x.photos || []).map((u) => `<img src="${esc(u)}" loading="lazy" alt="">`).join('')}</div>
         <div class="lxt"><b>${esc(x.price)}</b> ${esc(nm(x))}</div>
         <small>${esc(x.src)}・${esc(x.text)}</small>
         <div class="why">⚠️ ${(x.why || []).map(esc).join('；')}</div>
         ${x.mate ? `<div class="mate">${(x.mate.photos || [])[0] ? `<img src="${esc(x.mate.photos[0])}" loading="lazy" alt="">` : ''}<span>已上架的那件：<b>${esc(x.mate.price)}</b> ${esc(nm(x.mate))}${x.mate.sku ? '・貨號 ' + esc(x.mate.sku) : ''}</span></div>` : ''}
-        ${done ? `<div class="lxok">✓ 已送出「${esc(done)}」，5 分鐘內處理</div>`
-          : `<div class="lxbtn"><button type="button" class="ok" data-lr="上架">${x.mate ? '不是重複，上架' : '上架'}</button><button type="button" data-lredit="1">改</button><button type="button" data-lr="不上">不上</button><span class="lxmsg"></span></div>
+        ${done ? `<div class="lxok">✓ 已送出「${esc(done)}」，5 分鐘內處理</div><div class="lxbtn"><button type="button" data-lrredo="1">按錯了，重選</button></div>`
+          : `${lost ? `<div class="why">上次送出的「${esc(lab)}」好像沒處理到，請再按一次</div>` : ''}<div class="lxbtn"><button type="button" class="ok" data-lr="上架">${x.mate ? '不是重複，上架' : '上架'}</button><button type="button" data-lredit="1">改</button><button type="button" data-lr="不上">不上</button><span class="lxmsg"></span></div>
             <div class="lxform" hidden><label>品名<input class="lrn" value="${esc(x.name || '')}" placeholder="例：Ivy 手拿包"></label>
               <label>台幣售價<input class="lrp" inputmode="numeric" value="${esc(String(x.price || '').replace(/[^0-9]/g, ''))}" placeholder="例：45000"></label>
               <small>品牌（${esc(x.brand || '—')}）會自動寫在品名前面</small>
@@ -703,6 +707,11 @@ function reviewHtml(lr) {
 function bindReview(root) {
   root.querySelectorAll('.lrv [data-lredit]').forEach((b) => b.addEventListener('click', () => {
     const box = b.closest('.lrv'); box.querySelector('.lxform').hidden = false; b.parentElement.hidden = true; box.querySelector('.lrn').focus();
+  }));
+  root.querySelectorAll('.lrv [data-lrredo]').forEach((b) => b.addEventListener('click', () => {
+    const id = b.closest('.lrv').dataset.id;
+    try { const o = luxRevSent(); delete o[id]; localStorage.setItem('chiu189_luxrev', JSON.stringify(o)); } catch (e) {}
+    renderTodo();
   }));
   root.querySelectorAll('.lrv [data-lrcancel]').forEach((b) => b.addEventListener('click', () => {
     const box = b.closest('.lrv'); box.querySelector('.lxform').hidden = true; box.querySelector('.lxbtn').hidden = false;
@@ -720,7 +729,7 @@ function bindReview(root) {
     try {
       const j = await askApi({ a: 'ask', text });
       if (!j) { msg.textContent = ''; box.querySelectorAll('button').forEach((x) => { x.disabled = false; }); return; }
-      try { const o = luxRevSent(); o[box.dataset.id] = label; localStorage.setItem('chiu189_luxrev', JSON.stringify(o)); } catch (e) {}
+      try { const o = luxRevSent(); o[box.dataset.id] = { label, at: Date.now() }; localStorage.setItem('chiu189_luxrev', JSON.stringify(o)); } catch (e) {}
       msg.textContent = `✓ 已送出（${label}），5 分鐘內處理`; setTimeout(renderTodo, 1200);
     } catch (e) { msg.textContent = e.message === 'pin' ? '密碼不對，請再按一次' : '沒送出去，請再按一次'; box.querySelectorAll('button').forEach((x) => { x.disabled = false; }); }
   }));
