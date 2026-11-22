@@ -488,10 +488,29 @@ details.lxwrap[open] .lxtog::after { content: "收起 ▴"; }
 .lrv .orig{margin:4px 0;padding:6px 8px;border-radius:8px;background:rgba(127,127,127,.12);font-size:13px;line-height:1.5}.lrv .orig small{opacity:.8}.lrv .orig .raw{white-space:pre-wrap;word-break:break-all}
 .lrv { padding: 12px 0; border-top: 1px solid var(--line, #e5e5e5); }
 .lrv:first-child { border-top: 0; }
-.lrv .lxform select { font-size: 16px; padding: 6px 8px; border: 1px solid var(--line, #ddd); border-radius: 8px; background: transparent; color: inherit; }   /* 11/22 改品名＋選分類一起 */
+.lrv .lxt { font-size: 16px; font-weight: 700; margin-top: 8px; } .lrv .lxt b { color: var(--gold); font-weight: 700; }
+.lrv .lrd { margin-top: 4px; font-size: 13px; color: var(--sub); }
+.lrv .lrd summary { display: flex; justify-content: space-between; gap: 8px; list-style: none; cursor: pointer; }
+.lrv .lrd summary::-webkit-details-marker { display: none; }
+.lrv .lrd summary b { color: var(--ink, inherit); font-weight: 600; }
+.lrv .lrd-t { flex: none; } .lrv .lrd-t::after { content: " ▾"; } .lrv .lrd[open] .lrd-t::after { content: " ▴"; }
+.lrv .lrsrc { display: block; white-space: pre-wrap; word-break: break-all; opacity: .8; }
+.lrv .lrg { display: block; margin-top: 4px; } .lrv .lrg[hidden] { display: none; }
+.lrv .lrg .g3, .lrv .lrg .g2, .lrv .lrg .g1 { display: grid; gap: 6px; margin-top: 6px; }
+.lrv .lrg .g3 { grid-template-columns: repeat(3, 1fr); } .lrv .lrg .g2 { grid-template-columns: 1fr 1fr; }
+.lrv .lrg button { border-radius: 10px; padding: 10px 0; font-size: 15px; font-weight: 600; border: 0; background: var(--t-gold); color: var(--ink, inherit); min-height: 42px; }
+.lrv .lrg .g2 button { background: transparent; border: 1px solid var(--line); color: var(--sub); font-weight: 400; font-size: 14px; padding: 8px 0; min-height: 38px; }
+.lrv .lrg .lxmsg { display: block; margin-top: 4px; }
+.lrv .lxform { display: grid; gap: 8px; margin-top: 8px; padding: 10px; border-radius: 10px; background: var(--t-gold); }   /* 11/22 版面 C：改的表單一行一欄 */
+.lrv .lxform[hidden] { display: none; }
+.lrv .lxform label { display: grid; grid-template-columns: 4.5em 1fr; align-items: center; gap: 8px; font-size: 14px; }
+.lrv .lxform input, .lrv .lxform select { width: 100%; box-sizing: border-box; font-size: 16px; padding: 8px 10px; border: 1px solid var(--line, #ddd); border-radius: 8px; background: var(--card, #fff); color: inherit; -webkit-appearance: none; appearance: none; }
+.lrv .lxform small { color: var(--sub); font-size: 12px; }
+.lrv .lxform select { -webkit-appearance: menulist; appearance: auto; }
+.lrv .lxform .lxbtn button { border-radius: 10px; padding: 9px 18px; font-size: 15px; }
 .lrv .ph { display: flex; gap: 6px; overflow-x: auto; }
 .lrv .ph img { width: 84px; height: 84px; object-fit: cover; border-radius: 8px; flex: none; background: #8882; }
-.lrv .why { color: #c0392b; font-size: 13px; margin: 6px 0 2px; }
+.lrv .why { color: #c0392b; font-size: 13px; margin: 8px 0 0; }
 .lrv .mate { display: flex; gap: 8px; align-items: center; font-size: 13px; margin: 6px 0; padding: 6px; border-radius: 8px; background: #8881; }
 .lrv .mate img { width: 48px; height: 48px; object-fit: cover; border-radius: 6px; flex: none; }
 body.nopin .tabs, body.nopin [id^="pane-"], body.nopin #today, body.nopin #upd { display: none !important; }   /* 2026-11-21 密碼錯／沒密碼：收起上次的舊資料 */
@@ -702,6 +721,12 @@ function origHtml(o) {
     : `（${n(o.hkd)}＋運費 110）× 匯率 ${o.rate} ＝ 成本約 NT$ ${n(cost)}`;
   return `<div class="orig">料商原價 <b>港幣 ${n(o.hkd)}</b>${o.late ? '<small>（匯率用現在的）</small>' : ''}<br><small>${calc}</small>${o.raw ? `<br><small class="raw">料商原文：${esc(o.raw)}</small>` : ''}</div>`;
 }
+function origLine(x) {
+  // 版面 C：來源・港幣・加價縮成一行，細節點「原文」展開（11/22）
+  const o = x.orig, n = (v) => Number(v).toLocaleString('en-US');
+  if (!o || !o.hkd) return `${esc(x.src)}・原價沒記到`;
+  return `${esc(x.src)}・港幣 <b>${n(o.hkd)}</b>${o.add != null ? `・${esc(o.cat || '加價')} +${n(o.add)}` : ''}`;
+}
 function reviewHtml(lr) {
   if (!lr || !lr.n) return '';
   const sent = luxRevSent();
@@ -714,16 +739,15 @@ function reviewHtml(lr) {
       const lost = sv && at && asOf && asOf - at > 6 * 60e3;
       const done = lost ? '' : lab;
       return `<div class="lrv" data-id="${esc(x.id)}"><div class="ph">${(x.photos || []).map((u) => `<img src="${esc(u)}" loading="lazy" alt="">`).join('')}</div>
-        <div class="lxt"><b>${esc(x.price)}</b> ${esc(nm(x))}</div>
-        <small>${esc(x.src)}・${esc(x.text)}</small>
-        ${origHtml(x.orig)}
-        <div class="why">⚠️ ${(x.why || []).map(esc).join('；')}</div>
+        <div class="lxt"><b>${esc(x.price)}</b>　${esc(nm(x))}</div>
+        <details class="lrd"><summary><span>${origLine(x)}</span><span class="lrd-t">原文</span></summary>${origHtml(x.orig)}<small class="lrsrc">${esc(x.text)}</small></details>
+        <div class="why">⚠️ ${(x.why || []).map((w) => esc(w.includes('包包還是配件') ? '看不出類別' : w)).join('；')}</div>
         ${x.mate ? `<div class="mate">${(x.mate.photos || [])[0] ? `<img src="${esc(x.mate.photos[0])}" loading="lazy" alt="">` : ''}<span>已上架的那件：<b>${esc(x.mate.price)}</b> ${esc(nm(x.mate))}${x.mate.sku ? '・貨號 ' + esc(x.mate.sku) : ''}</span></div>` : ''}
         ${done ? `<div class="lxok">✓ 已送出「${esc(done)}」，5 分鐘內處理</div><div class="lxbtn"><button type="button" data-lrredo="1">按錯了，重選</button></div>`
-          : `${lost ? `<div class="why">上次送出的「${esc(lab)}」好像沒處理到，請再按一次</div>` : ''}<div class="lxbtn">${(x.why || []).some((w) => w.includes('包包還是配件'))
-              // 看不出類別：直接給分類選項，按了就上架到那一類（11/22 用戶）
-              ? [['bag', '包包'], ['slg', '皮夾小物'], ['acc', '配件']].map(([k, t]) => `<button type="button" class="ok" data-lr="上架" data-cat="${k}" data-catname="${t}">${t}</button>`).join('')
-              : `<button type="button" class="ok" data-lr="上架">${x.mate ? '不是重複，上架' : '上架'}</button>`}<button type="button" data-lredit="1">改</button><button type="button" data-lr="不上">不上</button><span class="lxmsg"></span></div>
+          : `${lost ? `<div class="why">上次送出的「${esc(lab)}」好像沒處理到，請再按一次</div>` : ''}<div class="lxbtn lrg">${(x.why || []).some((w) => w.includes('包包還是配件'))
+              // 看不出類別：直接給分類選項，按了就上架到那一類（11/22 用戶）；版面 C 精簡格子（11/22 用戶選）
+              ? `<div class="g3">${[['bag', '包包'], ['slg', '皮夾小物'], ['acc', '配件']].map(([k, t]) => `<button type="button" data-lr="上架" data-cat="${k}" data-catname="${t}">${t}</button>`).join('')}</div>`
+              : `<div class="g1"><button type="button" data-lr="上架">${x.mate ? '不是重複，上架' : '上架'}</button></div>`}<div class="g2"><button type="button" data-lredit="1">改</button><button type="button" data-lr="不上">不上</button></div><span class="lxmsg"></span></div>
             <div class="lxform" hidden><label>品名<input class="lrn" value="${esc(x.name || '')}" placeholder="例：Ivy 手拿包"></label>
               <label>台幣售價<input class="lrp" inputmode="numeric" value="${esc(String(x.price || '').replace(/[^0-9]/g, ''))}" placeholder="例：45000"></label>
               <label>分類<select class="lrc"><option value="">${(x.why || []).some((w) => w.includes('包包還是配件')) ? '請選' : '不改'}</option><option value="bag">包包</option><option value="slg">皮夾小物</option><option value="acc">配件</option></select></label>
@@ -735,7 +759,7 @@ function reviewHtml(lr) {
 }
 function bindReview(root) {
   root.querySelectorAll('.lrv [data-lredit]').forEach((b) => b.addEventListener('click', () => {
-    const box = b.closest('.lrv'); box.querySelector('.lxform').hidden = false; b.parentElement.hidden = true; box.querySelector('.lrn').focus();
+    const box = b.closest('.lrv'); box.querySelector('.lxform').hidden = false; b.closest('.lxbtn').hidden = true; box.querySelector('.lrn').focus();
   }));
   root.querySelectorAll('.lrv [data-lrredo]').forEach((b) => b.addEventListener('click', () => {
     const id = b.closest('.lrv').dataset.id;
@@ -746,7 +770,7 @@ function bindReview(root) {
     const box = b.closest('.lrv'); box.querySelector('.lxform').hidden = true; box.querySelector('.lxbtn').hidden = false;
   }));
   root.querySelectorAll('.lrv [data-lr]').forEach((b) => b.addEventListener('click', async () => {
-    const box = b.closest('.lrv'), act = b.dataset.lr, msg = b.parentElement.querySelector('.lxmsg');
+    const box = b.closest('.lrv'), act = b.dataset.lr, msg = b.closest('.lxbtn').querySelector('.lxmsg');
     let text = `【精品校正】審核:${box.dataset.id}｜${act}`, label = act;
     if (b.dataset.cat) { text += `｜分類=${b.dataset.cat}`; label = `上架到「${b.dataset.catname}」`; }
     if (act === '改') {
