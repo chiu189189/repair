@@ -433,6 +433,18 @@ details.sd-past { margin: 0 0 4px; }
 .sd-cap h4 { margin: 0 0 4px; font-size: 12px; color: var(--sub); font-weight: 600; border-bottom: 1px solid var(--line); padding-bottom: 3px; }
 .sd-cap p { margin: 0; font-size: 13.5px; line-height: 1.6; white-space: pre-wrap; word-break: break-word; }
 details.sd-past .sd { opacity: .75; }
+/* 2026-11-22 用戶選 A：同一天併一張卡 */
+.sd-day { display: flex; gap: 10px; align-items: flex-start; background: var(--card); border: 1px solid var(--line); border-radius: var(--r-md); padding: 8px 10px; }
+.sd-day.today { border-color: var(--accent); }
+.sd-day.fail { border-color: var(--fix); }
+.sd-day > .sd-dt { padding-top: 10px; }
+.sd-rows { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.sd-rows .sd { background: none; border: 0; border-radius: 0; padding: 8px 0; }
+.sd-rows > :first-child { padding-top: 0; }
+.sd-rows > .sd:last-child { padding-bottom: 0; }
+.sd-rows .sd + .sd, .sd-rows .sd-more + .sd { border-top: 1px solid var(--line); }
+.sd-rows .sd.gap { min-height: 36px; }
+.sd-rows .sd-more { margin: 0 0 8px; border: 1px dashed var(--line); border-radius: var(--r-sm); }
 /* 2026-11-18 成效 A */
 .st-tiles { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px; }
 .st-tile { font: inherit; text-align: left; color: var(--ink); background: var(--card); border: 1px solid var(--line); border-radius: var(--r-md); padding: 10px 11px; display: flex; flex-direction: column; gap: 3px; cursor: pointer; min-width: 0; }
@@ -707,7 +719,10 @@ function reviewHtml(lr) {
         <div class="why">⚠️ ${(x.why || []).map(esc).join('；')}</div>
         ${x.mate ? `<div class="mate">${(x.mate.photos || [])[0] ? `<img src="${esc(x.mate.photos[0])}" loading="lazy" alt="">` : ''}<span>已上架的那件：<b>${esc(x.mate.price)}</b> ${esc(nm(x.mate))}${x.mate.sku ? '・貨號 ' + esc(x.mate.sku) : ''}</span></div>` : ''}
         ${done ? `<div class="lxok">✓ 已送出「${esc(done)}」，5 分鐘內處理</div><div class="lxbtn"><button type="button" data-lrredo="1">按錯了，重選</button></div>`
-          : `${lost ? `<div class="why">上次送出的「${esc(lab)}」好像沒處理到，請再按一次</div>` : ''}<div class="lxbtn"><button type="button" class="ok" data-lr="上架">${x.mate ? '不是重複，上架' : '上架'}</button><button type="button" data-lredit="1">改</button><button type="button" data-lr="不上">不上</button><span class="lxmsg"></span></div>
+          : `${lost ? `<div class="why">上次送出的「${esc(lab)}」好像沒處理到，請再按一次</div>` : ''}<div class="lxbtn">${(x.why || []).some((w) => w.includes('包包還是配件'))
+              // 看不出類別：直接給分類選項，按了就上架到那一類（11/22 用戶）
+              ? [['bag', '包包'], ['slg', '皮夾小物'], ['acc', '配件']].map(([k, t]) => `<button type="button" class="ok" data-lr="上架" data-cat="${k}" data-catname="${t}">${t}</button>`).join('')
+              : `<button type="button" class="ok" data-lr="上架">${x.mate ? '不是重複，上架' : '上架'}</button>`}<button type="button" data-lredit="1">改</button><button type="button" data-lr="不上">不上</button><span class="lxmsg"></span></div>
             <div class="lxform" hidden><label>品名<input class="lrn" value="${esc(x.name || '')}" placeholder="例：Ivy 手拿包"></label>
               <label>台幣售價<input class="lrp" inputmode="numeric" value="${esc(String(x.price || '').replace(/[^0-9]/g, ''))}" placeholder="例：45000"></label>
               <small>品牌（${esc(x.brand || '—')}）會自動寫在品名前面</small>
@@ -731,6 +746,7 @@ function bindReview(root) {
   root.querySelectorAll('.lrv [data-lr]').forEach((b) => b.addEventListener('click', async () => {
     const box = b.closest('.lrv'), act = b.dataset.lr, msg = b.parentElement.querySelector('.lxmsg');
     let text = `【精品校正】審核:${box.dataset.id}｜${act}`, label = act;
+    if (b.dataset.cat) { text += `｜分類=${b.dataset.cat}`; label = `上架到「${b.dataset.catname}」`; }
     if (act === '改') {
       const name = box.querySelector('.lrn').value.trim().replace(/[｜|=]/g, ' '), tw = box.querySelector('.lrp').value.replace(/[^\d]/g, '');
       if (!name && !tw) { msg.textContent = '品名或台幣至少填一個'; return; }
@@ -993,7 +1009,8 @@ function renderSched() {
   const kind = (x) => { const t = String(x.t || ''); if (x.k === 'vid') return ['影片', 'vid']; if (/冷知識/.test(t.slice(0, 12))) return ['冷知識', 'img']; if (/教學/.test(t.slice(0, 12))) return ['教學', 'img']; return ['圖文', 'img']; };
   const ttl = (x) => clean(String(x.t || '').replace(/^【[^】]{0,12}】\s*/, '').replace(/^手機(冷知識|教學)\s*/, ''));
   sdList = [];
-  const it = (x, k) => {
+  const dt = (k) => { const d = new Date(k + 'T00:00:00'), isT = k === tk; return `<div class="sd-dt"><b>${isT ? '今天' : `${d.getMonth() + 1}/${d.getDate()}`}</b><span>${isT ? `${d.getMonth() + 1}/${d.getDate()}` : '週' + WD[d.getDay()]}</span></div>`; };
+  const it = (x, k, inDay) => {
     const si = sdList.push(x) - 1, has = !!(x.cap || x.cth || (x.pics && x.pics.length)), op = has && sdOpen.has(sdKey(x));
     const [kn, kc] = kind(x), d = new Date(k + 'T00:00:00'), isT = k === tk, vid = x.k === 'vid';
     const plats = x.p.filter((v) => v !== 'Threads').join('・');
@@ -1002,20 +1019,20 @@ function renderSched() {
     if (x.ck === 'ok') st = `<span class="good">${esc(x.p.join('・'))} 都發了 ✓</span>`;
     else if (x.ck === 'fail') st = `<span class="bad">沒發出去${x.ckn ? '：' + esc(x.ckn) : ''}</span>`;
     else st = `${plats ? `<span>${esc(plats)}</span>` : ''}${t ? `<span class="${t[1]}">${t[0]}</span>` : ''}${x.done ? '<span>已過・等確認</span>' : ''}`;
-    return `<div class="sd${isT ? ' today' : ''}${x.ck === 'fail' ? ' fail' : ''}${has ? ' has' : ''}${op ? ' open' : ''}" data-si="${si}"${has ? ` role="button" tabindex="0" aria-expanded="${op}"` : ''}><div class="sd-dt"><b>${isT ? '今天' : `${d.getMonth() + 1}/${d.getDate()}`}</b><span>${isT ? `${d.getMonth() + 1}/${d.getDate()}` : '週' + WD[d.getDay()]}</span></div>
+    return `<div class="sd${isT && !inDay ? ' today' : ''}${x.ck === 'fail' && !inDay ? ' fail' : ''}${has ? ' has' : ''}${op ? ' open' : ''}" data-si="${si}"${has ? ` role="button" tabindex="0" aria-expanded="${op}"` : ''}>${inDay ? '' : dt(k)}
       <div class="sd-th">${x.img ? `<img src="${esc(x.img)}" alt="" loading="lazy">` : ic(vid ? 'video' : 'doc')}</div>
       <div class="sd-bd"><div class="sd-kd"><span class="pill ${kc}">${kn}</span><span>${esc(x.at.slice(11, 16))}</span></div><div class="sd-tt">${esc(ttl(x))}</div><div class="sd-st">${st}</div></div>${has ? `<span class="sd-cv">${ic('chev')}</span>` : ''}</div>${op ? sdMore(x) : ''}`;
   };
-  const gap = (k) => { const d = new Date(k + 'T00:00:00'), isT = k === tk;
-    return `<div class="sd gap"><div class="sd-dt"><b>${isT ? '今天' : `${d.getMonth() + 1}/${d.getDate()}`}</b><span>${isT ? `${d.getMonth() + 1}/${d.getDate()}` : '週' + WD[d.getDay()]}</span></div><div class="sd-bd">11:00 還沒排圖文</div></div>`; };
+  const gap = (k, inDay) => `<div class="sd gap">${inDay ? '' : dt(k)}<div class="sd-bd">11:00 還沒排圖文</div></div>`;
   let html = '', curSec = '';
   for (let i = 0; i < total; i++) {
     const k = dayKey(new Date(now.getTime() + i * 864e5)), wk = monday(new Date(k + 'T00:00:00'));
     const sec = wk === thisWk ? '這週' : wk === nextWk ? '下週' : '之後';
     if (sec !== curSec) { html += `<div class="sec">${sec}</div>`; curSec = sec; }
-    const list = days[k] || [];
-    html += list.map((x) => it(x, k)).join('');
-    if (!list.some((x) => x.k === 'img') && !(i === 0 && now.getHours() >= 12)) html += gap(k);
+    const list = days[k] || [], noImg = !list.some((x) => x.k === 'img') && !(i === 0 && now.getHours() >= 12);
+    // 2026-11-22 用戶選 A：同一天兩篇以上（或一支影片＋還沒排圖文）併成一張卡，日期只寫一次
+    if (list.length + (noImg ? 1 : 0) > 1) html += `<div class="sd-day${k === tk ? ' today' : ''}${list.some((x) => x.ck === 'fail') ? ' fail' : ''}">${dt(k)}<div class="sd-rows">${list.map((x) => it(x, k, 1)).join('')}${noImg ? gap(k, 1) : ''}</div></div>`;
+    else html += list.map((x) => it(x, k)).join('') + (noImg ? gap(k) : '');
   }
   const vids7 = items.filter((x) => x.k === 'vid' && x.at.slice(0, 10) >= tk && x.at.slice(0, 10) < dayKey(new Date(now.getTime() + 7 * 864e5))).length;
   const vidNote = vids7 ? '' : `<div class="sd gap vidgap"><div class="sd-th">${ic('video')}</div><div class="sd-bd">接下來 7 天沒有影片・丟一支進「維修影片/待發」</div></div>`;
