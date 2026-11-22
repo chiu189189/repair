@@ -488,6 +488,7 @@ details.lxwrap[open] .lxtog::after { content: "收起 ▴"; }
 .lrv .orig{margin:4px 0;padding:6px 8px;border-radius:8px;background:rgba(127,127,127,.12);font-size:13px;line-height:1.5}.lrv .orig small{opacity:.8}.lrv .orig .raw{white-space:pre-wrap;word-break:break-all}
 .lrv { padding: 12px 0; border-top: 1px solid var(--line, #e5e5e5); }
 .lrv:first-child { border-top: 0; }
+.lrv .lxform select { font-size: 16px; padding: 6px 8px; border: 1px solid var(--line, #ddd); border-radius: 8px; background: transparent; color: inherit; }   /* 11/22 改品名＋選分類一起 */
 .lrv .ph { display: flex; gap: 6px; overflow-x: auto; }
 .lrv .ph img { width: 84px; height: 84px; object-fit: cover; border-radius: 8px; flex: none; background: #8882; }
 .lrv .why { color: #c0392b; font-size: 13px; margin: 6px 0 2px; }
@@ -725,6 +726,7 @@ function reviewHtml(lr) {
               : `<button type="button" class="ok" data-lr="上架">${x.mate ? '不是重複，上架' : '上架'}</button>`}<button type="button" data-lredit="1">改</button><button type="button" data-lr="不上">不上</button><span class="lxmsg"></span></div>
             <div class="lxform" hidden><label>品名<input class="lrn" value="${esc(x.name || '')}" placeholder="例：Ivy 手拿包"></label>
               <label>台幣售價<input class="lrp" inputmode="numeric" value="${esc(String(x.price || '').replace(/[^0-9]/g, ''))}" placeholder="例：45000"></label>
+              <label>分類<select class="lrc"><option value="">${(x.why || []).some((w) => w.includes('包包還是配件')) ? '請選' : '不改'}</option><option value="bag">包包</option><option value="slg">皮夾小物</option><option value="acc">配件</option></select></label>
               <small>品牌（${esc(x.brand || '—')}）會自動寫在品名前面</small>
               <div class="lxbtn"><button type="button" class="ok" data-lr="改">改好上架</button><button type="button" data-lrcancel="1">取消</button><span class="lxmsg"></span></div></div>`}
       </div>`;
@@ -749,9 +751,10 @@ function bindReview(root) {
     if (b.dataset.cat) { text += `｜分類=${b.dataset.cat}`; label = `上架到「${b.dataset.catname}」`; }
     if (act === '改') {
       const name = box.querySelector('.lrn').value.trim().replace(/[｜|=]/g, ' '), tw = box.querySelector('.lrp').value.replace(/[^\d]/g, '');
-      if (!name && !tw) { msg.textContent = '品名或台幣至少填一個'; return; }
+      const cs = box.querySelector('.lrc'), cat = cs ? cs.value : '', catn = cat ? cs.options[cs.selectedIndex].text : '';
+      if (!name && !tw && !cat) { msg.textContent = '品名、台幣、分類至少改一個'; return; }
       if (tw && (+tw < 1000 || +tw > 2000000)) { msg.textContent = '台幣看起來不對'; return; }
-      text += `｜品名=${name}｜台幣=${tw}`; label = `改成 ${name}${tw ? '・NT$ ' + nf(+tw) : ''}`;
+      text += `｜品名=${name}｜台幣=${tw}${cat ? '｜分類=' + cat : ''}`; label = `改成 ${name}${tw ? '・NT$ ' + nf(+tw) : ''}${catn ? '・' + catn : ''}`;
     }
     box.querySelectorAll('button').forEach((x) => { x.disabled = true; }); msg.textContent = '送出中…';
     try {
