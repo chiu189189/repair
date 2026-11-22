@@ -473,6 +473,7 @@ details.lxwrap > summary::-webkit-details-marker { display: none; }
 .lxtog::after { content: "展開 ▾"; }
 details.lxwrap[open] .lxtog::after { content: "收起 ▴"; }
 /* 2026-11-22 微商相冊不太確定、先不上的精品 */
+.lrv .orig{margin:4px 0;padding:6px 8px;border-radius:8px;background:rgba(127,127,127,.12);font-size:13px;line-height:1.5}.lrv .orig small{opacity:.8}.lrv .orig .raw{white-space:pre-wrap;word-break:break-all}
 .lrv { padding: 12px 0; border-top: 1px solid var(--line, #e5e5e5); }
 .lrv:first-child { border-top: 0; }
 .lrv .ph { display: flex; gap: 6px; overflow-x: auto; }
@@ -678,6 +679,16 @@ function holdHtml(lh) {
     + `<div class="sc-foot">精品批發的事，跟維修無關・更新 ${esc(String(lh.asOf || '').slice(5).replace('-', '/'))}</div></div>` : '';
 }
 function luxRevSent() { try { return JSON.parse(localStorage.getItem('chiu189_luxrev') || '{}'); } catch (e) { return {}; } }
+function origHtml(o) {
+  // 料商原始報價＋怎麼換算成台幣（2026-11-22 用戶：只看 NT$ 沒辦法判斷價錢對不對）
+  if (!o || !o.hkd) return '<div class="orig">料商原價：這件是舊資料，沒記到</div>';
+  const n = (v) => Number(v).toLocaleString('en-US');
+  const cost = Math.ceil(Math.round((o.hkd + 110) * o.rate * 100) / 100);
+  const calc = o.add != null
+    ? `（${n(o.hkd)}＋運費 110）× 匯率 ${o.rate} ＝ 成本 ${n(cost)}＋${esc(o.cat || '加價')} ${n(o.add)} → <b>NT$ ${n(Math.ceil((cost + o.add) / 100) * 100)}</b>`
+    : `（${n(o.hkd)}＋運費 110）× 匯率 ${o.rate} ＝ 成本約 NT$ ${n(cost)}`;
+  return `<div class="orig">料商原價 <b>港幣 ${n(o.hkd)}</b>${o.late ? '<small>（匯率用現在的）</small>' : ''}<br><small>${calc}</small>${o.raw ? `<br><small class="raw">料商原文：${esc(o.raw)}</small>` : ''}</div>`;
+}
 function reviewHtml(lr) {
   if (!lr || !lr.n) return '';
   const sent = luxRevSent();
@@ -692,6 +703,7 @@ function reviewHtml(lr) {
       return `<div class="lrv" data-id="${esc(x.id)}"><div class="ph">${(x.photos || []).map((u) => `<img src="${esc(u)}" loading="lazy" alt="">`).join('')}</div>
         <div class="lxt"><b>${esc(x.price)}</b> ${esc(nm(x))}</div>
         <small>${esc(x.src)}・${esc(x.text)}</small>
+        ${origHtml(x.orig)}
         <div class="why">⚠️ ${(x.why || []).map(esc).join('；')}</div>
         ${x.mate ? `<div class="mate">${(x.mate.photos || [])[0] ? `<img src="${esc(x.mate.photos[0])}" loading="lazy" alt="">` : ''}<span>已上架的那件：<b>${esc(x.mate.price)}</b> ${esc(nm(x.mate))}${x.mate.sku ? '・貨號 ' + esc(x.mate.sku) : ''}</span></div>` : ''}
         ${done ? `<div class="lxok">✓ 已送出「${esc(done)}」，5 分鐘內處理</div><div class="lxbtn"><button type="button" data-lrredo="1">按錯了，重選</button></div>`
