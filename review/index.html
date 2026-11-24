@@ -612,6 +612,16 @@ function stateMsg(t, btn) { const s = $('#state'); s.hidden = false; s.removeAtt
 
 function getPin() { try { return localStorage.getItem('chiu189_pin') || ''; } catch (e) { return ''; } }
 function setPin(v) { try { localStorage.setItem('chiu189_pin', v); } catch (e) {} }
+// 2026-11-24：信任裝置碼——PIN 對了伺服器會發一個 dev，存在這支手機；之後每次都帶，別人猜錯密碼鎖不到這支
+function getDev() { try { return localStorage.getItem('chiu189_dev') || ''; } catch (e) { return ''; } }
+function setDev(v) { try { localStorage.setItem('chiu189_dev', v); } catch (e) {} }
+async function apiPost(o) {
+  const d = getDev(), body = d ? Object.assign({}, o, { dev: d }) : o;
+  const res = await fetch(API, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(body) });
+  const j = await res.json();
+  if (j && j.dev) setDev(j.dev);
+  return { json: async () => j };
+}
 function askPin() { const v = prompt('請輸入審稿密碼（只要輸入一次）'); if (v) setPin(v.trim()); return v ? v.trim() : ''; }
 const sched = () => (data.reviews || []).find((r) => r.id === '__schedule__') || {};
 const reviews = () => (data.reviews || []).filter((r) => r.id !== '__schedule__');
@@ -630,7 +640,7 @@ async function loadImgs(card) {
   if (imgList(r)) { box.outerHTML = imgBox(r); return; }
   box.dataset.busy = '1';
   try {
-    const res = await fetch(API, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ a: 'imgs', id: r.id, pin: getPin() }) });
+    const res = await apiPost({ a: 'imgs', id: r.id, pin: getPin() });
     const j = await res.json();
     if (j.ok && j.imgs) { imgCache[r.id] = j.imgs; document.querySelectorAll('.card').forEach((c) => { const bx = c.querySelector('.imgs[data-lazy]'); if (bx && reviews()[+c.dataset.i] === r) bx.outerHTML = imgBox(r); }); }
   } catch (e) {}
@@ -657,12 +667,12 @@ async function load(quiet) {
     // 2026-11-10：讀稿也要密碼（PIN 存在這支手機，只輸入一次）
     let pin = getPin() || askPin();
     if (!pin) { hideOld(); stateMsg('要輸入審稿密碼才看得到內容。', '輸入密碼'); throw new Error('nopin'); }
-    const post = () => fetch(API, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ a: 'list', pin }) });
+    const post = () => apiPost({ a: 'list', pin });
     try { r = await post(); } catch (e1) { await new Promise((ok) => setTimeout(ok, 1500)); r = await post(); }
     const j = await r.json();
     if (!j.ok) {
       if (j.error === 'pin') { setPin(''); try { localStorage.removeItem('chiu189_cache'); } catch (e) {} hideOld(); stateMsg('密碼不對，請重新輸入。', '輸入密碼'); throw new Error('pin'); }
-      if (j.error === 'locked') { stateMsg('密碼錯太多次，鎖定 1 小時，請稍後再試。'); throw new Error('locked'); }
+      if (j.error === 'locked') { stateMsg('密碼錯太多次，暫時鎖定中，請稍後再試。'); throw new Error('locked'); }
       throw new Error(j.error);
     }
     data = j; document.body.classList.remove('nopin');
@@ -730,11 +740,12 @@ function origHtml(o) {
   // 料商原始報價＋怎麼換算成台幣（2026-11-22 用戶：只看 NT$ 沒辦法判斷價錢對不對）
   if (!o || !o.hkd) return '<div class="orig">料商原價：這件是舊資料，沒記到</div>';
   const n = (v) => Number(v).toLocaleString('en-US');
-  const cost = Math.ceil(Math.round((o.hkd + 110) * o.rate * 100) / 100);
-  const calc = o.add != null
-    ? `（${n(o.hkd)}＋運費 110）× 匯率 ${o.rate} ＝ 成本 ${n(cost)}＋${esc(o.cat || '加價')} ${n(o.add)} → <b>NT$ ${n(Math.ceil((cost + o.add) / 100) * 100)}</b>`
-    : `（${n(o.hkd)}＋運費 110）× 匯率 ${o.rate} ＝ 成本約 NT$ ${n(cost)}`;
-  return `<div class="orig">料商原價 <b>港幣 ${n(o.hkd)}</b>${o.late ? '<small>（匯率用現在的）</small>' : ''}<br><small>${calc}</small>${o.raw ? `<br><small class="raw">料商原文：${esc(o.raw)}</small>` : ''}</div>`;
+  // 2026-11-24：成本／售價改由伺服器算好（cost、sell、ship），這裡只顯示
+  const calc = o.cost == null ? ''
+    : o.sell != null
+    ? `（${n(o.hkd)}＋運費 ${n(o.ship)}）× 匯率 ${o.rate} ＝ 成本 ${n(o.cost)}＋${esc(o.cat || '加價')} ${n(o.add)} → <b>NT$ ${n(o.sell)}</b>`
+    : `（${n(o.hkd)}＋運費 ${n(o.ship)}）× 匯率 ${o.rate} ＝ 成本約 NT$ ${n(o.cost)}`;
+  return `<div class="orig">料商原價 <b>港幣 ${n(o.hkd)}</b>${o.late ? '<small>（匯率用現在的）</small>' : ''}${calc ? `<br><small>${calc}</small>` : ''}${o.raw ? `<br><small class="raw">料商原文：${esc(o.raw)}</small>` : ''}</div>`;
 }
 function origLine(x) {
   // 版面 C：來源・港幣・加價縮成一行，細節點「原文」展開（11/22）
@@ -1296,7 +1307,7 @@ async function decide(card, decision, note) {
   card.querySelectorAll('button').forEach((b) => (b.disabled = true));
   msg.textContent = '存檔中…';
   try {
-    const res = await fetch(API, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ a: 'decide', id: r.id, decision, note: note || '', pin }) });
+    const res = await apiPost({ a: 'decide', id: r.id, decision, note: note || '', pin });
     const j = await res.json();
     if (!j.ok && j.error === 'pin') { setPin(''); msg.textContent = '密碼不對，請再按一次重新輸入。'; card.querySelectorAll('button').forEach((b) => (b.disabled = false)); return; }
     if (!j.ok) throw new Error(j.error);
@@ -1363,7 +1374,7 @@ $('#sched').addEventListener('keydown', (e) => { if ((e.key === 'Enter' || e.key
 document.querySelector('.tabs').addEventListener('click', (e) => { const b = e.target.closest('button[data-tab]'); if (b) { setTab(b.dataset.tab); window.scrollTo({ top: 0 }); } });
 async function askApi(body) {
   const pin = getPin() || askPin(); if (!pin) return null;
-  const res = await fetch(API, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(Object.assign({ pin }, body)) });
+  const res = await apiPost(Object.assign({ pin }, body));
   const j = await res.json();
   if (!j.ok && j.error === 'pin') { setPin(''); throw new Error('pin'); }
   if (!j.ok) throw new Error(j.error);
@@ -1518,7 +1529,7 @@ const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent), standalone = navigat
 let swReg = null;
 const b64key = (s) => { s = s.replace(/-/g, '+').replace(/_/g, '/'); s += '='.repeat((4 - s.length % 4) % 4); return Uint8Array.from(atob(s), (c) => c.charCodeAt(0)); };
 const setBell = (on) => bell.classList.toggle('on', on);
-async function saveSub(sub, a) { const pin = getPin() || askPin(); if (!pin) throw new Error('nopin'); const res = await fetch(API, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ a: a || 'push_sub', pin, sub: sub.toJSON() }) }); const j = await res.json(); if (!j.ok && j.error === 'pin') { setPin(''); throw new Error('pin'); } if (!j.ok) throw new Error(j.error); }
+async function saveSub(sub, a) { const pin = getPin() || askPin(); if (!pin) throw new Error('nopin'); const res = await apiPost({ a: a || 'push_sub', pin, sub: sub.toJSON() }); const j = await res.json(); if (!j.ok && j.error === 'pin') { setPin(''); throw new Error('pin'); } if (!j.ok) throw new Error(j.error); }
 // 2026-11-21：點通知後要開的頁面（例：預覽播放 play.html）。iPhone 主畫面版常只叫回審稿頁不換頁 → sw.js 先記下，這裡接手跳過去（只收同網站）
 function goPending(url) { if (typeof url === 'string' && url.indexOf(location.origin + '/') === 0 && url !== location.href) location.href = url; }
 async function takePending() {
